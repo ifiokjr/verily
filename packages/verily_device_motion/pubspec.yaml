@@ -1,4 +1,4 @@
-name: verily_phone_motion
+name: verily_device_motion
 description: "A new Flutter package project."
 version: 0.0.1
 homepage:
@@ -53,3 +53,5 @@ flutter:
 #
 # For details regarding fonts in packages, see
 # https://flutter.dev/to/font-from-package
+
+resolution: workspace

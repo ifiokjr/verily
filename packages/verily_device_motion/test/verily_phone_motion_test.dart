@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:verily_phone_motion/verily_phone_motion.dart';
+import 'package:verily_device_motion/verily_device_motion.dart';
 
 // Helper to encode sensor data
 ByteData _encodeSensorData(List<double> values) {

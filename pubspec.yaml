@@ -5,9 +5,10 @@ environment:
 workspace:
   - apps/reflexy
   - packages/verily_sdk
-  - packages/verily_phone_motion
+  - packages/verily_device_motion
 dev_dependencies:
   melos: ^7.0.0-dev.7
+  flutter_lints: ^5.0.0
 
 melos:
   repository: https://github.com/ifiokjr/verily
