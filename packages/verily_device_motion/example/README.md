@@ -1,6 +1,6 @@
 # verily_device_motion Example
 
-This Flutter application demonstrates how to use the `verily_device_motion` package.
+This Flutter application demonstrates how to use the `verily_device_motion` package with Flutter Hooks and Riverpod for state management.
 
 ## Functionality
 
@@ -10,7 +10,15 @@ The app utilizes the `MotionDetectorService` from the parent package to listen f
 - **Full Yaw:** A complete 360-degree rotation around the phone's Z-axis (like spinning in a circle flat on a table).
 - **Drop:** A period of freefall followed by a significant impact.
 
-It displays counters for each of these detected events, incrementing the respective counter each time an event occurs. The state management is handled using Flutter Riverpod.
+It displays counters for each of these detected events, incrementing the respective counter each time an event occurs.
+
+## State Management & Hooks
+
+This example demonstrates several Flutter development patterns:
+
+- **Flutter Hooks**: For handling stateful logic and widget lifecycle
+- **Hooks Riverpod**: For global state management
+- **Custom Hooks**: We create a custom `useMotionDetector` hook that encapsulates the motion detector setup and cleanup
 
 ## Running the Example
 
@@ -41,15 +49,18 @@ To test the functionality:
 
 ## Code Structure
 
-This example uses a simplified implementation:
+The example demonstrates using hooks with Riverpod:
 
-- `MotionCounts` - A simple class to hold the count values for each motion type.
-- `MotionCounter` - A Riverpod Notifier that manages the state and interacts with the motion detection service.
-- `MotionCounterScreen` - A Flutter UI to display the motion counters.
+- **Custom Hook (`useMotionDetector`)**: Manages the setup, lifecycle, and disposal of the motion detector
+- **State Provider (`motionCountsProvider`)**: A simple Riverpod StateProvider that holds the counter values
+- **HookConsumerWidget**: Combines Flutter Hooks with Riverpod's Consumer functionality
+- **useEffect**: Manages side effects like stream subscriptions
+- **useCallback**: Memoizes functions to prevent unnecessary rebuilds
 
-The app demonstrates how to:
+This architecture demonstrates how to:
 
-- Initialize the `MotionDetectorService`
-- Listen to motion events
-- Update state based on detected events
-- Properly dispose of resources when finished
+- Use hooks to encapsulate stateful logic
+- Create custom hooks for reusable functionality
+- Combine hooks with Riverpod for comprehensive state management
+- Handle lifecycle events and resource cleanup
+- Subscribe to streams and update state based on events

@@ -1,55 +1,35 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:verily_device_motion/verily_device_motion.dart';
 
 import 'motion_counts.dart';
 
-// Define a manual provider since the generated one won't exist until build_runner is run
-final motionCounterProvider = NotifierProvider<MotionCounter, MotionCounts>(() {
-  return MotionCounter();
-});
+// Custom hook to manage the MotionDetectorService
+MotionDetectorService useMotionDetector() {
+  // Create a ref to store the detector service
+  final detectorRef = useRef<MotionDetectorService?>(null);
 
-// Define the Notifier class manually - later this will be generated
-class MotionCounter extends Notifier<MotionCounts> {
-  late MotionDetectorService _motionDetectorService;
-  late StreamSubscription<MotionEvent> _subscription;
+  // Setup and dispose the detector on widget lifecycle
+  useEffect(() {
+    // Initialize on first build
+    detectorRef.value = MotionDetectorService();
+    detectorRef.value!.startListening();
 
-  @override
-  MotionCounts build() {
-    // Initialize the motion detector service
-    _motionDetectorService = MotionDetectorService();
-    _motionDetectorService.startListening();
+    // Dispose on widget disposal
+    return () {
+      detectorRef.value?.dispose();
+      detectorRef.value = null;
+    };
+  }, const []); // Empty dependency array means this only runs once on init
 
-    // Listen for motion events
-    _subscription = _motionDetectorService.motionEvents.listen((event) {
-      switch (event.type) {
-        case MotionEventType.fullRoll:
-          state = state.copyWith(rollCount: state.rollCount + 1);
-          break;
-        case MotionEventType.fullYaw:
-          state = state.copyWith(yawCount: state.yawCount + 1);
-          break;
-        case MotionEventType.drop:
-          state = state.copyWith(dropCount: state.dropCount + 1);
-          break;
-      }
-    });
-
-    // Dispose resources when the provider is disposed
-    ref.onDispose(() {
-      _subscription.cancel();
-      _motionDetectorService.dispose();
-    });
-
-    return const MotionCounts();
-  }
-
-  void resetCounts() {
-    state = const MotionCounts();
-  }
+  return detectorRef.value!;
 }
 
+// Provider for the motion counts
+final motionCountsProvider = StateProvider<MotionCounts>((ref) => const MotionCounts());
+
+// Main app
 void main() {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,13 +53,50 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MotionCounterScreen extends ConsumerWidget {
+class MotionCounterScreen extends HookConsumerWidget {
   const MotionCounterScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the motion counter provider to get the current counts
-    final counts = ref.watch(motionCounterProvider);
+    // Get the motion detector service using our custom hook
+    final motionDetector = useMotionDetector();
+
+    // Get current counts from provider
+    final counts = ref.watch(motionCountsProvider);
+
+    // Listen to motion events using useEffect
+    useEffect(() {
+      // Set up stream subscription
+      final subscription = motionDetector.motionEvents.listen((event) {
+        switch (event.type) {
+          case MotionEventType.fullRoll:
+            ref.read(motionCountsProvider.notifier).update(
+              (state) => state.copyWith(rollCount: state.rollCount + 1)
+            );
+            break;
+          case MotionEventType.fullYaw:
+            ref.read(motionCountsProvider.notifier).update(
+              (state) => state.copyWith(yawCount: state.yawCount + 1)
+            );
+            break;
+          case MotionEventType.drop:
+            ref.read(motionCountsProvider.notifier).update(
+              (state) => state.copyWith(dropCount: state.dropCount + 1)
+            );
+            break;
+        }
+      });
+
+      // Clean up subscription
+      return () {
+        subscription.cancel();
+      };
+    }, [motionDetector]); // Depends on the motion detector
+
+    // Reset function using hooks
+    final resetCounts = useCallback(() {
+      ref.read(motionCountsProvider.notifier).state = const MotionCounts();
+    }, []);
 
     return Scaffold(
       appBar: AppBar(
@@ -100,9 +117,9 @@ class MotionCounterScreen extends ConsumerWidget {
           ],
         ),
       ),
-      // Optional: Add a button to reset counts
+      // Use resetCounts created with useCallback
       floatingActionButton: FloatingActionButton(
-        onPressed: () => ref.read(motionCounterProvider.notifier).resetCounts(),
+        onPressed: resetCounts,
         tooltip: 'Reset Counts',
         child: const Icon(Icons.refresh),
       ),

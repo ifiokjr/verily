@@ -30,7 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_riverpod: ^2.5.1 # Or latest compatible version
+  flutter_hooks: ^0.21.5 # Flutter hooks for stateful logic
+  hooks_riverpod: ^2.4.9 # Combines hooks with riverpod
   verily_device_motion:
     # Depend on the package itself, which is one level up
     path: ../
