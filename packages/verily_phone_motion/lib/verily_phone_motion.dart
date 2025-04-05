@@ -1,5 +1,6 @@
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+library verily_phone_motion;
+
+// Export the core service and its associated data types.
+export 'src/motion_detector_service.dart' show MotionDetectorService, MotionEvent, MotionEventType;
+
+// Add other exports here if the package grows.
