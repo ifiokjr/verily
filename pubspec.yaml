@@ -1,0 +1,16 @@
+name: verily_workspace
+publish_to: none
+environment:
+  sdk: ^3.6.0
+workspace:
+  - apps/reflexy
+  - packages/verily_sdk
+  - packages/verily_phone_motion
+dev_dependencies:
+  melos: ^7.0.0-dev.7
+
+melos:
+  repository: https://github.com/ifiokjr/verily
+
+# All of the content of your previous melos.yaml file
+# (Except for the packages and name)
