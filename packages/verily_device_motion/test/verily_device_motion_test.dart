@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:verily_device_motion/verily_device_motion.dart';
+import 'package:verily_device_motion/src/motion_detector_service.dart';
 
 // Helper to encode sensor data
 ByteData _encodeSensorData(List<double> values) {
@@ -108,8 +108,8 @@ void main() {
        expectLater(
            service.motionEvents,
            emits(isA<MotionEvent>()
-               .having((e) => e.type, 'type', MotionEventType.drop)
-               .having((e) => e.value, 'value', isNotNull)));
+               .having((e) => e!.type, 'type', MotionEventType.drop)
+               .having((e) => e!.value, 'value', isNotNull)));
 
        service.startListening();
        await Future.delayed(Duration.zero); // Allow listener setup
