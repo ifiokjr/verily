@@ -67,7 +67,7 @@ Perhaps the best approach is to test the module in the reflexes app and then use
 
 This project is being built to submit for an AI hackathon I'm participating in.
 
-In order to structure how the project is built, the first part should be to build the reflexes game.
+In order to structure how the project is built, the first part should be to build the reflexy game.
 
 - The game should rely directly on the flutter plugins initially (the action verification functionality can be extracted out later).
 - The game should test that mlkit can actually verify the actions like different excercises.

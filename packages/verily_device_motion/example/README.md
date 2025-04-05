@@ -24,15 +24,32 @@ It displays counters for each of these detected events, incrementing the respect
    flutter pub get
    ```
 
-3. **Run code generation:** This step is necessary to generate files required by Riverpod Generator and Freezed.
-   ```bash
-   flutter pub run build_runner build --delete-conflicting-outputs
-   ```
-   _(If you encounter issues, you might need to run `flutter clean` in this directory first)_
-
-4. **Run the application:** Connect a device or start an emulator/simulator.
+3. **Run the application:** Connect a device or start an emulator/simulator.
    ```bash
    flutter run
    ```
 
 The application should now launch, and you can try performing the roll, yaw, and drop motions to see the counters update.
+
+## Demo Instructions
+
+To test the functionality:
+
+1. **Full Roll:** Hold your phone with the screen facing you and rotate it 360 degrees along its horizontal axis (like rolling a wheel).
+2. **Full Yaw:** Place your phone flat on a table and rotate it 360 degrees (like a compass needle).
+3. **Drop:** _Simulate_ a drop by rapidly moving the phone downward and then quickly stopping it. For safety, do not actually drop your device!
+
+## Code Structure
+
+This example uses a simplified implementation:
+
+- `MotionCounts` - A simple class to hold the count values for each motion type.
+- `MotionCounter` - A Riverpod Notifier that manages the state and interacts with the motion detection service.
+- `MotionCounterScreen` - A Flutter UI to display the motion counters.
+
+The app demonstrates how to:
+
+- Initialize the `MotionDetectorService`
+- Listen to motion events
+- Update state based on detected events
+- Properly dispose of resources when finished

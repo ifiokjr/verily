@@ -1,12 +1,25 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+// Simple class to track motion counts without requiring code generation
+class MotionCounts {
+  final int rollCount;
+  final int yawCount;
+  final int dropCount;
 
-part 'motion_counts.freezed.dart';
+  const MotionCounts({
+    this.rollCount = 0,
+    this.yawCount = 0,
+    this.dropCount = 0,
+  });
 
-@freezed
-class MotionCounts with _$MotionCounts {
-  const factory MotionCounts({
-    @Default(0) int rollCount,
-    @Default(0) int yawCount,
-    @Default(0) int dropCount,
-  }) = _MotionCounts;
+  // Manual copyWith implementation
+  MotionCounts copyWith({
+    int? rollCount,
+    int? yawCount,
+    int? dropCount,
+  }) {
+    return MotionCounts(
+      rollCount: rollCount ?? this.rollCount,
+      yawCount: yawCount ?? this.yawCount,
+      dropCount: dropCount ?? this.dropCount,
+    );
+  }
 }

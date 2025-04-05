@@ -1,7 +1,54 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:verily_device_motion/verily_device_motion.dart';
 
-import 'motion_provider.dart';
+import 'motion_counts.dart';
+
+// Define a manual provider since the generated one won't exist until build_runner is run
+final motionCounterProvider = NotifierProvider<MotionCounter, MotionCounts>(() {
+  return MotionCounter();
+});
+
+// Define the Notifier class manually - later this will be generated
+class MotionCounter extends Notifier<MotionCounts> {
+  late MotionDetectorService _motionDetectorService;
+  late StreamSubscription<MotionEvent> _subscription;
+
+  @override
+  MotionCounts build() {
+    // Initialize the motion detector service
+    _motionDetectorService = MotionDetectorService();
+    _motionDetectorService.startListening();
+
+    // Listen for motion events
+    _subscription = _motionDetectorService.motionEvents.listen((event) {
+      switch (event.type) {
+        case MotionEventType.fullRoll:
+          state = state.copyWith(rollCount: state.rollCount + 1);
+          break;
+        case MotionEventType.fullYaw:
+          state = state.copyWith(yawCount: state.yawCount + 1);
+          break;
+        case MotionEventType.drop:
+          state = state.copyWith(dropCount: state.dropCount + 1);
+          break;
+      }
+    });
+
+    // Dispose resources when the provider is disposed
+    ref.onDispose(() {
+      _subscription.cancel();
+      _motionDetectorService.dispose();
+    });
+
+    return const MotionCounts();
+  }
+
+  void resetCounts() {
+    state = const MotionCounts();
+  }
+}
 
 void main() {
   // Ensure Flutter bindings are initialized
@@ -42,7 +89,7 @@ class MotionCounterScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
+            Text(
               'Device Motion Events Detected:',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
