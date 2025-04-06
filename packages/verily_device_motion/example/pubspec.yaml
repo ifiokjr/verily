@@ -32,6 +32,7 @@ dependencies:
     sdk: flutter
   flutter_hooks: ^0.21.2 # Flutter hooks for stateful logic
   hooks_riverpod: ^2.4.9 # Combines hooks with riverpod
+  sensors_plus: ^6.0.0 # Match main package version
   verily_device_motion:
     # Depend on the package itself, which is one level up
     path: ../
@@ -44,17 +45,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
-  flutter_lints: ^3.0.0 # Consistent with root if possible
-
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter packages.
 flutter:
 
   # The following line ensures that the Material Icons font is
