@@ -183,9 +183,22 @@ class GameScreen extends HookConsumerWidget {
           style: textTheme.headlineMedium,
         ),
         const SizedBox(height: 40),
-        Text(
-          currentAction?.name ?? '...',
-          style: textTheme.displayLarge?.copyWith(fontWeight: FontWeight.bold),
+        // --- AnimatedSwitcher for Action Text ---
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300), // Animation duration
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            // Use FadeTransition for smooth in/out
+            return FadeTransition(opacity: animation, child: child);
+          },
+          child: Text(
+            // Use the action start time as the key. This changes whenever
+            // a new action is generated (even if it's the same type),
+            // triggering the animation.
+            key: ValueKey<DateTime?>(gameState.actionStartTime),
+            currentAction?.name ?? '...', // Show '...' between actions or on game over
+            style: textTheme.displayLarge?.copyWith(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center, // Center align text
+          ),
         ),
       ],
     );
