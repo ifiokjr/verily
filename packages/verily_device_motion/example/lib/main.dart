@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -6,14 +7,14 @@ import 'package:verily_device_motion/verily_device_motion.dart';
 import 'motion_counts.dart';
 
 // Custom hook to manage the MotionDetectorService
-MotionDetectorService useMotionDetector() {
+MotionDetectorService useMotionDetector({double dropSensitivity = 1.0}) {
   // Create a ref to store the detector service
   final detectorRef = useRef<MotionDetectorService?>(null);
 
   // Setup and dispose the detector on widget lifecycle
   useEffect(() {
-    // Initialize on first build
-    detectorRef.value = MotionDetectorService();
+    // Initialize on first build with the provided sensitivity
+    detectorRef.value = MotionDetectorService(dropSensitivity: dropSensitivity);
     detectorRef.value!.startListening();
 
     // Dispose on widget disposal
@@ -21,7 +22,8 @@ MotionDetectorService useMotionDetector() {
       detectorRef.value?.dispose();
       detectorRef.value = null;
     };
-  }, const []); // Empty dependency array means this only runs once on init
+    // Re-run effect if dropSensitivity changes (though unlikely in this example)
+  }, [dropSensitivity]);
 
   return detectorRef.value!;
 }
@@ -58,8 +60,8 @@ class MotionCounterScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Get the motion detector service using our custom hook
-    final motionDetector = useMotionDetector();
+    // Get the motion detector service using our custom hook, passing sensitivity
+    final motionDetector = useMotionDetector(dropSensitivity: 1.5); // Example: 50% more sensitive
 
     // Get current counts from provider
     final counts = ref.watch(motionCountsProvider);

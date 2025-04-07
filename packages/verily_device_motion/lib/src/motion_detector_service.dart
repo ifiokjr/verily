@@ -54,6 +54,10 @@ class MotionEvent {
 /// predefined motion patterns. Detected events are broadcasted via the
 /// [motionEvents] stream.
 class MotionDetectorService {
+  // --- Constants ---
+  /// Base impact threshold (m/s²) used for calculating the effective threshold.
+  static const double _baseImpactThreshold = 25.0;
+
   // --- Configuration ---
 
   /// The threshold (in m/s²) below which acceleration magnitude is considered freefall.
@@ -64,9 +68,13 @@ class MotionDetectorService {
   /// Defaults to 150 milliseconds.
   final Duration freefallTimeThreshold;
 
-  /// The threshold (in m/s²) above which acceleration magnitude is considered an impact
-  /// after a potential freefall. Defaults to 25.0 m/s².
-  final double impactThreshold;
+  /// Sensitivity factor for drop detection. Defaults to 1.0.
+  /// - Values > 1.0 increase sensitivity (lower impact force needed to trigger a drop).
+  /// - Values < 1.0 decrease sensitivity (higher impact force needed).
+  /// - A value of 0.5 requires roughly twice the default impact force.
+  /// - A value of 2.0 requires roughly half the default impact force.
+  /// Must be greater than 0.
+  final double dropSensitivity;
 
   /// The time window after a potential freefall ends, during which an impact spike is checked for.
   /// Defaults to 500 milliseconds.
@@ -85,6 +93,10 @@ class MotionDetectorService {
   /// detections of the *same* type are ignored. This prevents rapid re-triggering.
   /// Defaults to 3 seconds.
   final Duration detectionResetDelay;
+
+  // --- Calculated Internal Configuration ---
+  /// The effective impact threshold calculated based on the base value and sensitivity.
+  late final double _effectiveImpactThreshold;
 
   // --- Sensor Subscriptions ---
   StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
@@ -125,7 +137,7 @@ class MotionDetectorService {
     // Drop detection parameters
     this.freefallThreshold = 1.5, // m/s^2
     this.freefallTimeThreshold = const Duration(milliseconds: 150),
-    this.impactThreshold = 25.0, // m/s^2
+    this.dropSensitivity = 1.0,
     this.impactDetectionWindow = const Duration(milliseconds: 500),
     // Rotation detection parameters
     this.rotationRateStopThreshold = 0.1, // radians/sec
@@ -133,9 +145,14 @@ class MotionDetectorService {
     // General parameters
     this.detectionResetDelay = const Duration(seconds: 3), // Cooldown period
   }) : assert(freefallThreshold >= 0, 'freefallThreshold must be non-negative'),
-       assert(impactThreshold > 0, 'impactThreshold must be positive'),
+       assert(dropSensitivity > 0, 'dropSensitivity must be positive'),
        assert(rotationRateStopThreshold >= 0, 'rotationRateStopThreshold must be non-negative'),
-       assert(fullRotationThreshold > 0, 'fullRotationThreshold must be positive');
+       assert(fullRotationThreshold > 0, 'fullRotationThreshold must be positive')
+  {
+    // Calculate the effective threshold based on sensitivity.
+    // Higher sensitivity means lower threshold.
+    _effectiveImpactThreshold = _baseImpactThreshold / dropSensitivity;
+  }
 
 
   /// Starts listening to accelerometer and gyroscope sensors.
@@ -250,7 +267,8 @@ class MotionDetectorService {
       }
       // Optional: Log high G spikes even if not part of a drop sequence
       // This could be useful for other analyses but is commented out for clarity.
-      // if (magnitude > impactThreshold) {
+      // Use the *calculated* effective threshold here for comparison if logging.
+      // if (magnitude > _effectiveImpactThreshold) {
       //   print("High acceleration spike detected (not necessarily impact): $magnitude");
       // }
     }
@@ -365,8 +383,9 @@ class MotionDetectorService {
             math.pow(event.x, 2) + math.pow(event.y, 2) + math.pow(event.z, 2));
 
         // --- Impact Detection ---
-        if (magnitude > impactThreshold) {
-          // print("Impact Detected! Magnitude: $magnitude"); // Debug
+        // Use the calculated effective impact threshold here
+        if (magnitude > _effectiveImpactThreshold) {
+          // print("Impact Detected! Magnitude: $magnitude (Threshold: $_effectiveImpactThreshold)"); // Debug
           // Emit the drop event with the impact magnitude.
           _emitMotionEvent(MotionEventType.drop, DateTime.now(), value: magnitude);
 
