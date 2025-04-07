@@ -1,24 +1,24 @@
 # verily_device_motion Example
 
-This Flutter application demonstrates how to use the `verily_device_motion` package with Flutter Hooks and Riverpod for state management.
+This Flutter application demonstrates how to use the `verily_device_motion` package with Flutter Hooks and Riverpod for state management, including interactive sensitivity controls.
 
 ## Functionality
 
 The app utilizes the `MotionDetectorService` from the parent package to listen for specific device motion events:
 
-- **Full Roll:** A complete 360-degree rotation around the phone's Y-axis (like doing a barrel roll).
-- **Full Yaw:** A complete 360-degree rotation around the phone's Z-axis (like spinning in a circle flat on a table).
-- **Drop:** A period of freefall followed by a significant impact. This example configures the drop detection to be 50% more sensitive than the default (`dropSensitivity: 1.5`).
+- **Yaw Rotation:** Rotation around the phone's Z-axis (like spinning flat). Threshold configurable via slider (default 270°).
+- **Roll Rotation:** Rotation around the phone's Y-axis (like a barrel roll). Threshold configurable via slider (default 270°).
+- **Drop:** A period of freefall followed by impact. Sensitivity configurable via slider (default 1.0).
 
-It displays counters for each of these detected events, incrementing the respective counter each time an event occurs.
+It displays counters for drop events, and separate counters for Clockwise (CW) and Counter-Clockwise (CCW) directions for yaw and roll events.
 
 ## State Management & Hooks
 
 This example demonstrates several Flutter development patterns:
 
-- **Flutter Hooks**: For handling stateful logic and widget lifecycle
-- **Hooks Riverpod**: For global state management
-- **Custom Hooks**: We create a custom `useMotionDetector` hook that encapsulates the motion detector setup (including setting `dropSensitivity`) and cleanup
+- **Flutter Hooks**: For handling stateful logic (sensitivity slider values) and widget lifecycle.
+- **Hooks Riverpod**: For global state management (event counts).
+- **Custom Hooks**: `useMotionDetector` hook encapsulates the service setup (passing sensitivities) and cleanup.
 
 ## Running the Example
 
@@ -37,31 +37,32 @@ This example demonstrates several Flutter development patterns:
    flutter run
    ```
 
-The application should now launch, and you can try performing the roll, yaw, and drop motions to see the counters update. Note that drops might trigger more easily due to the increased sensitivity setting.
+The application should now launch. You can adjust the sensitivity sliders and perform the motions to see the counters update.
 
 ## Demo Instructions
 
 To test the functionality:
 
-1. **Full Roll:** Hold your phone with the screen facing you and rotate it 360 degrees along its horizontal axis (like rolling a wheel).
-2. **Full Yaw:** Place your phone flat on a table and rotate it 360 degrees (like a compass needle).
-3. **Drop:** _Simulate_ a drop by rapidly moving the phone downward and then quickly stopping it. For safety, do not actually drop your device! Remember this example has increased drop sensitivity.
+1. **Yaw (Spin):** Place your phone flat and rotate it. Observe the CW/CCW counters. Adjust the Yaw Sensitivity slider to change the required rotation angle (e.g., 0.5 requires 180°).
+2. **Roll (Barrel):** Hold your phone screen-up and rotate it along its horizontal axis. Observe the CW/CCW counters. Adjust the Roll Sensitivity slider.
+3. **Drop:** _Simulate_ a drop by moving the phone down quickly and stopping abruptly. Adjust the Drop Sensitivity slider (higher values make it easier to trigger).
 
 ## Code Structure
 
 The example demonstrates using hooks with Riverpod:
 
-- **Custom Hook (`useMotionDetector`)**: Manages the setup, lifecycle, and disposal of the motion detector, including passing the `dropSensitivity`
-- **State Provider (`motionCountsProvider`)**: A simple Riverpod StateProvider that holds the counter values
-- **HookConsumerWidget**: Combines Flutter Hooks with Riverpod's Consumer functionality
-- **useEffect**: Manages side effects like stream subscriptions
-- **useCallback**: Memoizes functions to prevent unnecessary rebuilds
+- **Custom Hook (`useMotionDetector`)**: Manages the setup, lifecycle (reacting to sensitivity changes), and disposal of the motion detector.
+- **State Hook (`useState`)**: Used within the UI to manage the current values of the sensitivity sliders.
+- **State Provider (`motionCountsProvider`)**: A Riverpod StateProvider holding the directional event counts.
+- **HookConsumerWidget**: Combines Flutter Hooks with Riverpod's Consumer functionality.
+- **useEffect**: Manages side effects like stream subscriptions.
+- **useCallback**: Memoizes the reset function.
 
 This architecture demonstrates how to:
 
-- Use hooks to encapsulate stateful logic
-- Create custom hooks for reusable functionality
-- Combine hooks with Riverpod for comprehensive state management
-- Handle lifecycle events and resource cleanup
-- Subscribe to streams and update state based on events
-- Configure the `MotionDetectorService` with parameters like `dropSensitivity`
+- Use hooks to encapsulate stateful logic and manage local UI state (sliders).
+- Create custom hooks for reusable functionality, reacting to input changes.
+- Combine hooks with Riverpod for comprehensive state management.
+- Handle lifecycle events and resource cleanup.
+- Subscribe to streams and update state based on events and their direction.
+- Configure the `MotionDetectorService` with dynamic parameters.

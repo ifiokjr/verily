@@ -7,11 +7,19 @@ enum MotionEventType {
   /// A drop event, detected by a period of freefall followed by a significant impact.
   drop,
 
-  /// A full 360-degree rotation around the Z-axis (vertical axis when phone is upright).
-  fullYaw,
+  /// A rotation around the Z-axis (vertical axis when phone is upright).
+  /// The exact angle threshold is determined by [MotionDetectorService.yawSensitivity].
+  yaw, // Renamed from fullYaw for clarity
 
-  /// A full 360-degree rotation around the Y-axis (horizontal axis when phone is upright).
-  fullRoll
+  /// A rotation around the Y-axis (horizontal axis when phone is upright).
+  /// The exact angle threshold is determined by [MotionDetectorService.rollSensitivity].
+  roll // Renamed from fullRoll for clarity
+}
+
+/// Indicates the direction of a detected rotation event.
+enum RotationDirection {
+  clockwise,
+  counterClockwise
 }
 
 /// Contains details about a detected motion event.
@@ -24,14 +32,21 @@ class MotionEvent {
 
   /// An optional value associated with the event.
   /// For [MotionEventType.drop], this represents the impact magnitude (m/s²).
-  /// For rotation events, this is currently unused.
+  /// For rotation events, this is currently unused but could represent angle/rate.
   final double? value;
 
-  MotionEvent(this.type, this.timestamp, {this.value});
+  /// For rotation events ([MotionEventType.yaw], [MotionEventType.roll]),
+  /// indicates the direction of the rotation. Null for drop events.
+  final RotationDirection? direction;
+
+  MotionEvent(this.type, this.timestamp, {this.value, this.direction})
+    : assert(type == MotionEventType.drop || direction != null,
+          'Rotation direction must be provided for yaw and roll events.');
 
   @override
   String toString() {
-    return 'MotionEvent(type: $type, timestamp: $timestamp, value: ${value?.toStringAsFixed(2)})';
+    String directionString = direction != null ? ', direction: $direction' : '';
+    return 'MotionEvent(type: $type, timestamp: $timestamp, value: ${value?.toStringAsFixed(2)}$directionString)';
   }
 
   @override
@@ -41,10 +56,11 @@ class MotionEvent {
           runtimeType == other.runtimeType &&
           type == other.type &&
           timestamp == other.timestamp &&
-          value == other.value;
+          value == other.value &&
+          direction == other.direction; // Added direction
 
   @override
-  int get hashCode => type.hashCode ^ timestamp.hashCode ^ value.hashCode;
+  int get hashCode => type.hashCode ^ timestamp.hashCode ^ value.hashCode ^ direction.hashCode; // Added direction
 }
 
 /// Service to detect specific phone motions like drops, full yaw rotations,
@@ -57,6 +73,8 @@ class MotionDetectorService {
   // --- Constants ---
   /// Base impact threshold (m/s²) used for calculating the effective threshold.
   static const double _baseImpactThreshold = 25.0;
+  /// Base rotation angle threshold (radians, equivalent to 360 degrees).
+  static const double _baseRotationThreshold = 2 * math.pi;
 
   // --- Configuration ---
 
@@ -76,6 +94,20 @@ class MotionDetectorService {
   /// Must be greater than 0.
   final double dropSensitivity;
 
+  /// Sensitivity factor for yaw rotation detection. Defaults to 0.75 (270 degrees).
+  /// Determines the fraction of a full 360-degree rotation required to trigger a yaw event.
+  /// - Value of 1.0 requires a full 360 degrees.
+  /// - Value of 0.5 requires 180 degrees.
+  /// Must be between 0 and 1 (exclusive of 0).
+  final double yawSensitivity;
+
+  /// Sensitivity factor for roll rotation detection. Defaults to 0.75 (270 degrees).
+  /// Determines the fraction of a full 360-degree rotation required to trigger a roll event.
+  /// - Value of 1.0 requires a full 360 degrees.
+  /// - Value of 0.5 requires 180 degrees.
+  /// Must be between 0 and 1 (exclusive of 0).
+  final double rollSensitivity;
+
   /// The time window after a potential freefall ends, during which an impact spike is checked for.
   /// Defaults to 500 milliseconds.
   final Duration impactDetectionWindow;
@@ -83,11 +115,6 @@ class MotionDetectorService {
   /// The threshold (in radians/sec) below which the rotation rate is considered stopped,
   /// causing the accumulated rotation angle to reset. Defaults to 0.1 rad/s.
   final double rotationRateStopThreshold;
-
-  /// The threshold (in radians) for detecting a full rotation (yaw or roll).
-  /// Slightly less than 2π (360 degrees) to account for potential sensor noise.
-  /// Defaults to approximately 353 degrees (2 * pi * 0.98).
-  final double fullRotationThreshold;
 
   /// The cooldown duration after a motion event is detected, during which subsequent
   /// detections of the *same* type are ignored. This prevents rapid re-triggering.
@@ -97,6 +124,10 @@ class MotionDetectorService {
   // --- Calculated Internal Configuration ---
   /// The effective impact threshold calculated based on the base value and sensitivity.
   late final double _effectiveImpactThreshold;
+  /// The effective yaw rotation threshold calculated based on the base value and sensitivity.
+  late final double _effectiveYawThreshold;
+  /// The effective roll rotation threshold calculated based on the base value and sensitivity.
+  late final double _effectiveRollThreshold;
 
   // --- Sensor Subscriptions ---
   StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
@@ -140,18 +171,21 @@ class MotionDetectorService {
     this.dropSensitivity = 1.0,
     this.impactDetectionWindow = const Duration(milliseconds: 500),
     // Rotation detection parameters
+    this.yawSensitivity = 0.75, // Default to 270 degrees
+    this.rollSensitivity = 0.75, // Default to 270 degrees
     this.rotationRateStopThreshold = 0.1, // radians/sec
-    this.fullRotationThreshold = 2 * math.pi * 0.98, // ~353 degrees in radians
     // General parameters
     this.detectionResetDelay = const Duration(seconds: 3), // Cooldown period
   }) : assert(freefallThreshold >= 0, 'freefallThreshold must be non-negative'),
        assert(dropSensitivity > 0, 'dropSensitivity must be positive'),
-       assert(rotationRateStopThreshold >= 0, 'rotationRateStopThreshold must be non-negative'),
-       assert(fullRotationThreshold > 0, 'fullRotationThreshold must be positive')
+       assert(yawSensitivity > 0 && yawSensitivity <= 1.0, 'yawSensitivity must be between 0 (exclusive) and 1.0 (inclusive)'),
+       assert(rollSensitivity > 0 && rollSensitivity <= 1.0, 'rollSensitivity must be between 0 (exclusive) and 1.0 (inclusive)'),
+       assert(rotationRateStopThreshold >= 0, 'rotationRateStopThreshold must be non-negative')
   {
-    // Calculate the effective threshold based on sensitivity.
-    // Higher sensitivity means lower threshold.
+    // Calculate the effective thresholds based on base values and sensitivities.
     _effectiveImpactThreshold = _baseImpactThreshold / dropSensitivity;
+    _effectiveYawThreshold = _baseRotationThreshold * yawSensitivity;
+    _effectiveRollThreshold = _baseRotationThreshold * rollSensitivity;
   }
 
 
@@ -291,34 +325,29 @@ class MotionDetectorService {
       final double timeDelta =
           now.difference(_lastGyroTimestamp!).inMilliseconds / 1000.0;
 
-      // --- Yaw Calculation ---
-      // Update the accumulated yaw angle based on the current rate and time delta.
-      // Also handles resetting if rotation stops.
+      // --- Yaw Calculation --- Updated to use _effectiveYawThreshold
       _accumulatedYaw = _updateAccumulatedRotation(_accumulatedYaw, yawRate,
-          timeDelta, MotionEventType.fullYaw, _isYawDetectionCooldown);
+          timeDelta, MotionEventType.yaw, _isYawDetectionCooldown);
 
-      // Check if a full yaw rotation has occurred and we're not in cooldown.
       if (!_isYawDetectionCooldown &&
-          _accumulatedYaw.abs() >= fullRotationThreshold) {
-        _emitMotionEvent(MotionEventType.fullYaw, now);
+          _accumulatedYaw.abs() >= _effectiveYawThreshold) {
+        final direction = _accumulatedYaw > 0 ? RotationDirection.clockwise : RotationDirection.counterClockwise;
+        _emitMotionEvent(MotionEventType.yaw, now, direction: direction);
         _isYawDetectionCooldown = true; // Start cooldown
-        _accumulatedYaw %= (2 * math.pi); // Keep the remainder for continuous tracking
-        // Schedule the cooldown reset.
+        _accumulatedYaw = 0.0; // Reset completely after detection
         Timer(detectionResetDelay, () => _isYawDetectionCooldown = false);
       }
 
-      // --- Roll Calculation ---
-      // Update the accumulated roll angle.
+      // --- Roll Calculation --- Updated to use _effectiveRollThreshold
       _accumulatedRoll = _updateAccumulatedRotation(_accumulatedRoll,
-          rollRate, timeDelta, MotionEventType.fullRoll, _isRollDetectionCooldown);
+          rollRate, timeDelta, MotionEventType.roll, _isRollDetectionCooldown);
 
-      // Check if a full roll rotation has occurred and we're not in cooldown.
       if (!_isRollDetectionCooldown &&
-          _accumulatedRoll.abs() >= fullRotationThreshold) {
-        _emitMotionEvent(MotionEventType.fullRoll, now);
+          _accumulatedRoll.abs() >= _effectiveRollThreshold) {
+        final direction = _accumulatedRoll > 0 ? RotationDirection.clockwise : RotationDirection.counterClockwise;
+        _emitMotionEvent(MotionEventType.roll, now, direction: direction);
         _isRollDetectionCooldown = true; // Start cooldown
-        _accumulatedRoll %= (2 * math.pi); // Keep the remainder
-        // Schedule the cooldown reset.
+        _accumulatedRoll = 0.0; // Reset completely after detection
         Timer(detectionResetDelay, () => _isRollDetectionCooldown = false);
       }
     }
@@ -440,9 +469,16 @@ class MotionDetectorService {
   }
 
   /// Adds a [MotionEvent] to the broadcast stream controller if it's not closed.
-  void _emitMotionEvent(MotionEventType type, DateTime timestamp, {double? value}) {
+  void _emitMotionEvent(MotionEventType type, DateTime timestamp, {double? value, RotationDirection? direction}) {
     if (!_motionEventController.isClosed) {
-      final event = MotionEvent(type, timestamp, value: value);
+      // Ensure direction is provided for rotation events
+      if ((type == MotionEventType.yaw || type == MotionEventType.roll) && direction == null) {
+        // This should ideally not happen due to checks in _handleGyroscopeEvent,
+        // but adding a safeguard.
+        print("Error: Rotation direction missing for $type event.");
+        return;
+      }
+      final event = MotionEvent(type, timestamp, value: value, direction: direction);
       _motionEventController.add(event);
       // print("Motion Detected: $event"); // Optional: Log detected events
     }

@@ -13,15 +13,16 @@ and the Flutter guide for
 
 # verily_device_motion
 
-A Flutter package for detecting specific device motion events like drops, full yaw rotations, and full roll rotations using accelerometer and gyroscope data.
+A Flutter package for detecting specific device motion events like drops, yaw rotations, and roll rotations using accelerometer and gyroscope data.
 
 ## Features
 
 - Detects device drops based on freefall followed by impact.
-- Detects full 360-degree yaw rotations (spinning flat).
-- Detects full 360-degree roll rotations (barrel roll).
+- Detects yaw rotations (spinning flat) based on a configurable angle threshold.
+- Detects roll rotations (barrel roll) based on a configurable angle threshold.
+- Provides the direction (Clockwise/Counter-Clockwise) for rotation events.
 - Provides a simple stream-based API (`motionEvents`).
-- Configurable thresholds and sensitivity for detection.
+- Configurable sensitivity for drop, yaw, and roll detection.
 
 ## Getting Started
 
@@ -67,6 +68,9 @@ class _MyAppState extends State<MyApp> {
     _motionDetectorService = MotionDetectorService(
       // Example: Make drop detection twice as sensitive
       dropSensitivity: 2.0,
+      // Example: Trigger yaw/roll after 180 degrees (0.5 sensitivity)
+      yawSensitivity: 0.5,
+      rollSensitivity: 0.5,
       // Other parameters like freefallTimeThreshold, detectionResetDelay etc.
       // can also be customized here.
     );
@@ -75,7 +79,11 @@ class _MyAppState extends State<MyApp> {
     // Listen to the motion events stream
     _motionSubscription = _motionDetectorService.motionEvents.listen((event) {
       setState(() {
-        _lastEvent = '${event.type.name} at ${event.timestamp.toIso8601String()}';
+        String directionInfo = '';
+        if (event.type == MotionEventType.yaw || event.type == MotionEventType.roll) {
+           directionInfo = ' Direction: ${event.direction?.name}';
+        }
+        _lastEvent = '${event.type.name} at ${event.timestamp.toIso8601String()}$directionInfo';
         if (event.type == MotionEventType.drop) {
           _lastEvent += ' (Impact: ${event.value?.toStringAsFixed(2)} m/s²)';
         }
@@ -114,14 +122,15 @@ The `MotionDetectorService` constructor accepts several parameters to fine-tune 
 - `freefallThreshold` (double, default: 1.5): Acceleration magnitude (m/s²) below which freefall is considered.
 - `freefallTimeThreshold` (Duration, default: 150ms): Minimum freefall duration required.
 - `dropSensitivity` (double, default: 1.0): Adjusts the impact force needed for drop detection. Values > 1 increase sensitivity (easier to trigger), < 1 decrease sensitivity (harder to trigger). Must be > 0.
+- `yawSensitivity` (double, default: 0.75): Fraction of 360 degrees required for a yaw event (0.0 < sensitivity <= 1.0). 0.75 means 270 degrees.
+- `rollSensitivity` (double, default: 0.75): Fraction of 360 degrees required for a roll event (0.0 < sensitivity <= 1.0). 0.75 means 270 degrees.
 - `impactDetectionWindow` (Duration, default: 500ms): Time window after freefall to check for impact.
 - `rotationRateStopThreshold` (double, default: 0.1): Rotation rate (rad/s) below which accumulated rotation resets.
-- `fullRotationThreshold` (double, default: ~6.11 rad / 350 deg): Angle needed for a full rotation.
 - `detectionResetDelay` (Duration, default: 3s): Cooldown period after an event of the same type.
 
 ## Example App
 
-See the `example/` directory for a runnable Flutter application demonstrating the package usage with Flutter Hooks and Riverpod.
+See the `example/` directory for a runnable Flutter application demonstrating the package usage with Flutter Hooks, Riverpod, and interactive sensitivity sliders.
 
 ## Additional information
 

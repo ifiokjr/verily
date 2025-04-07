@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 import 'package:verily_device_motion/src/motion_detector_service.dart';
 
 // Helper to encode sensor data
@@ -97,48 +97,49 @@ void main() {
     });
 
     test('detects drop after freefall and impact', () async {
+       // Base threshold is 25.0. Sensitivity 1.25 -> effective threshold 25.0 / 1.25 = 20.0
        final service = MotionDetectorService(
+         dropSensitivity: 1.25,
          freefallTimeThreshold: const Duration(milliseconds: 50),
          impactDetectionWindow: const Duration(milliseconds: 100),
          detectionResetDelay: const Duration(milliseconds: 200),
          freefallThreshold: 1.5,
-         impactThreshold: 20.0,
        );
+       const double effectiveImpactThreshold = 25.0 / 1.25; // 20.0
 
        expectLater(
            service.motionEvents,
            emits(isA<MotionEvent>()
                .having((e) => e.type, 'type', MotionEventType.drop)
-               .having((e) => e.value, 'value', isNotNull)));
+               .having((e) => e.value, 'value', greaterThan(effectiveImpactThreshold))));
 
        service.startListening();
        await Future.delayed(Duration.zero); // Allow listener setup
 
        // 1. Simulate freefall (low acceleration)
        simulateSensorEvent(eventChannelAccelerometer, [0.5, 0.5, 0.5]);
-       await Future.delayed(const Duration(milliseconds: 60)); // > freefall threshold
+       await Future.delayed(const Duration(milliseconds: 60)); // > freefall time threshold
 
        // 2. Simulate end of freefall (normal gravity)
        simulateSensorEvent(eventChannelAccelerometer, [0.0, 9.8, 0.0]);
        await Future.delayed(Duration.zero); // Allow impact check to potentially start
 
-       // 3. Simulate impact (high acceleration) within the window
-       // Note: The service internally uses fastestInterval for impact check,
-       // but our mock sends to the same event channel regardless.
-       simulateSensorEvent(eventChannelAccelerometer, [5.0, -25.0, 3.0]);
+       // 3. Simulate impact > effective threshold
+       simulateSensorEvent(eventChannelAccelerometer, [5.0, -25.0, 3.0]); // Magnitude ~25.8 > 20.0
 
        await Future.delayed(const Duration(milliseconds: 250)); // Wait past detection reset delay
 
        service.dispose();
      });
 
-    test('does not detect drop if impact is outside window', () async {
+    test('does not detect drop if impact is below effective threshold', () async {
+       // Base threshold is 25.0. Sensitivity 0.8 -> effective threshold 25.0 / 0.8 = 31.25
        final service = MotionDetectorService(
+         dropSensitivity: 0.8,
          freefallTimeThreshold: const Duration(milliseconds: 50),
          impactDetectionWindow: const Duration(milliseconds: 100),
          detectionResetDelay: const Duration(milliseconds: 200),
          freefallThreshold: 1.5,
-         impactThreshold: 20.0,
        );
 
        expectLater(service.motionEvents, emitsDone);
@@ -146,26 +147,130 @@ void main() {
        service.startListening();
        await Future.delayed(Duration.zero); // Allow listener setup
 
-       // 1. Simulate freefall
+        // 1. Simulate freefall
        simulateSensorEvent(eventChannelAccelerometer, [0.5, 0.5, 0.5]);
-       await Future.delayed(const Duration(milliseconds: 60)); // > freefall threshold
+       await Future.delayed(const Duration(milliseconds: 60));
 
        // 2. Simulate end of freefall
        simulateSensorEvent(eventChannelAccelerometer, [0.0, 9.8, 0.0]);
+       await Future.delayed(Duration.zero);
 
-       // 3. Wait LONGER than the impact detection window
-       await Future.delayed(const Duration(milliseconds: 150));
+       // 3. Simulate impact BELOW effective threshold
+       simulateSensorEvent(eventChannelAccelerometer, [5.0, -25.0, 3.0]); // Magnitude ~25.8 < 31.25
 
-       // 4. Simulate impact (now it's too late)
-       simulateSensorEvent(eventChannelAccelerometer, [5.0, -25.0, 3.0]);
-
-       await Future.delayed(const Duration(milliseconds: 50)); // Wait a bit more
-
+       await Future.delayed(const Duration(milliseconds: 50));
        service.dispose(); // Closes the stream, fulfilling emitsDone
-     });
+    });
 
-     // TODO: Add tests for MotionEventType.fullYaw (using eventChannelGyroscope)
-     // TODO: Add tests for MotionEventType.fullRoll (using eventChannelGyroscope)
+    test('detects yaw clockwise rotation', () async {
+      final service = MotionDetectorService(
+        yawSensitivity: 0.5, // 180 degrees
+        detectionResetDelay: const Duration(milliseconds: 100),
+      );
+      final double effectiveThreshold = math.pi; // 0.5 * 2 * pi
+
+      expectLater(
+          service.motionEvents,
+          emits(isA<MotionEvent>()
+              .having((e) => e.type, 'type', MotionEventType.yaw)
+              .having((e) => e.direction, 'direction', RotationDirection.clockwise)));
+
+      service.startListening();
+      await Future.delayed(Duration.zero);
+
+      // Simulate clockwise rotation (positive Z rate)
+      // Rotate slightly more than 180 degrees in 1 second
+      final double rate = effectiveThreshold * 1.1; // rad/s
+      simulateSensorEvent(eventChannelGyroscope, [0.0, 0.0, rate]); // x, y, z
+      await Future.delayed(const Duration(seconds: 1));
+
+      // Stop rotation to ensure event isn't missed due to threshold check timing
+      simulateSensorEvent(eventChannelGyroscope, [0.0, 0.0, 0.0]);
+      await Future.delayed(const Duration(milliseconds: 150)); // Wait past reset delay
+
+      service.dispose();
+    });
+
+     test('detects yaw counter-clockwise rotation', () async {
+      final service = MotionDetectorService(
+        yawSensitivity: 0.75, // 270 degrees
+        detectionResetDelay: const Duration(milliseconds: 100),
+      );
+      final double effectiveThreshold = 1.5 * math.pi; // 0.75 * 2 * pi
+
+      expectLater(
+          service.motionEvents,
+          emits(isA<MotionEvent>()
+              .having((e) => e.type, 'type', MotionEventType.yaw)
+              .having((e) => e.direction, 'direction', RotationDirection.counterClockwise)));
+
+      service.startListening();
+      await Future.delayed(Duration.zero);
+
+      // Simulate counter-clockwise rotation (negative Z rate)
+      final double rate = -effectiveThreshold * 1.1; // rad/s
+      simulateSensorEvent(eventChannelGyroscope, [0.0, 0.0, rate]); // x, y, z
+      await Future.delayed(const Duration(seconds: 1));
+
+      simulateSensorEvent(eventChannelGyroscope, [0.0, 0.0, 0.0]);
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      service.dispose();
+    });
+
+    test('detects roll clockwise rotation', () async {
+      final service = MotionDetectorService(
+        rollSensitivity: 0.6, // 216 degrees
+        detectionResetDelay: const Duration(milliseconds: 100),
+      );
+      final double effectiveThreshold = 1.2 * math.pi; // 0.6 * 2 * pi
+
+      expectLater(
+          service.motionEvents,
+          emits(isA<MotionEvent>()
+              .having((e) => e.type, 'type', MotionEventType.roll)
+              .having((e) => e.direction, 'direction', RotationDirection.clockwise)));
+
+      service.startListening();
+      await Future.delayed(Duration.zero);
+
+      // Simulate clockwise roll (positive Y rate)
+      final double rate = effectiveThreshold * 1.1; // rad/s
+      simulateSensorEvent(eventChannelGyroscope, [0.0, rate, 0.0]); // x, y, z
+      await Future.delayed(const Duration(seconds: 1));
+
+      simulateSensorEvent(eventChannelGyroscope, [0.0, 0.0, 0.0]);
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      service.dispose();
+    });
+
+     test('detects roll counter-clockwise rotation', () async {
+      final service = MotionDetectorService(
+        rollSensitivity: 0.9, // 324 degrees
+        detectionResetDelay: const Duration(milliseconds: 100),
+      );
+      final double effectiveThreshold = 1.8 * math.pi; // 0.9 * 2 * pi
+
+      expectLater(
+          service.motionEvents,
+          emits(isA<MotionEvent>()
+              .having((e) => e.type, 'type', MotionEventType.roll)
+              .having((e) => e.direction, 'direction', RotationDirection.counterClockwise)));
+
+      service.startListening();
+      await Future.delayed(Duration.zero);
+
+      // Simulate counter-clockwise roll (negative Y rate)
+      final double rate = -effectiveThreshold * 1.1; // rad/s
+      simulateSensorEvent(eventChannelGyroscope, [0.0, rate, 0.0]); // x, y, z
+      await Future.delayed(const Duration(seconds: 1));
+
+      simulateSensorEvent(eventChannelGyroscope, [0.0, 0.0, 0.0]);
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      service.dispose();
+    });
 
   });
 }
