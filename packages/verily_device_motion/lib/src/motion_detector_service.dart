@@ -322,7 +322,7 @@ class MotionDetectorService {
 
       if (!_isYawDetectionCooldown &&
           _accumulatedYaw.abs() >= _effectiveYawThreshold) {
-        final direction = _accumulatedYaw > 0 ? RotationDirection.clockwise : RotationDirection.counterClockwise;
+        final direction = _accumulatedYaw > 0 ? RotationDirection.counterClockwise: RotationDirection.clockwise ;
         _emitMotionEvent(MotionEventType.yaw, now, direction: direction);
         _isYawDetectionCooldown = true; // Start cooldown
         // Reset using modulo to handle continuous rotation correctly
