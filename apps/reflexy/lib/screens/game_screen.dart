@@ -86,9 +86,11 @@ class GameScreen extends HookConsumerWidget {
     );
 
     // --- State for Timer Display ---
-    // `useState` holds the integer value for the countdown display.
-    // It triggers a rebuild of this widget when its value changes.
     final displayedSeconds = useState<int>(gameState.actionTimeLimit.inSeconds);
+
+    // --- State for Red Flash Effect ---
+    // Controls the visibility of the red flash overlay for incorrect actions.
+    final showRedFlash = useState(false);
 
     // --- Side Effects (Hooks) ---
 
@@ -170,104 +172,103 @@ class GameScreen extends HookConsumerWidget {
       ],
     );
 
+    // Auto-hide Red Flash Effect
+    // This effect runs whenever `showRedFlash.value` changes.
+    useEffect(() {
+      // If the flash is set to show...
+      if (showRedFlash.value) {
+        // ...start a short timer to hide it again.
+        final timer = Timer(const Duration(milliseconds: 200), () {
+          // Check if it's still true before setting to false, in case
+          // multiple errors happened quickly.
+          if (showRedFlash.value) {
+            print("[GameScreen Flash] Hiding red flash.");
+            showRedFlash.value = false;
+          }
+        });
+        // Cleanup: cancel the timer if the effect re-runs before it fires.
+        return timer.cancel;
+      }
+      // No cleanup needed if flash wasn't shown.
+      return null;
+    }, [showRedFlash.value]); // Dependency: run when flash state changes.
+
     // Motion Event Listener & Action Handling
-    // This `useEffect` subscribes to motion events from the detector.
     useEffect(
       () {
         print("[GameScreen Listener] Subscribing to motion detector...");
         final StreamSubscription<MotionEvent>
         subscription = motionDetector.motionEvents.listen(
           (event) {
-            // Log the received event.
             print(
               "[GameScreen Listener] Received motion event: ${event.type}, Direction: ${event.direction}",
             );
-
-            // Read the latest game state INSIDE the listener to ensure we have the most current required actions.
             final currentRequiredActions =
                 ref.read(gameProvider).currentActions;
             if (currentRequiredActions.isEmpty) {
               print(
                 "[GameScreen Listener] No action currently required. Ignoring event.",
               );
-              return; // No action required right now
+              return;
             }
             final requiredAction = currentRequiredActions.first;
-
             bool actionMatched = false;
+            bool motionDetected = false; // Track if a relevant motion occurred
 
             // --- Handle Drop ---
-            if (event.type == MotionEventType.drop &&
-                requiredAction == GameAction.drop) {
-              print(
-                "[GameScreen Listener] Drop detected and required! Triggering success.",
-              );
-              actionMatched = true;
+            if (event.type == MotionEventType.drop) {
+              motionDetected = true;
+              if (requiredAction == GameAction.drop) {
+                  print("[GameScreen Listener] Drop detected and required! Triggering success.");
+                  actionMatched = true;
+              }
             }
             // --- Handle Roll ---
             else if (event.type == MotionEventType.roll) {
-              if (requiredAction == GameAction.rotateLeft &&
-                  event.direction == RotationDirection.counterClockwise) {
-                print(
-                  "[GameScreen Listener] Roll Left (CCW) detected and required! Triggering success.",
-                );
+              motionDetected = true;
+              if (requiredAction == GameAction.rotateLeft && event.direction == RotationDirection.counterClockwise) {
+                print("[GameScreen Listener] Roll Left (CCW) detected and required! Triggering success.");
                 actionMatched = true;
-              } else if (requiredAction == GameAction.rotateRight &&
-                  event.direction == RotationDirection.clockwise) {
-                print(
-                  "[GameScreen Listener] Roll Right (CW) detected and required! Triggering success.",
-                );
+              } else if (requiredAction == GameAction.rotateRight && event.direction == RotationDirection.clockwise) {
+                print("[GameScreen Listener] Roll Right (CW) detected and required! Triggering success.");
                 actionMatched = true;
               } else {
-                print(
-                  "[GameScreen Listener] Roll detected (${event.direction}), but required action was $requiredAction. Ignoring.",
-                );
+                 print("[GameScreen Listener] Roll detected (${event.direction}), but required action was $requiredAction. Ignoring.");
               }
             }
             // --- Handle Yaw (Spin) ---
             else if (event.type == MotionEventType.yaw) {
-              if (requiredAction == GameAction.rotateAntiClockwise &&
-                  event.direction == RotationDirection.counterClockwise) {
-                print(
-                  "[GameScreen Listener] Spin Left (Yaw CCW) detected and required! Triggering success.",
-                );
+              motionDetected = true;
+               if (requiredAction == GameAction.rotateAntiClockwise && event.direction == RotationDirection.counterClockwise) {
+                print("[GameScreen Listener] Spin Left (Yaw CCW) detected and required! Triggering success.");
                 actionMatched = true;
-              } else if (requiredAction == GameAction.rotateClockwise &&
-                  event.direction == RotationDirection.clockwise) {
-                print(
-                  "[GameScreen Listener] Spin Right (Yaw CW) detected and required! Triggering success.",
-                );
+              } else if (requiredAction == GameAction.rotateClockwise && event.direction == RotationDirection.clockwise) {
+                print("[GameScreen Listener] Spin Right (Yaw CW) detected and required! Triggering success.");
                 actionMatched = true;
               } else {
-                print(
-                  "[GameScreen Listener] Yaw detected (${event.direction}), but required action was $requiredAction. Ignoring.",
-                );
+                 print("[GameScreen Listener] Yaw detected (${event.direction}), but required action was $requiredAction. Ignoring.");
               }
             }
 
             // --- Process Result ---
             if (actionMatched) {
-              // Notify the game state manager with the specific action that succeeded.
               gameNotifier.actionSuccess(requiredAction);
-              // Trigger the confetti animation.
               confettiController.play();
-            } else if (event.type != MotionEventType.roll &&
-                event.type != MotionEventType.drop &&
-                event.type != MotionEventType.yaw) {
-              // Check if it's not any handled type
-              // Optional: If an *unexpected* type of event happens, you might want to log or ignore.
-              print(
-                "[GameScreen Listener] Received unhandled event type: ${event.type}",
-              );
+            } else if (motionDetected) {
+              // A relevant motion was detected, but it didn't match the required action.
+              print("[GameScreen Listener] Incorrect motion detected! Triggering red flash.");
+              showRedFlash.value = true; // Trigger the flash
+            } else {
+              // Optional: Log unhandled event types if needed
+               print("[GameScreen Listener] Received unhandled/ignored event type: ${event.type}");
             }
-            // Note: We only call actionSuccess on a match. actionFailure is handled by the timer in GameNotifier.
           },
           onError:
               (e) => print("[GameScreen Listener] Motion Stream Error: $e"),
           onDone: () => print("[GameScreen Listener] Motion Stream Done."),
         );
 
-        // Cleanup function: Cancel the stream subscription when the effect re-runs or widget disposes.
+        // Cleanup function
         return () {
           print("[GameScreen Listener] Cancelling motion subscription...");
           subscription.cancel();
@@ -291,7 +292,7 @@ class GameScreen extends HookConsumerWidget {
       ),
       // Stack allows overlaying widgets, here used for the confetti effect.
       body: Stack(
-        alignment: Alignment.topCenter, // Center confetti blasts at the top.
+        alignment: Alignment.center, // Center align stack children
         children: [
           // Main content area, centered.
           Center(
@@ -305,7 +306,24 @@ class GameScreen extends HookConsumerWidget {
                       displayedSeconds.value,
                     ),
           ),
-          // Confetti overlay.
+          // --- Red Flash Overlay ---
+          // This AnimatedOpacity widget controls the flash effect.
+          Positioned.fill( // Make it cover the entire screen
+             child: IgnorePointer( // Prevent flash from blocking interactions
+                ignoring: !showRedFlash.value,
+                child: AnimatedOpacity(
+                  opacity: showRedFlash.value ? 1.0 : 0.0, // Control visibility
+                  duration: const Duration(milliseconds: 100), // Fade in/out duration
+                  curve: Curves.easeInOut, // Smooth transition
+                  child: Container(
+                     // Semi-transparent red color for the flash
+                     color: Colors.red.withOpacity(0.4),
+                   ),
+                ),
+              ),
+           ),
+          // --- Confetti Overlay ---
+          // Align confetti to top center for success celebration.
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
