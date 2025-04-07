@@ -192,10 +192,10 @@ class GameScreen extends HookConsumerWidget {
           }
           // --- Handle Yaw (Spin) ---
           else if (event.type == MotionEventType.yaw) {
-             if (requiredAction == GameAction.spinLeft && event.direction == RotationDirection.counterClockwise) {
+             if (requiredAction == GameAction.rotateAntiClockwise && event.direction == RotationDirection.counterClockwise) {
               print("[GameScreen Listener] Spin Left (Yaw CCW) detected and required! Triggering success.");
               actionMatched = true;
-            } else if (requiredAction == GameAction.spinRight && event.direction == RotationDirection.clockwise) {
+            } else if (requiredAction == GameAction.rotateClockwise && event.direction == RotationDirection.clockwise) {
               print("[GameScreen Listener] Spin Right (Yaw CW) detected and required! Triggering success.");
               actionMatched = true;
             } else {
@@ -344,12 +344,12 @@ class GameScreen extends HookConsumerWidget {
       case GameAction.drop:
         // Using arrow_circle_down_outlined for drop action
         return buildIconWithLabel(Icons.arrow_circle_down_outlined, 'Drop');
-      case GameAction.spinLeft:
-        // Using rotate_90_degrees_ccw for YAW
-        return buildIconWithLabel(Icons.rotate_left, 'Spin Left');
-      case GameAction.spinRight:
-        // Using rotate_90_degrees_cw for YAW
-        return buildIconWithLabel(Icons.rotate_right, 'Spin Right');
+      case GameAction.rotateAntiClockwise:
+        // Using rotate_left for YAW CCW
+        return buildIconWithLabel(Icons.rotate_left, 'Rotate Anti-Clockwise');
+      case GameAction.rotateClockwise:
+        // Using rotate_right for YAW CW
+        return buildIconWithLabel(Icons.rotate_right, 'Rotate Clockwise');
       // Add cases for other future icon-based actions here
       default:
         // Default to Text for null or other text-only actions

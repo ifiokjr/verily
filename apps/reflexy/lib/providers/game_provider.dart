@@ -116,10 +116,10 @@ class GameNotifier extends StateNotifier<GameState> {
         nextAction = GameAction.rotateRight; // Roll CW
         break;
       case 3:
-        nextAction = GameAction.spinLeft; // Yaw CCW
+        nextAction = GameAction.rotateAntiClockwise; // Yaw CCW
         break;
       case 4:
-        nextAction = GameAction.spinRight; // Yaw CW
+        nextAction = GameAction.rotateClockwise; // Yaw CW
         break;
       default: // Should not happen
         nextAction = GameAction.drop;
