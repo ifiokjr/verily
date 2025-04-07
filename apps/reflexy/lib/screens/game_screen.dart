@@ -297,33 +297,46 @@ class GameScreen extends HookConsumerWidget {
   }
 
   /// Helper function to build the widget representing the current action.
-  /// Displays an Icon for rotation actions, Text otherwise.
+  /// Displays an Icon and Text label for specific actions, Text otherwise.
   Widget _buildActionWidget(BuildContext context, GameAction? action, DateTime? keyTime) {
     final textTheme = Theme.of(context).textTheme;
-    final iconSize = textTheme.displayLarge?.fontSize ?? 64.0; // Match text size
+    // Slightly smaller icon size when text is also present
+    final iconSize = (textTheme.displayLarge?.fontSize ?? 64.0) * 0.8;
+    final labelStyle = textTheme.titleMedium; // Style for the text label
 
     // Use the action start time as the key for the AnimatedSwitcher child.
     final key = ValueKey<DateTime?>(keyTime);
 
+    // Helper to build Column with Icon and Text
+    Widget buildIconWithLabel(IconData iconData, String label) {
+      return Column(
+        key: key, // Assign key to the top-level widget in the Column
+        mainAxisSize: MainAxisSize.min, // Keep column height tight
+        children: [
+          Icon(
+            iconData,
+            size: iconSize,
+            color: Theme.of(context).iconTheme.color, // Use theme color
+          ),
+          const SizedBox(height: 8), // Space between icon and text
+          Text(label, style: labelStyle, textAlign: TextAlign.center),
+        ],
+      );
+    }
+
     switch (action) {
       case GameAction.rotateLeft:
-        return Icon(
-          key: key,
-          Icons.arrow_circle_left_outlined,
-          size: iconSize,
-          color: Theme.of(context).iconTheme.color, // Use theme color
-        );
+        // Using arrow_circle_left_outlined for better visual direction
+        return buildIconWithLabel(Icons.arrow_circle_left_outlined, 'Rotate Left');
       case GameAction.rotateRight:
-        return Icon(
-          key: key,
-          Icons.arrow_circle_right_outlined,
-          size: iconSize,
-          color: Theme.of(context).iconTheme.color,
-        );
+        // Using arrow_circle_right_outlined for better visual direction
+        return buildIconWithLabel(Icons.arrow_circle_right_outlined, 'Rotate Right');
       case GameAction.drop:
-      // Add cases for other future text-based actions here
+        // Using arrow_circle_down_outlined for drop action
+        return buildIconWithLabel(Icons.arrow_circle_down_outlined, 'Drop');
+      // Add cases for other future icon-based actions here
       default:
-        // Default to Text for null or other actions
+        // Default to Text for null or other text-only actions
         return Text(
           key: key,
           action?.name ?? '...', // Display action name or '...'
