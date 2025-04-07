@@ -46,8 +46,9 @@ dependencies:
 
   # UI/UX
   cupertino_icons: ^1.0.8
-  # simple_icons: ^12.2.0 # Example: For nice icons if needed later
-  # flutter_svg: ^2.0.10+1 # Example: If using SVG assets
+  confetti: ^0.7.0 # Add confetti for visual feedback
+# simple_icons: ^12.2.0 # Example: For nice icons if needed later
+# flutter_svg: ^2.0.10+1 # Example: If using SVG assets
 
 dev_dependencies:
   flutter_test:

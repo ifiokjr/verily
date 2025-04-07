@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../models/game_action.dart';
@@ -8,14 +11,16 @@ class GameState {
   final int level;
   final List<GameAction> currentActions; // Actions to perform in this sequence
   final bool isGameOver;
-  final Duration timeLeft; // Optional: Timer
+  final DateTime? actionStartTime; // When the current action(s) were presented
+  final Duration actionTimeLimit; // Max time allowed per action/sequence
 
   const GameState({
     this.score = 0,
     this.level = 1,
     this.currentActions = const [],
     this.isGameOver = false,
-    this.timeLeft = const Duration(seconds: 10), // Example timer
+    this.actionStartTime,
+    this.actionTimeLimit = const Duration(seconds: 5), // Initial 5 second limit
   });
 
   GameState copyWith({
@@ -23,15 +28,29 @@ class GameState {
     int? level,
     List<GameAction>? currentActions,
     bool? isGameOver,
-    Duration? timeLeft,
+    // Allow explicitly setting start time to null when game is over or between actions
+    DateTime? actionStartTime,
+    bool clearActionStartTime = false,
+    Duration? actionTimeLimit,
   }) {
     return GameState(
       score: score ?? this.score,
       level: level ?? this.level,
       currentActions: currentActions ?? this.currentActions,
       isGameOver: isGameOver ?? this.isGameOver,
-      timeLeft: timeLeft ?? this.timeLeft,
+      actionStartTime: clearActionStartTime ? null : actionStartTime ?? this.actionStartTime,
+      actionTimeLimit: actionTimeLimit ?? this.actionTimeLimit,
     );
+  }
+
+  // Helper to get remaining time
+  Duration get remainingTime {
+    if (isGameOver || actionStartTime == null) {
+      return Duration.zero;
+    }
+    final elapsed = DateTime.now().difference(actionStartTime!);
+    final remaining = actionTimeLimit - elapsed;
+    return remaining.isNegative ? Duration.zero : remaining;
   }
 }
 
@@ -40,52 +59,88 @@ class GameState {
 class GameNotifier extends StateNotifier<GameState> {
   GameNotifier() : super(const GameState());
 
+  Timer? _actionTimer;
+
   void startGame() {
-    // TODO: Implement game start logic (reset state, generate actions)
-    state = const GameState(); // Reset for now
+    print("[GameNotifier] Starting game...");
+    state = const GameState(); // Reset state completely
     _generateNextActions();
   }
 
   void actionSuccess(GameAction action) {
-    // TODO: Check if action was correct, update score, generate next
-    if (!state.isGameOver && state.currentActions.isNotEmpty && state.currentActions.first == action) {
-       // Correct action!
-       final remainingActions = List<GameAction>.from(state.currentActions)..removeAt(0);
-       final newScore = state.score + 10; // Example scoring
+    print("[GameNotifier] Received action: $action. Required: ${state.currentActions.firstOrNull}");
+    _cancelActionTimer(); // Action performed, cancel timer
 
-       if (remainingActions.isEmpty) {
-          // Sequence complete, move to next level potentially
-          print("Sequence Complete!");
-          state = state.copyWith(score: newScore, currentActions: []);
-          _generateNextActions(); // Generate next sequence
-       } else {
-          // Continue current sequence
-          state = state.copyWith(score: newScore, currentActions: remainingActions);
-       }
+    if (state.isGameOver) return; // Ignore if already game over
+
+    if (state.currentActions.isNotEmpty && state.currentActions.first == action) {
+      print("[GameNotifier] Correct action! Score: ${state.score + 1}");
+      // TODO: Handle multi-action sequences later
+      state = state.copyWith(
+        score: state.score + 1,
+        // level: state.level + (state.score + 1) % 5 == 0 ? 1 : 0, // Increment level every 5 points
+        currentActions: [], // Clear current action
+        clearActionStartTime: true,
+      );
+      _generateNextActions(); // Get the next action
     } else {
-       // Incorrect action or game over
-       // TODO: Handle incorrect action (e.g., penalty, game over)
-       print("Incorrect action or game over");
+      print("[GameNotifier] Incorrect action or no action required.");
+      actionFailure(); // Treat as failure if action is wrong or unexpected
     }
-
   }
 
   void actionFailure() {
-    // TODO: Handle failure (e.g., time out, incorrect action)
-    state = state.copyWith(isGameOver: true);
-    print("Game Over!");
+    print("[GameNotifier] Action failed! Game Over.");
+    _cancelActionTimer();
+    if (!state.isGameOver) { // Prevent setting state if already game over
+      state = state.copyWith(isGameOver: true, clearActionStartTime: true);
+    }
   }
 
   void _generateNextActions() {
-    // TODO: Implement logic to generate actions based on level/difficulty
-    // For now, just generate one random action
-    final List<GameAction> allActions = GameAction.values;
-    final nextAction = allActions[DateTime.now().millisecond % allActions.length];
-    print("Next Action: $nextAction");
-    state = state.copyWith(currentActions: [nextAction]);
+    print("[GameNotifier] Generating next action(s)...");
+    // Simple: Always generate Drop for now
+    final nextAction = GameAction.drop;
+    print("[GameNotifier] Next action required: $nextAction");
+
+    state = state.copyWith(
+      currentActions: [nextAction],
+      isGameOver: false,
+      actionStartTime: DateTime.now(), // Set start time for the new action
+    );
+    _startActionTimer(); // Start timer for the new action
   }
 
-  // TODO: Add timer logic if needed
+  // --- Timer Logic ---
+  void _startActionTimer() {
+    _cancelActionTimer(); // Cancel any existing timer first
+    if (state.isGameOver) return; // Don't start timer if game is over
+
+    print("[GameNotifier] Starting action timer for ${state.actionTimeLimit.inSeconds} seconds.");
+    _actionTimer = Timer(state.actionTimeLimit, () {
+      print("[GameNotifier] Timer finished! Time's up.");
+      // Check if the game state hasn't changed (e.g., action succeeded just before timer fired)
+      // and ensure the game isn't already over.
+      if (!state.isGameOver && state.actionStartTime != null) {
+        actionFailure();
+      }
+    });
+  }
+
+  void _cancelActionTimer() {
+    if (_actionTimer?.isActive ?? false) {
+       print("[GameNotifier] Cancelling active action timer.");
+      _actionTimer!.cancel();
+    }
+    _actionTimer = null;
+  }
+
+  // Ensure timer is cancelled when the notifier is disposed
+  @override
+  void dispose() {
+    _cancelActionTimer();
+    super.dispose();
+  }
 }
 
 final gameProvider = StateNotifierProvider<GameNotifier, GameState>((ref) {
