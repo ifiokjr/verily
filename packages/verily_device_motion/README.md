@@ -11,23 +11,117 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/to/develop-packages).
 -->
 
-TODO: Put a short description of the package here that helps potential users know whether this package might be useful for them.
+# verily_device_motion
+
+A Flutter package for detecting specific device motion events like drops, full yaw rotations, and full roll rotations using accelerometer and gyroscope data.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- Detects device drops based on freefall followed by impact.
+- Detects full 360-degree yaw rotations (spinning flat).
+- Detects full 360-degree roll rotations (barrel roll).
+- Provides a simple stream-based API (`motionEvents`).
+- Configurable thresholds and sensitivity for detection.
 
-## Getting started
+## Getting Started
 
-TODO: List prerequisites and provide or point to information on how to start using the package.
+1. **Add Dependency:** Add `verily_device_motion` to your `pubspec.yaml`:
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     verily_device_motion:
+       # Replace with the actual path or pub version
+       path: ../packages/verily_device_motion
+     sensors_plus: ^6.0.0 # Ensure this matches or is compatible
+   ```
+
+2. **Import:**
+   ```dart
+   import 'package:verily_device_motion/verily_device_motion.dart';
+   ```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples to `/example` folder.
-
 ```dart
-const like = 'sample';
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:verily_device_motion/verily_device_motion.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late MotionDetectorService _motionDetectorService;
+  StreamSubscription<MotionEvent>? _motionSubscription;
+  String _lastEvent = 'None';
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the service (optionally configure parameters)
+    _motionDetectorService = MotionDetectorService(
+      // Example: Make drop detection twice as sensitive
+      dropSensitivity: 2.0,
+      // Other parameters like freefallTimeThreshold, detectionResetDelay etc.
+      // can also be customized here.
+    );
+    _motionDetectorService.startListening();
+
+    // Listen to the motion events stream
+    _motionSubscription = _motionDetectorService.motionEvents.listen((event) {
+      setState(() {
+        _lastEvent = '${event.type.name} at ${event.timestamp.toIso8601String()}';
+        if (event.type == MotionEventType.drop) {
+          _lastEvent += ' (Impact: ${event.value?.toStringAsFixed(2)} m/s²)';
+        }
+        print("Motion Detected: $_lastEvent");
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _motionSubscription?.cancel();
+    _motionDetectorService.dispose(); // IMPORTANT: Dispose the service
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Motion Detector Demo'),
+        ),
+        body: Center(
+          child: Text('Last Motion Event: $_lastEvent'),
+        ),
+      ),
+    );
+  }
+}
 ```
+
+## Configuration
+
+The `MotionDetectorService` constructor accepts several parameters to fine-tune detection:
+
+- `freefallThreshold` (double, default: 1.5): Acceleration magnitude (m/s²) below which freefall is considered.
+- `freefallTimeThreshold` (Duration, default: 150ms): Minimum freefall duration required.
+- `dropSensitivity` (double, default: 1.0): Adjusts the impact force needed for drop detection. Values > 1 increase sensitivity (easier to trigger), < 1 decrease sensitivity (harder to trigger). Must be > 0.
+- `impactDetectionWindow` (Duration, default: 500ms): Time window after freefall to check for impact.
+- `rotationRateStopThreshold` (double, default: 0.1): Rotation rate (rad/s) below which accumulated rotation resets.
+- `fullRotationThreshold` (double, default: ~6.11 rad / 350 deg): Angle needed for a full rotation.
+- `detectionResetDelay` (Duration, default: 3s): Cooldown period after an event of the same type.
+
+## Example App
+
+See the `example/` directory for a runnable Flutter application demonstrating the package usage with Flutter Hooks and Riverpod.
 
 ## Additional information
 
