@@ -334,7 +334,8 @@ class MotionDetectorService {
         final direction = _accumulatedYaw > 0 ? RotationDirection.clockwise : RotationDirection.counterClockwise;
         _emitMotionEvent(MotionEventType.yaw, now, direction: direction);
         _isYawDetectionCooldown = true; // Start cooldown
-        _accumulatedYaw = 0.0; // Reset completely after detection
+        // Reset using modulo to handle continuous rotation correctly
+        _accumulatedYaw %= _effectiveYawThreshold; // Keep the remainder relative to the threshold
         Timer(detectionResetDelay, () => _isYawDetectionCooldown = false);
       }
 
@@ -347,7 +348,8 @@ class MotionDetectorService {
         final direction = _accumulatedRoll > 0 ? RotationDirection.clockwise : RotationDirection.counterClockwise;
         _emitMotionEvent(MotionEventType.roll, now, direction: direction);
         _isRollDetectionCooldown = true; // Start cooldown
-        _accumulatedRoll = 0.0; // Reset completely after detection
+        // Reset using modulo to handle continuous rotation correctly
+        _accumulatedRoll %= _effectiveRollThreshold; // Keep the remainder relative to the threshold
         Timer(detectionResetDelay, () => _isRollDetectionCooldown = false);
       }
     }
