@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -5,36 +6,40 @@ import 'package:verily_device_motion/verily_device_motion.dart';
 
 import 'motion_counts.dart';
 
-// Custom hook to manage the MotionDetectorService with sensitivity parameters
+// Custom hook to manage the MotionDetectorService
+// Creates the service instance ONLY ONCE when the hook mounts.
 MotionDetectorService useMotionDetector({
-  required double dropSensitivity,
-  required double yawSensitivity,
-  required double rollSensitivity,
+  // Accept initial values for setup
+  required double initialDropSensitivity,
+  required double initialYawSensitivity,
+  required double initialRollSensitivity,
 }) {
-  // Create a ref to store the detector service
   final detectorRef = useRef<MotionDetectorService?>(null);
 
-  // Setup and dispose the detector on widget lifecycle
   useEffect(() {
-    // Initialize on first build with the provided sensitivities
+    // ONLY create on first mount
+    print('[MotionDetector Hook] Creating detector instance ONCE...');
     detectorRef.value = MotionDetectorService(
-      dropSensitivity: dropSensitivity,
-      yawSensitivity: yawSensitivity,
-      rollSensitivity: rollSensitivity,
+      dropSensitivity: initialDropSensitivity,
+      yawSensitivity: initialYawSensitivity,
+      rollSensitivity: initialRollSensitivity,
+      // You could also pass the reduced cooldown here if preferred,
+      // but we'll change the default in the service itself.
+      // detectionResetDelay: const Duration(seconds: 1),
     );
     detectorRef.value!.startListening();
-    print('MotionDetectorService initialized/updated with sensitivities: drop=$dropSensitivity, yaw=$yawSensitivity, roll=$rollSensitivity');
+    print('[MotionDetector Hook] Initialized with sensitivities: drop=$initialDropSensitivity, yaw=$initialYawSensitivity, roll=$initialRollSensitivity');
 
-    // Dispose on widget disposal
+    // Cleanup on unmount
     return () {
-      print('Disposing MotionDetectorService...');
+      print('[MotionDetector Hook] Disposing detector instance ON UNMOUNT...');
       detectorRef.value?.dispose();
       detectorRef.value = null;
     };
-    // Re-run effect if any sensitivity changes
-  }, [dropSensitivity, yawSensitivity, rollSensitivity]);
+    // EMPTY dependency array ensures this runs only on mount and unmount
+  }, const []);
 
-  // We assert non-null because useEffect runs synchronously on first build
+  // The instance is guaranteed to be created by the time build runs
   return detectorRef.value!;
 }
 
@@ -70,16 +75,17 @@ class MotionCounterScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // State for sensitivity sliders
-    final dropSensitivity = useState<double>(1.0);
-    final yawSensitivity = useState<double>(0.75); // Default from service
-    final rollSensitivity = useState<double>(0.75); // Default from service
+    // State for sensitivity sliders (initial values match service defaults)
+    final dropSensitivity = useState<double>(2.0); // Matches new default
+    final yawSensitivity = useState<double>(0.75);
+    final rollSensitivity = useState<double>(0.75);
 
-    // Get the motion detector service using our custom hook, passing sensitivities
+    // Get the motion detector service using our hook
+    // Pass the INITIAL values from the state hooks.
     final motionDetector = useMotionDetector(
-      dropSensitivity: dropSensitivity.value,
-      yawSensitivity: yawSensitivity.value,
-      rollSensitivity: rollSensitivity.value,
+      initialDropSensitivity: dropSensitivity.value,
+      initialYawSensitivity: yawSensitivity.value,
+      initialRollSensitivity: rollSensitivity.value,
     );
 
     // Get current counts from provider
@@ -87,8 +93,9 @@ class MotionCounterScreen extends HookConsumerWidget {
 
     // Listen to motion events using useEffect
     useEffect(() {
+      print("[Motion Event Listener] Subscribing to detector...");
       final subscription = motionDetector.motionEvents.listen((event) {
-        print("Received Motion Event: $event"); // Debugging
+        // print("Received Motion Event: $event"); // Keep for debugging if needed
         ref.read(motionCountsProvider.notifier).update((state) {
           switch (event.type) {
             case MotionEventType.drop:
@@ -103,14 +110,15 @@ class MotionCounterScreen extends HookConsumerWidget {
                   : state.copyWith(rollCcwCount: state.rollCcwCount + 1);
           }
         });
-      }, onError: (e) => print("Error in motion stream: $e"));
+      }, onError: (e) => print("[Motion Event Listener] Error: $e"));
 
-      // Clean up subscription
+      // Clean up subscription on unmount or if detector changes (it shouldn't now)
       return () {
-        print("Cancelling motion subscription...");
+        print("[Motion Event Listener] Cancelling subscription...");
         subscription.cancel();
       };
-    }, [motionDetector]); // Re-subscribe if the detector instance changes
+      // Dependency array only includes motionDetector. It won't change now.
+    }, [motionDetector]);
 
     // Reset function using hooks
     final resetCounts = useCallback(() {
@@ -146,7 +154,7 @@ class MotionCounterScreen extends HookConsumerWidget {
             ),
             const SizedBox(height: 10),
             _SensitivitySlider(
-              label: 'Drop Sensitivity',
+              label: 'Drop Sensitivity (Effective on Restart)',
               value: dropSensitivity.value,
               min: 0.1, // Avoid zero
               max: 5.0,
@@ -165,7 +173,7 @@ class MotionCounterScreen extends HookConsumerWidget {
             ),
             const SizedBox(height: 10),
             _SensitivitySlider(
-              label: 'Yaw Sensitivity (Threshold: ${(yawSensitivity.value * 360).toStringAsFixed(0)}°)',
+              label: 'Yaw Sensitivity (Threshold: ${(yawSensitivity.value * 360).toStringAsFixed(0)}°, Effective on Restart)',
               value: yawSensitivity.value,
               min: 0.1, // ~36 degrees
               max: 1.0, // 360 degrees
@@ -184,7 +192,7 @@ class MotionCounterScreen extends HookConsumerWidget {
             ),
              const SizedBox(height: 10),
             _SensitivitySlider(
-              label: 'Roll Sensitivity (Threshold: ${(rollSensitivity.value * 360).toStringAsFixed(0)}°)',
+              label: 'Roll Sensitivity (Threshold: ${(rollSensitivity.value * 360).toStringAsFixed(0)}°, Effective on Restart)',
               value: rollSensitivity.value,
               min: 0.1, // ~36 degrees
               max: 1.0, // 360 degrees

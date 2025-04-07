@@ -117,7 +117,7 @@ class MotionDetectorService {
 
   /// The cooldown duration after a motion event is detected, during which subsequent
   /// detections of the *same* type are ignored. This prevents rapid re-triggering.
-  /// Defaults to 3 seconds.
+  /// Defaults to 1 second.
   final Duration detectionResetDelay;
 
   // --- Calculated Internal Configuration ---
@@ -174,7 +174,7 @@ class MotionDetectorService {
     this.rollSensitivity = 0.75, // Default to 270 degrees
     this.rotationRateStopThreshold = 0.1, // radians/sec
     // General parameters
-    this.detectionResetDelay = const Duration(seconds: 3), // Cooldown period
+    this.detectionResetDelay = const Duration(seconds: 1), // Default cooldown reduced to 1s
   }) : assert(freefallThreshold >= 0, 'freefallThreshold must be non-negative'),
        assert(dropSensitivity > 0, 'dropSensitivity must be positive'),
        assert(yawSensitivity > 0 && yawSensitivity <= 1.0, 'yawSensitivity must be between 0 (exclusive) and 1.0 (inclusive)'),
@@ -185,7 +185,7 @@ class MotionDetectorService {
     _effectiveImpactThreshold = _baseImpactThreshold / dropSensitivity;
     _effectiveYawThreshold = _baseRotationThreshold * yawSensitivity;
     _effectiveRollThreshold = _baseRotationThreshold * rollSensitivity;
-    print('[MotionDetector] Initialized. DropSens: $dropSensitivity, EffectiveImpactThr: ${_effectiveImpactThreshold.toStringAsFixed(2)}, FreefallThr: ${freefallThreshold.toStringAsFixed(2)}');
+    print('[MotionDetector] Initialized. DropSens: $dropSensitivity, EffectiveImpactThr: ${_effectiveImpactThreshold.toStringAsFixed(2)}, FreefallThr: ${freefallThreshold.toStringAsFixed(2)}, Cooldown: ${detectionResetDelay.inSeconds}s');
   }
 
 
@@ -417,7 +417,7 @@ class MotionDetectorService {
           _isDropDetectionCooldown = true;
           print('[MotionDetector Drop] *** Cooldown Started (${detectionResetDelay.inSeconds}s) ***');
           Timer(detectionResetDelay, () {
-            print('[MotionDetector Drop] *** Cooldown Finished ***');
+            print('[MotionDetector Drop] *** Cooldown Finished (${detectionResetDelay.inSeconds}s) ***');
             _isDropDetectionCooldown = false;
           });
 
