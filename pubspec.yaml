@@ -1,7 +1,7 @@
 name: verily_workspace
 publish_to: none
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.7.2
 workspace:
   - apps/reflexy
   - packages/verily_sdk

@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import 'app.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  // TODO: Add any initialization needed here (e.g., Firebase, Camera)
+
+  runApp(
+    const ProviderScope(
+      child: ReflexyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
