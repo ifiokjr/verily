@@ -81,3 +81,17 @@ In order to structure how the project is built, the first part should be to buil
 - Verify in real time that the user is where they say they are. So this is based on geolocation data and they can film the surrounding location to verify that they are at the location.
 
 - Verify that the user has rotated the device to a certain angle using the accelerometer and gyroscope.
+
+## Contributing
+
+To setup the development environment, run the following commands:
+
+Install flutter via `fvm` to manage flutter versions.
+
+```bash
+fvm global stable
+```
+
+Install shorebird
+
+https://docs.shorebird.dev/getting-started/
