@@ -190,10 +190,18 @@ class GameScreen extends HookConsumerWidget {
                print("[GameScreen Listener] Roll detected (${event.direction}), but required action was $requiredAction. Ignoring.");
             }
           }
-          // --- Handle Yaw (Placeholder for future) ---
-          // else if (event.type == MotionEventType.yaw) {
-          //   // Add logic for yaw left/right (e.g., GameAction.spinLeft/spinRight)
-          // }
+          // --- Handle Yaw (Spin) ---
+          else if (event.type == MotionEventType.yaw) {
+             if (requiredAction == GameAction.spinLeft && event.direction == RotationDirection.counterClockwise) {
+              print("[GameScreen Listener] Spin Left (Yaw CCW) detected and required! Triggering success.");
+              actionMatched = true;
+            } else if (requiredAction == GameAction.spinRight && event.direction == RotationDirection.clockwise) {
+              print("[GameScreen Listener] Spin Right (Yaw CW) detected and required! Triggering success.");
+              actionMatched = true;
+            } else {
+               print("[GameScreen Listener] Yaw detected (${event.direction}), but required action was $requiredAction. Ignoring.");
+            }
+          }
 
           // --- Process Result ---
           if (actionMatched) {
@@ -201,7 +209,9 @@ class GameScreen extends HookConsumerWidget {
              gameNotifier.actionSuccess(requiredAction);
              // Trigger the confetti animation.
              confettiController.play();
-          } else if (event.type != MotionEventType.roll && event.type != MotionEventType.drop) {
+          } else if (event.type != MotionEventType.roll
+                   && event.type != MotionEventType.drop
+                   && event.type != MotionEventType.yaw) { // Check if it's not any handled type
               // Optional: If an *unexpected* type of event happens, you might want to log or ignore.
               print("[GameScreen Listener] Received unhandled event type: ${event.type}");
           }
@@ -326,14 +336,20 @@ class GameScreen extends HookConsumerWidget {
 
     switch (action) {
       case GameAction.rotateLeft:
-        // Using arrow_circle_left_outlined for better visual direction
+        // Using arrow_circle_left_outlined for ROLL
         return buildIconWithLabel(Icons.arrow_circle_left_outlined, 'Rotate Left');
       case GameAction.rotateRight:
-        // Using arrow_circle_right_outlined for better visual direction
+        // Using arrow_circle_right_outlined for ROLL
         return buildIconWithLabel(Icons.arrow_circle_right_outlined, 'Rotate Right');
       case GameAction.drop:
         // Using arrow_circle_down_outlined for drop action
         return buildIconWithLabel(Icons.arrow_circle_down_outlined, 'Drop');
+      case GameAction.spinLeft:
+        // Using rotate_90_degrees_ccw for YAW
+        return buildIconWithLabel(Icons.rotate_left, 'Spin Left');
+      case GameAction.spinRight:
+        // Using rotate_90_degrees_cw for YAW
+        return buildIconWithLabel(Icons.rotate_right, 'Spin Right');
       // Add cases for other future icon-based actions here
       default:
         // Default to Text for null or other text-only actions

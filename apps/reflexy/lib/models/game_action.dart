@@ -4,6 +4,8 @@ enum GameAction {
   rotateLeft,
   rotateRight,
   drop,
+  spinLeft,
+  spinRight,
   stickTongueOut,
   shout, // Maybe add specific word later?
   winkLeft,

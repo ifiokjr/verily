@@ -101,7 +101,8 @@ class GameNotifier extends StateNotifier<GameState> {
     print("[GameNotifier] Generating next action(s)...");
     // Randomly select the next action type
     final random = Random();
-    final actionTypeIndex = random.nextInt(3); // 0: drop, 1: rotateLeft, 2: rotateRight
+    // Now includes 5 actions: drop, rotateL/R, spinL/R
+    final actionTypeIndex = random.nextInt(5);
 
     GameAction nextAction;
     switch (actionTypeIndex) {
@@ -109,10 +110,16 @@ class GameNotifier extends StateNotifier<GameState> {
         nextAction = GameAction.drop;
         break;
       case 1:
-        nextAction = GameAction.rotateLeft; // Corresponds to Roll Counter-Clockwise
+        nextAction = GameAction.rotateLeft; // Roll CCW
         break;
       case 2:
-        nextAction = GameAction.rotateRight; // Corresponds to Roll Clockwise
+        nextAction = GameAction.rotateRight; // Roll CW
+        break;
+      case 3:
+        nextAction = GameAction.spinLeft; // Yaw CCW
+        break;
+      case 4:
+        nextAction = GameAction.spinRight; // Yaw CW
         break;
       default: // Should not happen
         nextAction = GameAction.drop;
