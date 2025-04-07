@@ -108,8 +108,8 @@ void main() {
        expectLater(
            service.motionEvents,
            emits(isA<MotionEvent>()
-               .having((e) => e!.type, 'type', MotionEventType.drop)
-               .having((e) => e!.value, 'value', isNotNull)));
+               .having((e) => e.type, 'type', MotionEventType.drop)
+               .having((e) => e.value, 'value', isNotNull)));
 
        service.startListening();
        await Future.delayed(Duration.zero); // Allow listener setup

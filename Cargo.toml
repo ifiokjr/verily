@@ -1,17 +1,14 @@
 [workspace]
-members = [
-	"crates/*",
-	"programs/*",
-]
+members = []
 resolver = "2"
 
 [workspace.package]
 version = "0.0.0"
 authors = ["Ifiok Jr. <ifiokotung@gmail.com>"]
 edition = "2024"
-homepage = "https://openbudget.com"
+homepage = "https://verily.fun"
 license = "Apache-2.0"
-repository = "https://github.com/ifiokjr/openbudget"
+repository = "https://github.com/ifiokjr/verily"
 rust-version = "1.85.0"
 
 [workspace.dependencies]
@@ -40,7 +37,6 @@ const_str_to_pubkey = "0.2"
 crossbeam-channel = "0.5"
 cuid2 = "0.1"
 default-env = "0.1"
-deli = "0.2"
 derive-where = "1"
 derive_more = "2"
 dotenvy = "0.15"
@@ -62,7 +58,6 @@ heck = "0.5"
 hmac = "0.12"
 http = "1"
 hyper = "1"
-idb = "0.6"
 image = "0.25"
 indexmap = "2"
 indicatif = "0.17"
@@ -125,10 +120,6 @@ sqlx = "0.8"
 static_assertions = "1"
 steel = { git = "https://github.com/ifiokjr/steel", rev = "1d3a37b" }
 strum = "0.27"
-tailwind_fuse = "0.3"
-tauri = "2"
-tauri-build = "2"
-tauri-plugin-shell = "2"
 test-log = "0.2"
 test_utils_insta = "0.1"
 test_utils_keypairs = "0.1"
@@ -155,23 +146,10 @@ webauthn-rs-core = "0.5"
 webauthn-rs-proto = "0.5"
 welds = "0.4"
 
-# internal crates
-browser_extensions = { path = "./crates/browser_extensions", version = "0.0.0" }
-openbudget_components = { path = "./crates/openbudget_components", version = "0.0.0" }
-openbudget_core = { path = "./crates/openbudget_core", version = "0.0.0" }
-openbudget_db = { path = "./crates/openbudget_db", version = "0.0.0" }
-openbudget_functions = { path = "./crates/openbudget_functions", version = "0.0.0" }
-openbudget_program = { path = "./programs/openbudget_program", version = "0.0.0" }
-openbudget_program_test = { path = "./crates/openbudget_program_test", version = "0.0.0" }
-openbudget_wallet = { path = "./crates/openbudget_wallet", version = "0.0.0" }
-openbudget_wallet_db = { path = "./crates/openbudget_wallet_db", version = "0.0.0" }
-
 [workspace.metadata.bin]
 cargo-insta = { version = "1.42.2" }
-cargo-leptos = { version = "0.2.29" }
 cargo-llvm-cov = { version = "0.6.16" }
 cargo-nextest = { version = "0.9.92" }
-leptosfmt = { version = "0.1.33", bins = ["leptosfmt"] }
 query-security-txt = { version = "1.1.1", bins = ["query-security-txt"] }
 solana-verify = { version = "0.4.1", bins = ["solana-verify"] }
 sqlx-cli = { version = "0.8.3", bins = ["sqlx"] }

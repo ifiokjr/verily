@@ -16,8 +16,8 @@
       pkgs.coreutils
       pkgs.deno
       pkgs.dprint
-      pkgs.flutter
       pkgs.flyctl
+      pkgs.gcc
       pkgs.git
       pkgs.nixfmt-rfc-style
       pkgs.rustup
