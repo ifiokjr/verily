@@ -9,6 +9,8 @@ workspace:
 dev_dependencies:
   melos: ^7.0.0-dev.7
   flutter_lints: ^5.0.0
+  custom_lint:
+  riverpod_lint:
 
 melos:
   repository: https://github.com/ifiokjr/verily

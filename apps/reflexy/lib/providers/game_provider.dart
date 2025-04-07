@@ -99,8 +99,25 @@ class GameNotifier extends StateNotifier<GameState> {
 
   void _generateNextActions() {
     print("[GameNotifier] Generating next action(s)...");
-    // Simple: Always generate Drop for now
-    final nextAction = GameAction.drop;
+    // Randomly select the next action type
+    final random = Random();
+    final actionTypeIndex = random.nextInt(3); // 0: drop, 1: rotateLeft, 2: rotateRight
+
+    GameAction nextAction;
+    switch (actionTypeIndex) {
+      case 0:
+        nextAction = GameAction.drop;
+        break;
+      case 1:
+        nextAction = GameAction.rotateLeft; // Corresponds to Roll Counter-Clockwise
+        break;
+      case 2:
+        nextAction = GameAction.rotateRight; // Corresponds to Roll Clockwise
+        break;
+      default: // Should not happen
+        nextAction = GameAction.drop;
+    }
+
     print("[GameNotifier] Next action required: $nextAction");
 
     state = state.copyWith(
