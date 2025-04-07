@@ -29,7 +29,9 @@ MotionDetectorService useMotionDetector({
   // function runs when the hook unmounts (disposing the service).
   useEffect(() {
     // Create the service instance.
-    print('[MotionDetector Hook - GameScreen] Creating detector instance ONCE...');
+    print(
+      '[MotionDetector Hook - GameScreen] Creating detector instance ONCE...',
+    );
     detectorRef.value = MotionDetectorService(
       dropSensitivity: initialDropSensitivity,
       yawSensitivity: initialYawSensitivity,
@@ -44,7 +46,9 @@ MotionDetectorService useMotionDetector({
     // Return a cleanup function. This is called when the widget is removed
     // from the tree (unmounted).
     return () {
-      print('[MotionDetector Hook - GameScreen] Disposing detector instance...');
+      print(
+        '[MotionDetector Hook - GameScreen] Disposing detector instance...',
+      );
       // Cancel sensor subscriptions and release resources.
       detectorRef.value?.dispose();
       detectorRef.value = null;
@@ -76,8 +80,10 @@ class GameScreen extends HookConsumerWidget {
     final motionDetector = useMotionDetector();
     // Create and manage the confetti controller using `useMemoized` to create it
     // once and `useEffect` (below) to dispose of it.
-    final confettiController = useMemoized(() =>
-        ConfettiController(duration: const Duration(milliseconds: 500)), []);
+    final confettiController = useMemoized(
+      () => ConfettiController(duration: const Duration(milliseconds: 500)),
+      [],
+    );
 
     // --- State for Timer Display ---
     // `useState` holds the integer value for the countdown display.
@@ -89,10 +95,13 @@ class GameScreen extends HookConsumerWidget {
     // Dispose Confetti Controller
     // This `useEffect` hook ensures the confetti controller is disposed when
     // the widget is removed from the tree.
-    useEffect(() {
-      // The function returned by the effect is the cleanup function.
-      return confettiController.dispose;
-    }, [confettiController]); // Re-run dispose logic if controller instance changes (it shouldn't).
+    useEffect(
+      () {
+        // The function returned by the effect is the cleanup function.
+        return confettiController.dispose;
+      },
+      [confettiController],
+    ); // Re-run dispose logic if controller instance changes (it shouldn't).
 
     // Start Game on First Build
     // This `useEffect` runs once after the first build to initialize the game.
@@ -106,135 +115,173 @@ class GameScreen extends HookConsumerWidget {
 
     // Local Timer Logic for Countdown UI
     // This `useEffect` manages a periodic timer to update the countdown display.
-    useEffect(() {
-      Timer? periodicTimer;
+    useEffect(
+      () {
+        Timer? periodicTimer;
 
-      // Helper function to start/restart the UI timer.
-      void startUiTimer() {
-        periodicTimer?.cancel(); // Cancel any existing timer.
+        // Helper function to start/restart the UI timer.
+        void startUiTimer() {
+          periodicTimer?.cancel(); // Cancel any existing timer.
 
-        // Only start if the game is running and an action is active.
-        if (!gameState.isGameOver && gameState.actionStartTime != null) {
-          print("[GameScreen Timer] Starting UI Timer.");
-          // Create a timer that fires every second.
-          periodicTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-            // Inside the timer, read the LATEST game state to get accurate remaining time.
-            final currentRemaining = ref.read(gameProvider).remainingTime;
-            final remainingSec = currentRemaining.inSeconds;
-            // Update the local state (`displayedSeconds`) to trigger UI refresh.
-            displayedSeconds.value = remainingSec;
+          // Only start if the game is running and an action is active.
+          if (!gameState.isGameOver && gameState.actionStartTime != null) {
+            print("[GameScreen Timer] Starting UI Timer.");
+            // Create a timer that fires every second.
+            periodicTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+              // Inside the timer, read the LATEST game state to get accurate remaining time.
+              final currentRemaining = ref.read(gameProvider).remainingTime;
+              final remainingSec = currentRemaining.inSeconds;
+              // Update the local state (`displayedSeconds`) to trigger UI refresh.
+              displayedSeconds.value = remainingSec;
 
-            // Stop the timer if time runs out or game ends.
-            if (remainingSec <= 0 || ref.read(gameProvider).isGameOver) {
-              print("[GameScreen Timer] Stopping UI Timer (Time up or Game Over).");
-              timer.cancel();
-              periodicTimer = null;
-            }
-          });
-          // Set the initial display value immediately.
-          displayedSeconds.value = gameState.remainingTime.inSeconds;
-        } else {
-          // If game is over or no action, reset the display.
-          print("[GameScreen Timer] Not starting UI Timer (Game Over or no action). Resetting display.");
-          displayedSeconds.value = gameState.actionTimeLimit.inSeconds;
+              // Stop the timer if time runs out or game ends.
+              if (remainingSec <= 0 || ref.read(gameProvider).isGameOver) {
+                print(
+                  "[GameScreen Timer] Stopping UI Timer (Time up or Game Over).",
+                );
+                timer.cancel();
+                periodicTimer = null;
+              }
+            });
+            // Set the initial display value immediately.
+            displayedSeconds.value = gameState.remainingTime.inSeconds;
+          } else {
+            // If game is over or no action, reset the display.
+            print(
+              "[GameScreen Timer] Not starting UI Timer (Game Over or no action). Resetting display.",
+            );
+            displayedSeconds.value = gameState.actionTimeLimit.inSeconds;
+          }
         }
-      }
 
-      // Start the timer initially and whenever actionStartTime or isGameOver changes.
-      startUiTimer();
+        // Start the timer initially and whenever actionStartTime or isGameOver changes.
+        startUiTimer();
 
-      // Cleanup function: Cancel the timer if the effect re-runs or widget disposes.
-      return () {
-        print("[GameScreen Timer] Cleaning up UI Timer.");
-        periodicTimer?.cancel();
-      };
-    }, [
-      // Dependency array: This effect re-runs if `actionStartTime` or `isGameOver` changes.
-      gameState.actionStartTime,
-      gameState.isGameOver
-    ]);
+        // Cleanup function: Cancel the timer if the effect re-runs or widget disposes.
+        return () {
+          print("[GameScreen Timer] Cleaning up UI Timer.");
+          periodicTimer?.cancel();
+        };
+      },
+      [
+        // Dependency array: This effect re-runs if `actionStartTime` or `isGameOver` changes.
+        gameState.actionStartTime,
+        gameState.isGameOver,
+      ],
+    );
 
     // Motion Event Listener & Action Handling
     // This `useEffect` subscribes to motion events from the detector.
-    useEffect(() {
-      print("[GameScreen Listener] Subscribing to motion detector...");
-      final StreamSubscription<MotionEvent> subscription = motionDetector.motionEvents.listen(
-        (event) {
-          // Log the received event.
-          print("[GameScreen Listener] Received motion event: ${event.type}, Direction: ${event.direction}");
+    useEffect(
+      () {
+        print("[GameScreen Listener] Subscribing to motion detector...");
+        final StreamSubscription<MotionEvent>
+        subscription = motionDetector.motionEvents.listen(
+          (event) {
+            // Log the received event.
+            print(
+              "[GameScreen Listener] Received motion event: ${event.type}, Direction: ${event.direction}",
+            );
 
-          // Read the latest game state INSIDE the listener to ensure we have the most current required actions.
-          final currentRequiredActions = ref.read(gameProvider).currentActions;
-          if (currentRequiredActions.isEmpty) {
-             print("[GameScreen Listener] No action currently required. Ignoring event.");
-             return; // No action required right now
-          }
-          final requiredAction = currentRequiredActions.first;
-
-          bool actionMatched = false;
-
-          // --- Handle Drop ---
-          if (event.type == MotionEventType.drop && requiredAction == GameAction.drop) {
-             print("[GameScreen Listener] Drop detected and required! Triggering success.");
-             actionMatched = true;
-          }
-          // --- Handle Roll ---
-          else if (event.type == MotionEventType.roll) {
-            if (requiredAction == GameAction.rotateLeft && event.direction == RotationDirection.counterClockwise) {
-              print("[GameScreen Listener] Roll Left (CCW) detected and required! Triggering success.");
-              actionMatched = true;
-            } else if (requiredAction == GameAction.rotateRight && event.direction == RotationDirection.clockwise) {
-              print("[GameScreen Listener] Roll Right (CW) detected and required! Triggering success.");
-              actionMatched = true;
-            } else {
-               print("[GameScreen Listener] Roll detected (${event.direction}), but required action was $requiredAction. Ignoring.");
+            // Read the latest game state INSIDE the listener to ensure we have the most current required actions.
+            final currentRequiredActions =
+                ref.read(gameProvider).currentActions;
+            if (currentRequiredActions.isEmpty) {
+              print(
+                "[GameScreen Listener] No action currently required. Ignoring event.",
+              );
+              return; // No action required right now
             }
-          }
-          // --- Handle Yaw (Spin) ---
-          else if (event.type == MotionEventType.yaw) {
-             if (requiredAction == GameAction.rotateAntiClockwise && event.direction == RotationDirection.counterClockwise) {
-              print("[GameScreen Listener] Spin Left (Yaw CCW) detected and required! Triggering success.");
-              actionMatched = true;
-            } else if (requiredAction == GameAction.rotateClockwise && event.direction == RotationDirection.clockwise) {
-              print("[GameScreen Listener] Spin Right (Yaw CW) detected and required! Triggering success.");
-              actionMatched = true;
-            } else {
-               print("[GameScreen Listener] Yaw detected (${event.direction}), but required action was $requiredAction. Ignoring.");
-            }
-          }
+            final requiredAction = currentRequiredActions.first;
 
-          // --- Process Result ---
-          if (actionMatched) {
-             // Notify the game state manager with the specific action that succeeded.
-             gameNotifier.actionSuccess(requiredAction);
-             // Trigger the confetti animation.
-             confettiController.play();
-          } else if (event.type != MotionEventType.roll
-                   && event.type != MotionEventType.drop
-                   && event.type != MotionEventType.yaw) { // Check if it's not any handled type
+            bool actionMatched = false;
+
+            // --- Handle Drop ---
+            if (event.type == MotionEventType.drop &&
+                requiredAction == GameAction.drop) {
+              print(
+                "[GameScreen Listener] Drop detected and required! Triggering success.",
+              );
+              actionMatched = true;
+            }
+            // --- Handle Roll ---
+            else if (event.type == MotionEventType.roll) {
+              if (requiredAction == GameAction.rotateLeft &&
+                  event.direction == RotationDirection.counterClockwise) {
+                print(
+                  "[GameScreen Listener] Roll Left (CCW) detected and required! Triggering success.",
+                );
+                actionMatched = true;
+              } else if (requiredAction == GameAction.rotateRight &&
+                  event.direction == RotationDirection.clockwise) {
+                print(
+                  "[GameScreen Listener] Roll Right (CW) detected and required! Triggering success.",
+                );
+                actionMatched = true;
+              } else {
+                print(
+                  "[GameScreen Listener] Roll detected (${event.direction}), but required action was $requiredAction. Ignoring.",
+                );
+              }
+            }
+            // --- Handle Yaw (Spin) ---
+            else if (event.type == MotionEventType.yaw) {
+              if (requiredAction == GameAction.rotateAntiClockwise &&
+                  event.direction == RotationDirection.counterClockwise) {
+                print(
+                  "[GameScreen Listener] Spin Left (Yaw CCW) detected and required! Triggering success.",
+                );
+                actionMatched = true;
+              } else if (requiredAction == GameAction.rotateClockwise &&
+                  event.direction == RotationDirection.clockwise) {
+                print(
+                  "[GameScreen Listener] Spin Right (Yaw CW) detected and required! Triggering success.",
+                );
+                actionMatched = true;
+              } else {
+                print(
+                  "[GameScreen Listener] Yaw detected (${event.direction}), but required action was $requiredAction. Ignoring.",
+                );
+              }
+            }
+
+            // --- Process Result ---
+            if (actionMatched) {
+              // Notify the game state manager with the specific action that succeeded.
+              gameNotifier.actionSuccess(requiredAction);
+              // Trigger the confetti animation.
+              confettiController.play();
+            } else if (event.type != MotionEventType.roll &&
+                event.type != MotionEventType.drop &&
+                event.type != MotionEventType.yaw) {
+              // Check if it's not any handled type
               // Optional: If an *unexpected* type of event happens, you might want to log or ignore.
-              print("[GameScreen Listener] Received unhandled event type: ${event.type}");
-          }
-          // Note: We only call actionSuccess on a match. actionFailure is handled by the timer in GameNotifier.
+              print(
+                "[GameScreen Listener] Received unhandled event type: ${event.type}",
+              );
+            }
+            // Note: We only call actionSuccess on a match. actionFailure is handled by the timer in GameNotifier.
+          },
+          onError:
+              (e) => print("[GameScreen Listener] Motion Stream Error: $e"),
+          onDone: () => print("[GameScreen Listener] Motion Stream Done."),
+        );
 
-        },
-        onError: (e) => print("[GameScreen Listener] Motion Stream Error: $e"),
-        onDone: () => print("[GameScreen Listener] Motion Stream Done."),
-      );
-
-      // Cleanup function: Cancel the stream subscription when the effect re-runs or widget disposes.
-      return () {
-        print("[GameScreen Listener] Cancelling motion subscription...");
-        subscription.cancel();
-      };
-    }, [
-      // Dependency array: Resubscribe if these instances change.
-      // Necessary to ensure the listener uses the latest notifier/controller.
-      motionDetector, // The service instance.
-      gameNotifier,   // The game logic handler.
-      confettiController // The confetti animation controller.
-      // Note: gameState.currentActions removed as reading latest inside listener is safer.
-    ]);
+        // Cleanup function: Cancel the stream subscription when the effect re-runs or widget disposes.
+        return () {
+          print("[GameScreen Listener] Cancelling motion subscription...");
+          subscription.cancel();
+        };
+      },
+      [
+        // Dependency array: Resubscribe if these instances change.
+        // Necessary to ensure the listener uses the latest notifier/controller.
+        motionDetector, // The service instance.
+        gameNotifier, // The game logic handler.
+        confettiController, // The confetti animation controller.
+        // Note: gameState.currentActions removed as reading latest inside listener is safer.
+      ],
+    );
 
     // --- UI Structure ---
     return Scaffold(
@@ -249,16 +296,22 @@ class GameScreen extends HookConsumerWidget {
           // Main content area, centered.
           Center(
             // Conditionally display game area or game over screen.
-            child: gameState.isGameOver
-                ? _buildGameOver(context, gameState.score, gameNotifier)
-                : _buildGameArea(context, gameState, displayedSeconds.value),
+            child:
+                gameState.isGameOver
+                    ? _buildGameOver(context, gameState.score, gameNotifier)
+                    : _buildGameArea(
+                      context,
+                      gameState,
+                      displayedSeconds.value,
+                    ),
           ),
           // Confetti overlay.
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
               confettiController: confettiController,
-              blastDirectionality: BlastDirectionality.explosive, // Fun explosion effect.
+              blastDirectionality:
+                  BlastDirectionality.explosive, // Fun explosion effect.
               shouldLoop: false, // Play animation only once per trigger.
               numberOfParticles: 20,
               gravity: 0.1,
@@ -272,7 +325,11 @@ class GameScreen extends HookConsumerWidget {
   }
 
   /// Builds the main game area showing the timer and action prompt.
-  Widget _buildGameArea(BuildContext context, GameState gameState, int displayedSeconds) {
+  Widget _buildGameArea(
+    BuildContext context,
+    GameState gameState,
+    int displayedSeconds,
+  ) {
     final textTheme = Theme.of(context).textTheme;
     // Get the action to perform (if any).
     final currentAction = gameState.currentActions.firstOrNull;
@@ -284,13 +341,12 @@ class GameScreen extends HookConsumerWidget {
         if (currentAction != null && !gameState.isGameOver)
           Text(
             '${displayedSeconds}s', // Show remaining seconds.
-            style: textTheme.headlineLarge?.copyWith(color: Colors.orangeAccent),
+            style: textTheme.headlineLarge?.copyWith(
+              color: Colors.orangeAccent,
+            ),
           ),
         const SizedBox(height: 20),
-        Text(
-          'Perform Action:',
-          style: textTheme.headlineMedium,
-        ),
+        Text('Perform Action:', style: textTheme.headlineMedium),
         const SizedBox(height: 40),
         // AnimatedSwitcher handles smooth transitions between actions.
         AnimatedSwitcher(
@@ -300,7 +356,11 @@ class GameScreen extends HookConsumerWidget {
             return FadeTransition(opacity: animation, child: child);
           },
           // The child widget (Icon or Text displaying the action).
-          child: _buildActionWidget(context, currentAction, gameState.actionStartTime),
+          child: _buildActionWidget(
+            context,
+            currentAction,
+            gameState.actionStartTime,
+          ),
         ),
       ],
     );
@@ -308,7 +368,11 @@ class GameScreen extends HookConsumerWidget {
 
   /// Helper function to build the widget representing the current action.
   /// Displays an Icon and Text label for specific actions, Text otherwise.
-  Widget _buildActionWidget(BuildContext context, GameAction? action, DateTime? keyTime) {
+  Widget _buildActionWidget(
+    BuildContext context,
+    GameAction? action,
+    DateTime? keyTime,
+  ) {
     final textTheme = Theme.of(context).textTheme;
     // Slightly smaller icon size when text is also present
     final iconSize = (textTheme.displayLarge?.fontSize ?? 64.0) * 0.8;
@@ -337,10 +401,16 @@ class GameScreen extends HookConsumerWidget {
     switch (action) {
       case GameAction.rotateLeft:
         // Using arrow_circle_left_outlined for ROLL
-        return buildIconWithLabel(Icons.arrow_circle_left_outlined, 'Rotate Left');
+        return buildIconWithLabel(
+          Icons.arrow_circle_left_outlined,
+          'Rotate Left',
+        );
       case GameAction.rotateRight:
         // Using arrow_circle_right_outlined for ROLL
-        return buildIconWithLabel(Icons.arrow_circle_right_outlined, 'Rotate Right');
+        return buildIconWithLabel(
+          Icons.arrow_circle_right_outlined,
+          'Rotate Right',
+        );
       case GameAction.drop:
         // Using arrow_circle_down_outlined for drop action
         return buildIconWithLabel(Icons.arrow_circle_down_outlined, 'Drop');
@@ -363,7 +433,11 @@ class GameScreen extends HookConsumerWidget {
   }
 
   /// Builds the game over screen displaying the final score and a restart button.
-  Widget _buildGameOver(BuildContext context, int finalScore, GameNotifier gameNotifier) {
+  Widget _buildGameOver(
+    BuildContext context,
+    int finalScore,
+    GameNotifier gameNotifier,
+  ) {
     final textTheme = Theme.of(context).textTheme;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -376,7 +450,7 @@ class GameScreen extends HookConsumerWidget {
           // Call startGame on the notifier to reset the game state.
           onPressed: () => gameNotifier.startGame(),
           child: const Text('Play Again?'),
-        )
+        ),
       ],
     );
   }
@@ -398,10 +472,15 @@ Path drawStar(Size size) {
   path.moveTo(size.width, halfWidth);
 
   for (double step = 0; step < fullAngle; step += degToRad(degreesPerPoint)) {
-    path.lineTo(halfWidth + externalRadius * cos(step), halfWidth + externalRadius * sin(step));
-    path.lineTo(halfWidth + internalRadius * cos(step + degToRad(halfDegreesPerPoint)), halfWidth + internalRadius * sin(step + degToRad(halfDegreesPerPoint)));
+    path.lineTo(
+      halfWidth + externalRadius * cos(step),
+      halfWidth + externalRadius * sin(step),
+    );
+    path.lineTo(
+      halfWidth + internalRadius * cos(step + degToRad(halfDegreesPerPoint)),
+      halfWidth + internalRadius * sin(step + degToRad(halfDegreesPerPoint)),
+    );
   }
   path.close();
   return path;
 }
-

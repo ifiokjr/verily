@@ -38,7 +38,8 @@ class GameState {
       level: level ?? this.level,
       currentActions: currentActions ?? this.currentActions,
       isGameOver: isGameOver ?? this.isGameOver,
-      actionStartTime: clearActionStartTime ? null : actionStartTime ?? this.actionStartTime,
+      actionStartTime:
+          clearActionStartTime ? null : actionStartTime ?? this.actionStartTime,
       actionTimeLimit: actionTimeLimit ?? this.actionTimeLimit,
     );
   }
@@ -68,12 +69,15 @@ class GameNotifier extends StateNotifier<GameState> {
   }
 
   void actionSuccess(GameAction action) {
-    print("[GameNotifier] Received action: $action. Required: ${state.currentActions.firstOrNull}");
+    print(
+      "[GameNotifier] Received action: $action. Required: ${state.currentActions.firstOrNull}",
+    );
     _cancelActionTimer(); // Action performed, cancel timer
 
     if (state.isGameOver) return; // Ignore if already game over
 
-    if (state.currentActions.isNotEmpty && state.currentActions.first == action) {
+    if (state.currentActions.isNotEmpty &&
+        state.currentActions.first == action) {
       print("[GameNotifier] Correct action! Score: ${state.score + 1}");
       // TODO: Handle multi-action sequences later
       state = state.copyWith(
@@ -92,7 +96,8 @@ class GameNotifier extends StateNotifier<GameState> {
   void actionFailure() {
     print("[GameNotifier] Action failed! Game Over.");
     _cancelActionTimer();
-    if (!state.isGameOver) { // Prevent setting state if already game over
+    if (!state.isGameOver) {
+      // Prevent setting state if already game over
       state = state.copyWith(isGameOver: true, clearActionStartTime: true);
     }
   }
@@ -140,7 +145,9 @@ class GameNotifier extends StateNotifier<GameState> {
     _cancelActionTimer(); // Cancel any existing timer first
     if (state.isGameOver) return; // Don't start timer if game is over
 
-    print("[GameNotifier] Starting action timer for ${state.actionTimeLimit.inSeconds} seconds.");
+    print(
+      "[GameNotifier] Starting action timer for ${state.actionTimeLimit.inSeconds} seconds.",
+    );
     _actionTimer = Timer(state.actionTimeLimit, () {
       print("[GameNotifier] Timer finished! Time's up.");
       // Check if the game state hasn't changed (e.g., action succeeded just before timer fired)
@@ -153,7 +160,7 @@ class GameNotifier extends StateNotifier<GameState> {
 
   void _cancelActionTimer() {
     if (_actionTimer?.isActive ?? false) {
-       print("[GameNotifier] Cancelling active action timer.");
+      print("[GameNotifier] Cancelling active action timer.");
       _actionTimer!.cancel();
     }
     _actionTimer = null;

@@ -6,12 +6,8 @@ class InstructionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('How to Play'),
-      ),
-      body: const Center(
-        child: Text('Instructions content goes here...'),
-      ),
+      appBar: AppBar(title: const Text('How to Play')),
+      body: const Center(child: Text('Instructions content goes here...')),
     );
   }
 }

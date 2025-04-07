@@ -6,10 +6,7 @@ class AppTheme {
     brightness: Brightness.light,
     colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
     useMaterial3: true,
-    appBarTheme: const AppBarTheme(
-      centerTitle: true,
-      elevation: 1,
-    ),
+    appBarTheme: const AppBarTheme(centerTitle: true, elevation: 1),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -25,10 +22,7 @@ class AppTheme {
       brightness: Brightness.dark,
     ),
     useMaterial3: true,
-     appBarTheme: const AppBarTheme(
-      centerTitle: true,
-      elevation: 1,
-    ),
+    appBarTheme: const AppBarTheme(centerTitle: true, elevation: 1),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),

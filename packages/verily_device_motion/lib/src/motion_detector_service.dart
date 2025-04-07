@@ -10,17 +10,13 @@ enum MotionEventType {
   /// A rotation around the Z-axis (vertical axis when phone is upright).
   /// The exact angle threshold is determined by [MotionDetectorService.yawSensitivity].
   yaw, // Renamed from fullYaw for clarity
-
   /// A rotation around the Y-axis (horizontal axis when phone is upright).
   /// The exact angle threshold is determined by [MotionDetectorService.rollSensitivity].
-  roll // Renamed from fullRoll for clarity
+  roll, // Renamed from fullRoll for clarity
 }
 
 /// Indicates the direction of a detected rotation event.
-enum RotationDirection {
-  clockwise,
-  counterClockwise
-}
+enum RotationDirection { clockwise, counterClockwise }
 
 /// Contains details about a detected motion event.
 class MotionEvent {
@@ -40,8 +36,10 @@ class MotionEvent {
   final RotationDirection? direction;
 
   MotionEvent(this.type, this.timestamp, {this.value, this.direction})
-    : assert(type == MotionEventType.drop || direction != null,
-          'Rotation direction must be provided for yaw and roll events.');
+    : assert(
+        type == MotionEventType.drop || direction != null,
+        'Rotation direction must be provided for yaw and roll events.',
+      );
 
   @override
   String toString() {
@@ -60,7 +58,8 @@ class MotionEvent {
           direction == other.direction; // Added direction
 
   @override
-  int get hashCode => type.hashCode ^ timestamp.hashCode ^ value.hashCode ^ direction.hashCode; // Added direction
+  int get hashCode =>
+      type.hashCode ^ timestamp.hashCode ^ value.hashCode ^ direction.hashCode; // Added direction
 }
 
 /// Service to detect specific phone motions like drops, full yaw rotations,
@@ -73,6 +72,7 @@ class MotionDetectorService {
   // --- Constants ---
   /// Base impact threshold (m/s²) used for calculating the effective threshold.
   static const double _baseImpactThreshold = 25.0;
+
   /// Base rotation angle threshold (radians, equivalent to 360 degrees).
   static const double _baseRotationThreshold = 2 * math.pi;
 
@@ -123,8 +123,10 @@ class MotionDetectorService {
   // --- Calculated Internal Configuration ---
   /// The effective impact threshold calculated based on the base value and sensitivity.
   late final double _effectiveImpactThreshold;
+
   /// The effective yaw rotation threshold calculated based on the base value and sensitivity.
   late final double _effectiveYawThreshold;
+
   /// The effective roll rotation threshold calculated based on the base value and sensitivity.
   late final double _effectiveRollThreshold;
 
@@ -174,20 +176,31 @@ class MotionDetectorService {
     this.rollSensitivity = 0.75, // Default to 270 degrees
     this.rotationRateStopThreshold = 0.1, // radians/sec
     // General parameters
-    this.detectionResetDelay = const Duration(seconds: 1), // Default cooldown reduced to 1s
+    this.detectionResetDelay = const Duration(
+      seconds: 1,
+    ), // Default cooldown reduced to 1s
   }) : assert(freefallThreshold >= 0, 'freefallThreshold must be non-negative'),
        assert(dropSensitivity > 0, 'dropSensitivity must be positive'),
-       assert(yawSensitivity > 0 && yawSensitivity <= 1.0, 'yawSensitivity must be between 0 (exclusive) and 1.0 (inclusive)'),
-       assert(rollSensitivity > 0 && rollSensitivity <= 1.0, 'rollSensitivity must be between 0 (exclusive) and 1.0 (inclusive)'),
-       assert(rotationRateStopThreshold >= 0, 'rotationRateStopThreshold must be non-negative')
-  {
+       assert(
+         yawSensitivity > 0 && yawSensitivity <= 1.0,
+         'yawSensitivity must be between 0 (exclusive) and 1.0 (inclusive)',
+       ),
+       assert(
+         rollSensitivity > 0 && rollSensitivity <= 1.0,
+         'rollSensitivity must be between 0 (exclusive) and 1.0 (inclusive)',
+       ),
+       assert(
+         rotationRateStopThreshold >= 0,
+         'rotationRateStopThreshold must be non-negative',
+       ) {
     // Calculate the effective thresholds based on base values and sensitivities.
     _effectiveImpactThreshold = _baseImpactThreshold / dropSensitivity;
     _effectiveYawThreshold = _baseRotationThreshold * yawSensitivity;
     _effectiveRollThreshold = _baseRotationThreshold * rollSensitivity;
-    print('[MotionDetector] Initialized. DropSens: $dropSensitivity, EffectiveImpactThr: ${_effectiveImpactThreshold.toStringAsFixed(2)}, FreefallThr: ${freefallThreshold.toStringAsFixed(2)}, Cooldown: ${detectionResetDelay.inSeconds}s');
+    print(
+      '[MotionDetector] Initialized. DropSens: $dropSensitivity, EffectiveImpactThr: ${_effectiveImpactThreshold.toStringAsFixed(2)}, FreefallThr: ${freefallThreshold.toStringAsFixed(2)}, Cooldown: ${detectionResetDelay.inSeconds}s',
+    );
   }
-
 
   /// Starts listening to accelerometer and gyroscope sensors.
   ///
@@ -207,17 +220,23 @@ class MotionDetectorService {
 
     // --- Start Accelerometer Listener ---
     // Uses normal interval for general motion and freefall start detection.
-    _accelerometerSubscription =
-        accelerometerEventStream(samplingPeriod: SensorInterval.normalInterval)
-            .listen(_handleAccelerometerEvent,
-                onError: _handleAccelerometerError, cancelOnError: false); // Keep listening on error if possible
+    _accelerometerSubscription = accelerometerEventStream(
+      samplingPeriod: SensorInterval.normalInterval,
+    ).listen(
+      _handleAccelerometerEvent,
+      onError: _handleAccelerometerError,
+      cancelOnError: false,
+    ); // Keep listening on error if possible
 
     // --- Start Gyroscope Listener ---
     // Uses UI interval, suitable for smooth rotation tracking.
-    _gyroscopeSubscription =
-        gyroscopeEventStream(samplingPeriod: SensorInterval.uiInterval)
-            .listen(_handleGyroscopeEvent,
-                onError: _handleGyroscopeError, cancelOnError: false); // Keep listening on error if possible
+    _gyroscopeSubscription = gyroscopeEventStream(
+      samplingPeriod: SensorInterval.uiInterval,
+    ).listen(
+      _handleGyroscopeEvent,
+      onError: _handleGyroscopeError,
+      cancelOnError: false,
+    ); // Keep listening on error if possible
 
     // print("MotionDetectorService: Started listening to sensors."); // Optional logging
   }
@@ -236,7 +255,7 @@ class MotionDetectorService {
 
     // Only close the controller if it's not already closed
     if (!_motionEventController.isClosed) {
-       _motionEventController.close();
+      _motionEventController.close();
     }
 
     // Nullify subscriptions to indicate they are stopped
@@ -251,14 +270,14 @@ class MotionDetectorService {
   /// Resets internal state variables to their initial values.
   /// Called internally when starting to listen.
   void _resetState() {
-      _inPotentialFreefall = false;
-      _potentialFreefallStartTime = null;
-      _lastGyroTimestamp = null;
-      _accumulatedYaw = 0.0;
-      _accumulatedRoll = 0.0;
-      _isDropDetectionCooldown = false;
-      _isYawDetectionCooldown = false;
-      _isRollDetectionCooldown = false;
+    _inPotentialFreefall = false;
+    _potentialFreefallStartTime = null;
+    _lastGyroTimestamp = null;
+    _accumulatedYaw = 0.0;
+    _accumulatedRoll = 0.0;
+    _isDropDetectionCooldown = false;
+    _isYawDetectionCooldown = false;
+    _isRollDetectionCooldown = false;
   }
 
   // --- Event Handlers ---
@@ -267,7 +286,8 @@ class MotionDetectorService {
   void _handleAccelerometerEvent(AccelerometerEvent event) {
     if (_accelerometerSubscription == null) return;
     double magnitude = math.sqrt(
-        math.pow(event.x, 2) + math.pow(event.y, 2) + math.pow(event.z, 2));
+      math.pow(event.x, 2) + math.pow(event.y, 2) + math.pow(event.z, 2),
+    );
     final now = DateTime.now();
     // DEBUG: Print magnitude frequently to see baseline and spikes
     // print('[MotionDetector Accel] Mag: ${magnitude.toStringAsFixed(2)}');
@@ -277,23 +297,33 @@ class MotionDetectorService {
       if (!_inPotentialFreefall) {
         _inPotentialFreefall = true;
         _potentialFreefallStartTime = now;
-        print('[MotionDetector Drop] >>> Potential Freefall STARTED (Mag: ${magnitude.toStringAsFixed(2)} < ${freefallThreshold.toStringAsFixed(2)}) @ $now');
+        print(
+          '[MotionDetector Drop] >>> Potential Freefall STARTED (Mag: ${magnitude.toStringAsFixed(2)} < ${freefallThreshold.toStringAsFixed(2)}) @ $now',
+        );
       }
       // else: Already in potential freefall, just continue
-    } else { // Acceleration is above freefall threshold
+    } else {
+      // Acceleration is above freefall threshold
       if (_inPotentialFreefall) {
         // We *were* in freefall, now check duration and look for impact
         final freefallDuration = now.difference(_potentialFreefallStartTime!);
-        print('[MotionDetector Drop] <<< Potential Freefall ENDED (Mag: ${magnitude.toStringAsFixed(2)} >= ${freefallThreshold.toStringAsFixed(2)}). Duration: $freefallDuration @ $now');
+        print(
+          '[MotionDetector Drop] <<< Potential Freefall ENDED (Mag: ${magnitude.toStringAsFixed(2)} >= ${freefallThreshold.toStringAsFixed(2)}). Duration: $freefallDuration @ $now',
+        );
 
-        _inPotentialFreefall = false; // Reset freefall state *before* checking impact
+        _inPotentialFreefall =
+            false; // Reset freefall state *before* checking impact
         _potentialFreefallStartTime = null;
 
         if (freefallDuration >= freefallTimeThreshold) {
-          print('[MotionDetector Drop] --- Freefall Duration OK ($freefallDuration >= $freefallTimeThreshold). Checking for impact...');
+          print(
+            '[MotionDetector Drop] --- Freefall Duration OK ($freefallDuration >= $freefallTimeThreshold). Checking for impact...',
+          );
           _checkForImpact(now);
         } else {
-          print('[MotionDetector Drop] --- Freefall Duration TOO SHORT ($freefallDuration < $freefallTimeThreshold). No impact check.');
+          print(
+            '[MotionDetector Drop] --- Freefall Duration TOO SHORT ($freefallDuration < $freefallTimeThreshold). No impact check.',
+          );
         }
       } // else: we were not in freefall, so just ignore normal acceleration readings
     }
@@ -307,7 +337,9 @@ class MotionDetectorService {
     final now = DateTime.now();
     // Gyroscope reports rotation rate in radians per second.
     double yawRate = event.z; // Z-axis rotation (around vertical axis)
-    double rollRate = event.y; // Y-axis rotation (around horizontal axis - tilting left/right)
+    double rollRate =
+        event
+            .y; // Y-axis rotation (around horizontal axis - tilting left/right)
     // Note: Pitch (X-axis) is event.x, but not used here.
 
     // Calculate time delta since the last event for integration.
@@ -317,30 +349,48 @@ class MotionDetectorService {
           now.difference(_lastGyroTimestamp!).inMilliseconds / 1000.0;
 
       // --- Yaw Calculation --- Updated to use _effectiveYawThreshold
-      _accumulatedYaw = _updateAccumulatedRotation(_accumulatedYaw, yawRate,
-          timeDelta, MotionEventType.yaw, _isYawDetectionCooldown);
+      _accumulatedYaw = _updateAccumulatedRotation(
+        _accumulatedYaw,
+        yawRate,
+        timeDelta,
+        MotionEventType.yaw,
+        _isYawDetectionCooldown,
+      );
 
       if (!_isYawDetectionCooldown &&
           _accumulatedYaw.abs() >= _effectiveYawThreshold) {
-        final direction = _accumulatedYaw > 0 ? RotationDirection.counterClockwise: RotationDirection.clockwise ;
+        final direction =
+            _accumulatedYaw > 0
+                ? RotationDirection.counterClockwise
+                : RotationDirection.clockwise;
         _emitMotionEvent(MotionEventType.yaw, now, direction: direction);
         _isYawDetectionCooldown = true; // Start cooldown
         // Reset using modulo to handle continuous rotation correctly
-        _accumulatedYaw %= _effectiveYawThreshold; // Keep the remainder relative to the threshold
+        _accumulatedYaw %=
+            _effectiveYawThreshold; // Keep the remainder relative to the threshold
         Timer(detectionResetDelay, () => _isYawDetectionCooldown = false);
       }
 
       // --- Roll Calculation --- Updated to use _effectiveRollThreshold
-      _accumulatedRoll = _updateAccumulatedRotation(_accumulatedRoll,
-          rollRate, timeDelta, MotionEventType.roll, _isRollDetectionCooldown);
+      _accumulatedRoll = _updateAccumulatedRotation(
+        _accumulatedRoll,
+        rollRate,
+        timeDelta,
+        MotionEventType.roll,
+        _isRollDetectionCooldown,
+      );
 
       if (!_isRollDetectionCooldown &&
           _accumulatedRoll.abs() >= _effectiveRollThreshold) {
-        final direction = _accumulatedRoll > 0 ? RotationDirection.clockwise : RotationDirection.counterClockwise;
+        final direction =
+            _accumulatedRoll > 0
+                ? RotationDirection.clockwise
+                : RotationDirection.counterClockwise;
         _emitMotionEvent(MotionEventType.roll, now, direction: direction);
         _isRollDetectionCooldown = true; // Start cooldown
         // Reset using modulo to handle continuous rotation correctly
-        _accumulatedRoll %= _effectiveRollThreshold; // Keep the remainder relative to the threshold
+        _accumulatedRoll %=
+            _effectiveRollThreshold; // Keep the remainder relative to the threshold
         Timer(detectionResetDelay, () => _isRollDetectionCooldown = false);
       }
     }
@@ -357,9 +407,13 @@ class MotionDetectorService {
   /// Accumulation is skipped if the corresponding cooldown flag is active.
   ///
   /// Returns the updated accumulated angle.
-  double _updateAccumulatedRotation(double accumulatedAngle, double rate,
-      double timeDelta, MotionEventType type, bool isCooldown) {
-
+  double _updateAccumulatedRotation(
+    double accumulatedAngle,
+    double rate,
+    double timeDelta,
+    MotionEventType type,
+    bool isCooldown,
+  ) {
     // Integrate the angle change, but only if not in cooldown for this motion type.
     if (!isCooldown) {
       accumulatedAngle += (rate * timeDelta);
@@ -368,7 +422,8 @@ class MotionDetectorService {
     // If the rotation rate is very low (effectively stopped),
     // reset the accumulator to prevent slow drift from noise.
     // The accumulatedAngle check prevents resetting constantly when already near zero.
-    if (rate.abs() < rotationRateStopThreshold && accumulatedAngle.abs() > 0.01) {
+    if (rate.abs() < rotationRateStopThreshold &&
+        accumulatedAngle.abs() > 0.01) {
       // print("${type.name} rate below threshold, resetting accumulated angle from $accumulatedAngle"); // Debug
       return 0.0; // Reset due to stopped rotation
     }
@@ -392,32 +447,43 @@ class MotionDetectorService {
     _impactSubscription?.cancel();
     _impactTimer?.cancel();
 
-    print('[MotionDetector Drop] === Starting Impact Check Window (${impactDetectionWindow.inMilliseconds}ms) ===');
+    print(
+      '[MotionDetector Drop] === Starting Impact Check Window (${impactDetectionWindow.inMilliseconds}ms) ===',
+    );
     bool impactDetectedInThisCheck = false;
 
     _impactSubscription = accelerometerEventStream(
-            samplingPeriod: SensorInterval.fastestInterval)
-        .listen(
+      samplingPeriod: SensorInterval.fastestInterval,
+    ).listen(
       (AccelerometerEvent event) {
         if (_impactSubscription == null || impactDetectedInThisCheck) return;
 
         double magnitude = math.sqrt(
-            math.pow(event.x, 2) + math.pow(event.y, 2) + math.pow(event.z, 2));
+          math.pow(event.x, 2) + math.pow(event.y, 2) + math.pow(event.z, 2),
+        );
         final now = DateTime.now();
         final timeSinceFreefallEnd = now.difference(freefallEndTime);
 
-        print('[MotionDetector Impact Check] Accel Mag: ${magnitude.toStringAsFixed(2)} (Time since freefall end: ${timeSinceFreefallEnd.inMilliseconds}ms)');
+        print(
+          '[MotionDetector Impact Check] Accel Mag: ${magnitude.toStringAsFixed(2)} (Time since freefall end: ${timeSinceFreefallEnd.inMilliseconds}ms)',
+        );
 
         // --- Impact Detection ---
         if (magnitude > _effectiveImpactThreshold) {
-          print('[MotionDetector Drop] +++ IMPACT DETECTED! Mag: ${magnitude.toStringAsFixed(2)} > Threshold: ${_effectiveImpactThreshold.toStringAsFixed(2)}');
+          print(
+            '[MotionDetector Drop] +++ IMPACT DETECTED! Mag: ${magnitude.toStringAsFixed(2)} > Threshold: ${_effectiveImpactThreshold.toStringAsFixed(2)}',
+          );
           impactDetectedInThisCheck = true;
           _emitMotionEvent(MotionEventType.drop, now, value: magnitude);
 
           _isDropDetectionCooldown = true;
-          print('[MotionDetector Drop] *** Cooldown Started (${detectionResetDelay.inSeconds}s) ***');
+          print(
+            '[MotionDetector Drop] *** Cooldown Started (${detectionResetDelay.inSeconds}s) ***',
+          );
           Timer(detectionResetDelay, () {
-            print('[MotionDetector Drop] *** Cooldown Finished (${detectionResetDelay.inSeconds}s) ***');
+            print(
+              '[MotionDetector Drop] *** Cooldown Finished (${detectionResetDelay.inSeconds}s) ***',
+            );
             _isDropDetectionCooldown = false;
           });
 
@@ -430,7 +496,9 @@ class MotionDetectorService {
 
         // --- Window Timeout Check (within listener) ---
         if (timeSinceFreefallEnd > impactDetectionWindow) {
-           print('[MotionDetector Drop] --- Impact window passed (${timeSinceFreefallEnd.inMilliseconds}ms > ${impactDetectionWindow.inMilliseconds}ms). Cancelling check.');
+          print(
+            '[MotionDetector Drop] --- Impact window passed (${timeSinceFreefallEnd.inMilliseconds}ms > ${impactDetectionWindow.inMilliseconds}ms). Cancelling check.',
+          );
           _impactSubscription?.cancel();
           _impactTimer?.cancel();
           _impactSubscription = null;
@@ -449,28 +517,48 @@ class MotionDetectorService {
     );
 
     // --- Safety Timer ---
-    _impactTimer = Timer(impactDetectionWindow + const Duration(milliseconds: 50), () {
-      if (_impactSubscription != null) {
-        print('[MotionDetector Drop] --- Impact safety timer fired. Cancelling check.');
-        _impactSubscription?.cancel();
-        _impactSubscription = null;
-        _impactTimer = null;
-      }
-    });
+    _impactTimer = Timer(
+      impactDetectionWindow + const Duration(milliseconds: 50),
+      () {
+        if (_impactSubscription != null) {
+          print(
+            '[MotionDetector Drop] --- Impact safety timer fired. Cancelling check.',
+          );
+          _impactSubscription?.cancel();
+          _impactSubscription = null;
+          _impactTimer = null;
+        }
+      },
+    );
   }
 
   /// Adds a [MotionEvent] to the broadcast stream controller if it's not closed.
-  void _emitMotionEvent(MotionEventType type, DateTime timestamp, {double? value, RotationDirection? direction}) {
+  void _emitMotionEvent(
+    MotionEventType type,
+    DateTime timestamp, {
+    double? value,
+    RotationDirection? direction,
+  }) {
     if (!_motionEventController.isClosed) {
-       print('[MotionDetector] >>> Emitting Event: $type'); // DEBUG: Confirm emission
-      if ((type == MotionEventType.yaw || type == MotionEventType.roll) && direction == null) {
+      print(
+        '[MotionDetector] >>> Emitting Event: $type',
+      ); // DEBUG: Confirm emission
+      if ((type == MotionEventType.yaw || type == MotionEventType.roll) &&
+          direction == null) {
         print("Error: Rotation direction missing for $type event.");
         return;
       }
-      final event = MotionEvent(type, timestamp, value: value, direction: direction);
+      final event = MotionEvent(
+        type,
+        timestamp,
+        value: value,
+        direction: direction,
+      );
       _motionEventController.add(event);
     } else {
-       print('[MotionDetector] ??? Attempted to emit event on closed controller: $type');
+      print(
+        '[MotionDetector] ??? Attempted to emit event on closed controller: $type',
+      );
     }
   }
 

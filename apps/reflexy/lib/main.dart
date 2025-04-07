@@ -7,11 +7,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   // TODO: Add any initialization needed here (e.g., Firebase, Camera)
 
-  runApp(
-    const ProviderScope(
-      child: ReflexyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: ReflexyApp()));
 }
 
 class MyApp extends StatelessWidget {

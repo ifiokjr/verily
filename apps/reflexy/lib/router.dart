@@ -10,11 +10,7 @@ import 'screens/instructions_screen.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 // App routes
-enum AppRoute {
-  home,
-  instructions,
-  game,
-}
+enum AppRoute { home, instructions, game }
 
 // Provider for GoRouter configuration
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -33,10 +29,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/instructions',
         name: AppRoute.instructions.name,
-        pageBuilder: (context, state) => const MaterialPage(
-          fullscreenDialog: true,
-          child: InstructionsScreen(),
-        ),
+        pageBuilder:
+            (context, state) => const MaterialPage(
+              fullscreenDialog: true,
+              child: InstructionsScreen(),
+            ),
       ),
       // Game Screen
       GoRoute(
@@ -45,9 +42,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const GameScreen(),
       ),
     ],
-    errorBuilder: (context, state) => Scaffold(
-      appBar: AppBar(title: const Text('Error')),
-      body: Center(child: Text('Page not found: ${state.error}')),
-    ), // Basic error page
+    errorBuilder:
+        (context, state) => Scaffold(
+          appBar: AppBar(title: const Text('Error')),
+          body: Center(child: Text('Page not found: ${state.error}')),
+        ), // Basic error page
   );
 });

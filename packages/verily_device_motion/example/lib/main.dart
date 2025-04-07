@@ -28,7 +28,8 @@ MotionDetectorService useMotionDetector({
       // detectionResetDelay: const Duration(seconds: 1),
     );
     detectorRef.value!.startListening();
-    print('[MotionDetector Hook] Initialized with sensitivities: drop=$initialDropSensitivity, yaw=$initialYawSensitivity, roll=$initialRollSensitivity');
+    print(
+        '[MotionDetector Hook] Initialized with sensitivities: drop=$initialDropSensitivity, yaw=$initialYawSensitivity, roll=$initialRollSensitivity');
 
     // Cleanup on unmount
     return () {
@@ -44,7 +45,8 @@ MotionDetectorService useMotionDetector({
 }
 
 // Provider for the motion counts
-final motionCountsProvider = StateProvider<MotionCounts>((ref) => const MotionCounts());
+final motionCountsProvider =
+    StateProvider<MotionCounts>((ref) => const MotionCounts());
 
 // Main app
 void main() {
@@ -138,7 +140,8 @@ class MotionCounterScreen extends HookConsumerWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView( // Use ListView for scrollability
+        child: ListView(
+          // Use ListView for scrollability
           children: <Widget>[
             Text(
               'Motion Event Counts',
@@ -173,7 +176,8 @@ class MotionCounterScreen extends HookConsumerWidget {
             ),
             const SizedBox(height: 10),
             _SensitivitySlider(
-              label: 'Yaw Sensitivity (Threshold: ${(yawSensitivity.value * 360).toStringAsFixed(0)}°, Effective on Restart)',
+              label:
+                  'Yaw Sensitivity (Threshold: ${(yawSensitivity.value * 360).toStringAsFixed(0)}°, Effective on Restart)',
               value: yawSensitivity.value,
               min: 0.1, // ~36 degrees
               max: 1.0, // 360 degrees
@@ -185,14 +189,15 @@ class MotionCounterScreen extends HookConsumerWidget {
             const SizedBox(height: 20),
 
             // --- Roll Counters ---
-             _buildDirectionalCounterCard(
+            _buildDirectionalCounterCard(
               title: 'Roll (Barrel)',
               cwCount: counts.rollCwCount,
               ccwCount: counts.rollCcwCount,
             ),
-             const SizedBox(height: 10),
+            const SizedBox(height: 10),
             _SensitivitySlider(
-              label: 'Roll Sensitivity (Threshold: ${(rollSensitivity.value * 360).toStringAsFixed(0)}°, Effective on Restart)',
+              label:
+                  'Roll Sensitivity (Threshold: ${(rollSensitivity.value * 360).toStringAsFixed(0)}°, Effective on Restart)',
               value: rollSensitivity.value,
               min: 0.1, // ~36 degrees
               max: 1.0, // 360 degrees

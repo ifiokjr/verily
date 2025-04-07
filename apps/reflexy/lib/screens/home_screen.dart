@@ -13,9 +13,7 @@ class HomeScreen extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Reflexy'),
-      ),
+      appBar: AppBar(title: const Text('Reflexy')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -32,7 +30,9 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               Text(
                 'Test Your Reflexes!',
-                style: textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: textTheme.headlineLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
