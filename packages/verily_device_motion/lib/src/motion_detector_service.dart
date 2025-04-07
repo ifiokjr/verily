@@ -79,18 +79,17 @@ class MotionDetectorService {
   // --- Configuration ---
 
   /// The threshold (in m/s²) below which acceleration magnitude is considered freefall.
-  /// Defaults to 1.5 m/s².
+  /// Slightly increased default for potentially noisy freefall simulations.
+  /// Defaults to 2.0 m/s².
   final double freefallThreshold;
 
   /// The minimum duration of freefall required before checking for an impact.
   /// Defaults to 150 milliseconds.
   final Duration freefallTimeThreshold;
 
-  /// Sensitivity factor for drop detection. Defaults to 1.0.
-  /// - Values > 1.0 increase sensitivity (lower impact force needed to trigger a drop).
+  /// Sensitivity factor for drop detection. Defaults to 2.0 (twice the base sensitivity).
+  /// - Values > 1.0 increase sensitivity (lower impact force needed).
   /// - Values < 1.0 decrease sensitivity (higher impact force needed).
-  /// - A value of 0.5 requires roughly twice the default impact force.
-  /// - A value of 2.0 requires roughly half the default impact force.
   /// Must be greater than 0.
   final double dropSensitivity;
 
@@ -166,9 +165,9 @@ class MotionDetectorService {
   /// Provides sensible defaults suitable for general use cases.
   MotionDetectorService({
     // Drop detection parameters
-    this.freefallThreshold = 1.5, // m/s^2
+    this.freefallThreshold = 2.0, // Increased default freefall threshold
     this.freefallTimeThreshold = const Duration(milliseconds: 150),
-    this.dropSensitivity = 1.0,
+    this.dropSensitivity = 2.0, // Default increased sensitivity
     this.impactDetectionWindow = const Duration(milliseconds: 500),
     // Rotation detection parameters
     this.yawSensitivity = 0.75, // Default to 270 degrees
@@ -186,6 +185,7 @@ class MotionDetectorService {
     _effectiveImpactThreshold = _baseImpactThreshold / dropSensitivity;
     _effectiveYawThreshold = _baseRotationThreshold * yawSensitivity;
     _effectiveRollThreshold = _baseRotationThreshold * rollSensitivity;
+    print('[MotionDetector] Initialized. DropSens: $dropSensitivity, EffectiveImpactThr: ${_effectiveImpactThreshold.toStringAsFixed(2)}, FreefallThr: ${freefallThreshold.toStringAsFixed(2)}');
   }
 
 
@@ -265,46 +265,37 @@ class MotionDetectorService {
 
   /// Processes incoming accelerometer events for freefall detection.
   void _handleAccelerometerEvent(AccelerometerEvent event) {
-    // Protect against processing events after disposal
     if (_accelerometerSubscription == null) return;
-
-    // Calculate the magnitude of the acceleration vector.
     double magnitude = math.sqrt(
         math.pow(event.x, 2) + math.pow(event.y, 2) + math.pow(event.z, 2));
     final now = DateTime.now();
+    // DEBUG: Print magnitude frequently to see baseline and spikes
+    // print('[MotionDetector Accel] Mag: ${magnitude.toStringAsFixed(2)}');
 
     // --- Potential Freefall Detection Logic ---
     if (magnitude < freefallThreshold) {
-      // If we weren't already in potential freefall, mark the start time.
       if (!_inPotentialFreefall) {
         _inPotentialFreefall = true;
         _potentialFreefallStartTime = now;
-        // print("Potential freefall started"); // Debug log
+        print('[MotionDetector Drop] >>> Potential Freefall STARTED (Mag: ${magnitude.toStringAsFixed(2)} < ${freefallThreshold.toStringAsFixed(2)}) @ $now');
       }
-    } else {
-      // If we *were* in potential freefall (i.e., acceleration is now above threshold)
+      // else: Already in potential freefall, just continue
+    } else { // Acceleration is above freefall threshold
       if (_inPotentialFreefall) {
-        // Calculate how long the potential freefall lasted.
+        // We *were* in freefall, now check duration and look for impact
         final freefallDuration = now.difference(_potentialFreefallStartTime!);
+        print('[MotionDetector Drop] <<< Potential Freefall ENDED (Mag: ${magnitude.toStringAsFixed(2)} >= ${freefallThreshold.toStringAsFixed(2)}). Duration: $freefallDuration @ $now');
 
-        // If the duration meets the threshold, proceed to check for an impact.
-        if (freefallDuration >= freefallTimeThreshold) {
-          // print("Freefall duration threshold met ($freefallDuration), checking for impact..."); // Debug log
-          _checkForImpact(now); // Check immediately after freefall ends
-        } else {
-          // print("Freefall too short ($freefallDuration)"); // Debug log
-        }
-
-        // Reset freefall state regardless of duration, as it has ended.
-        _inPotentialFreefall = false;
+        _inPotentialFreefall = false; // Reset freefall state *before* checking impact
         _potentialFreefallStartTime = null;
-      }
-      // Optional: Log high G spikes even if not part of a drop sequence
-      // This could be useful for other analyses but is commented out for clarity.
-      // Use the *calculated* effective threshold here for comparison if logging.
-      // if (magnitude > _effectiveImpactThreshold) {
-      //   print("High acceleration spike detected (not necessarily impact): $magnitude");
-      // }
+
+        if (freefallDuration >= freefallTimeThreshold) {
+          print('[MotionDetector Drop] --- Freefall Duration OK ($freefallDuration >= $freefallTimeThreshold). Checking for impact...');
+          _checkForImpact(now);
+        } else {
+          print('[MotionDetector Drop] --- Freefall Duration TOO SHORT ($freefallDuration < $freefallTimeThreshold). No impact check.');
+        }
+      } // else: we were not in freefall, so just ignore normal acceleration readings
     }
   }
 
@@ -361,7 +352,8 @@ class MotionDetectorService {
   ///
   /// Integrates the rotation rate over the time delta and adds it to the
   /// accumulated angle. Resets the accumulated angle to zero if the rotation
-  /// rate drops below the [rotationRateStopThreshold].
+  /// rate drops below the [rotationRateStopThreshold] for a sustained period
+  /// (implicitly handled by continuous calls) or if accumulation is negligible.
   /// Accumulation is skipped if the corresponding cooldown flag is active.
   ///
   /// Returns the updated accumulated angle.
@@ -373,99 +365,96 @@ class MotionDetectorService {
       accumulatedAngle += (rate * timeDelta);
     }
 
-    // If the rotation rate is very low (effectively stopped) and there was
-    // some accumulated angle, reset the accumulator.
-    // Check accumulatedAngle magnitude to avoid resetting constantly at 0.
+    // If the rotation rate is very low (effectively stopped),
+    // reset the accumulator to prevent slow drift from noise.
+    // The accumulatedAngle check prevents resetting constantly when already near zero.
     if (rate.abs() < rotationRateStopThreshold && accumulatedAngle.abs() > 0.01) {
-       // print("${type.name} rate below threshold, resetting accumulated angle from $accumulatedAngle"); // Debug
-      return 0.0; // Reset
+      // print("${type.name} rate below threshold, resetting accumulated angle from $accumulatedAngle"); // Debug
+      return 0.0; // Reset due to stopped rotation
     }
+
+    // Optional: Add a check to reset if the angle itself becomes near zero after integration,
+    // regardless of rate, to handle potential over/undershoot corrections.
+    // if (accumulatedAngle.abs() < 0.01) {
+    //   return 0.0;
+    // }
 
     return accumulatedAngle; // Return the updated or potentially reset angle
   }
 
   /// Initiates a check for an impact spike immediately following a potential freefall.
-  ///
-  /// Listens to the accelerometer at a high frequency for a short duration
-  /// ([impactDetectionWindow]) to catch the characteristic high-G spike of an impact.
   void _checkForImpact(DateTime freefallEndTime) {
-    // Don't check for impact if drop detection is currently in its cooldown period.
     if (_isDropDetectionCooldown) {
-      // print("Drop detection cooldown active, skipping impact check."); // Debug
+      print('[MotionDetector Drop] !!! Impact check skipped: Cooldown active.');
       return;
     }
 
-    // Cancel any previous impact check that might still be running (safety measure).
     _impactSubscription?.cancel();
     _impactTimer?.cancel();
 
-    // print("Starting impact detection listener..."); // Debug
+    print('[MotionDetector Drop] === Starting Impact Check Window (${impactDetectionWindow.inMilliseconds}ms) ===');
+    bool impactDetectedInThisCheck = false;
 
-    // Listen briefly for a high-G spike using the fastest possible sensor interval.
     _impactSubscription = accelerometerEventStream(
-            // Use fastest interval for better chance of catching brief impact spike
             samplingPeriod: SensorInterval.fastestInterval)
         .listen(
       (AccelerometerEvent event) {
-        // Protect against processing events after disposal or cancellation
-        if (_impactSubscription == null) return;
+        if (_impactSubscription == null || impactDetectedInThisCheck) return;
 
         double magnitude = math.sqrt(
             math.pow(event.x, 2) + math.pow(event.y, 2) + math.pow(event.z, 2));
+        final now = DateTime.now();
+        final timeSinceFreefallEnd = now.difference(freefallEndTime);
+
+        print('[MotionDetector Impact Check] Accel Mag: ${magnitude.toStringAsFixed(2)} (Time since freefall end: ${timeSinceFreefallEnd.inMilliseconds}ms)');
 
         // --- Impact Detection ---
-        // Use the calculated effective impact threshold here
         if (magnitude > _effectiveImpactThreshold) {
-          // print("Impact Detected! Magnitude: $magnitude (Threshold: $_effectiveImpactThreshold)"); // Debug
-          // Emit the drop event with the impact magnitude.
-          _emitMotionEvent(MotionEventType.drop, DateTime.now(), value: magnitude);
+          print('[MotionDetector Drop] +++ IMPACT DETECTED! Mag: ${magnitude.toStringAsFixed(2)} > Threshold: ${_effectiveImpactThreshold.toStringAsFixed(2)}');
+          impactDetectedInThisCheck = true;
+          _emitMotionEvent(MotionEventType.drop, now, value: magnitude);
 
-          // Start cooldown for drop detection to prevent immediate re-triggering.
           _isDropDetectionCooldown = true;
-          Timer(detectionResetDelay, () => _isDropDetectionCooldown = false);
+          print('[MotionDetector Drop] *** Cooldown Started (${detectionResetDelay.inSeconds}s) ***');
+          Timer(detectionResetDelay, () {
+            print('[MotionDetector Drop] *** Cooldown Finished ***');
+            _isDropDetectionCooldown = false;
+          });
 
-          // Successfully detected impact, stop listening immediately.
           _impactSubscription?.cancel();
-          _impactTimer?.cancel(); // Cancel the safety timer as well
-          _impactSubscription = null; // Mark as cancelled
+          _impactTimer?.cancel();
+          _impactSubscription = null;
           _impactTimer = null;
+          return;
         }
 
         // --- Window Timeout Check (within listener) ---
-        // Also check if the detection window has passed *during* this event handling.
-        // This ensures we stop promptly if the window closes between events.
-        if (DateTime.now().difference(freefallEndTime) > impactDetectionWindow) {
-          // print("Impact detection window passed within listener, cancelling."); // Debug
+        if (timeSinceFreefallEnd > impactDetectionWindow) {
+           print('[MotionDetector Drop] --- Impact window passed (${timeSinceFreefallEnd.inMilliseconds}ms > ${impactDetectionWindow.inMilliseconds}ms). Cancelling check.');
           _impactSubscription?.cancel();
-          _impactTimer?.cancel(); // Cancel the safety timer
-          _impactSubscription = null; // Mark as cancelled
+          _impactTimer?.cancel();
+          _impactSubscription = null;
           _impactTimer = null;
-          // print("Freefall detected, but no subsequent impact spike within window."); // Log info
+          return;
         }
       },
       onError: (error) {
-        // Handle errors during the brief impact listening phase.
-        print("Impact Accelerometer Error: $error");
+        print("[MotionDetector Impact Check] Error: $error");
         _impactSubscription?.cancel();
         _impactTimer?.cancel();
         _impactSubscription = null;
         _impactTimer = null;
       },
-      cancelOnError: true, // Stop listening if an error occurs during impact check
+      cancelOnError: true,
     );
 
     // --- Safety Timer ---
-    // Ensures the impact listener is *always* cancelled if no impact is detected
-    // within the allowed window, even if no further accelerometer events arrive.
-    // Add a small buffer to the duration.
     _impactTimer = Timer(impactDetectionWindow + const Duration(milliseconds: 50), () {
-      // This timer callback executes only if the impact listener wasn't already cancelled.
       if (_impactSubscription != null) {
-        // print("Impact detection window timed out via Timer, cancelling."); // Debug
+        print('[MotionDetector Drop] --- Impact safety timer fired. Cancelling check.');
         _impactSubscription?.cancel();
         _impactSubscription = null;
-        _impactTimer = null; // Timer fulfilled its purpose
-        // print("Freefall detected, but no subsequent impact spike within window (timer)."); // Log info
+        _impactTimer = null;
       }
     });
   }
@@ -473,16 +462,15 @@ class MotionDetectorService {
   /// Adds a [MotionEvent] to the broadcast stream controller if it's not closed.
   void _emitMotionEvent(MotionEventType type, DateTime timestamp, {double? value, RotationDirection? direction}) {
     if (!_motionEventController.isClosed) {
-      // Ensure direction is provided for rotation events
+       print('[MotionDetector] >>> Emitting Event: $type'); // DEBUG: Confirm emission
       if ((type == MotionEventType.yaw || type == MotionEventType.roll) && direction == null) {
-        // This should ideally not happen due to checks in _handleGyroscopeEvent,
-        // but adding a safeguard.
         print("Error: Rotation direction missing for $type event.");
         return;
       }
       final event = MotionEvent(type, timestamp, value: value, direction: direction);
       _motionEventController.add(event);
-      // print("Motion Detected: $event"); // Optional: Log detected events
+    } else {
+       print('[MotionDetector] ??? Attempted to emit event on closed controller: $type');
     }
   }
 
