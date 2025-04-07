@@ -289,19 +289,48 @@ class GameScreen extends HookConsumerWidget {
             // Use FadeTransition for the in/out effect.
             return FadeTransition(opacity: animation, child: child);
           },
-          // The child widget (Text displaying the action).
-          child: Text(
-            // Crucial: Key determines when the AnimatedSwitcher transitions.
-            // Using `actionStartTime` ensures a unique key for *every* new action,
-            // triggering the fade even if the action type is the same as the last.
-            key: ValueKey<DateTime?>(gameState.actionStartTime),
-            currentAction?.name ?? '...', // Display action name or '...'
-            style: textTheme.displayLarge?.copyWith(fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
+          // The child widget (Icon or Text displaying the action).
+          child: _buildActionWidget(context, currentAction, gameState.actionStartTime),
         ),
       ],
     );
+  }
+
+  /// Helper function to build the widget representing the current action.
+  /// Displays an Icon for rotation actions, Text otherwise.
+  Widget _buildActionWidget(BuildContext context, GameAction? action, DateTime? keyTime) {
+    final textTheme = Theme.of(context).textTheme;
+    final iconSize = textTheme.displayLarge?.fontSize ?? 64.0; // Match text size
+
+    // Use the action start time as the key for the AnimatedSwitcher child.
+    final key = ValueKey<DateTime?>(keyTime);
+
+    switch (action) {
+      case GameAction.rotateLeft:
+        return Icon(
+          key: key,
+          Icons.arrow_circle_left_outlined,
+          size: iconSize,
+          color: Theme.of(context).iconTheme.color, // Use theme color
+        );
+      case GameAction.rotateRight:
+        return Icon(
+          key: key,
+          Icons.arrow_circle_right_outlined,
+          size: iconSize,
+          color: Theme.of(context).iconTheme.color,
+        );
+      case GameAction.drop:
+      // Add cases for other future text-based actions here
+      default:
+        // Default to Text for null or other actions
+        return Text(
+          key: key,
+          action?.name ?? '...', // Display action name or '...'
+          style: textTheme.displayLarge?.copyWith(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        );
+    }
   }
 
   /// Builds the game over screen displaying the final score and a restart button.
