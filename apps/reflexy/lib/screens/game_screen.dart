@@ -1,4 +1,4 @@
-import 'dart:async'; // Needed for StreamSubscription
+import 'dart:async'; // Needed for StreamSubscription & Timer
 import 'dart:math'; // Needed for confetti Path
 import 'package:confetti/confetti.dart'; // Import confetti
 import 'package:flutter/material.dart';
@@ -49,18 +49,65 @@ class GameScreen extends HookConsumerWidget {
     final gameState = ref.watch(gameProvider);
     final gameNotifier = ref.read(gameProvider.notifier);
     final motionDetector = useMotionDetector();
-
-    // --- Confetti Controller Hook ---
     final confettiController = useMemoized(() => ConfettiController(duration: const Duration(milliseconds: 500)), []);
-    useEffect(() => confettiController.dispose, []); // Dispose controller
 
-    // Start Game on First Build
+    // --- State for Timer Display ---
+    // Holds the remaining seconds to display, updated by a local timer.
+    final displayedSeconds = useState<int>(gameState.actionTimeLimit.inSeconds);
+
+    // --- Local Timer Logic for Countdown UI ---
+    useEffect(() {
+      Timer? periodicTimer;
+
+      void startUiTimer() {
+        // Cancel any previous timer
+        periodicTimer?.cancel();
+
+        // Only start if game is active and there's an action/start time
+        if (!gameState.isGameOver && gameState.actionStartTime != null) {
+          print("[GameScreen Timer] Starting UI Timer.");
+          periodicTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+            // Read the *current* remaining time from the provider
+            // Important: Read within the timer callback to get the latest state
+            final currentRemaining = ref.read(gameProvider).remainingTime;
+            final remainingSec = currentRemaining.inSeconds;
+            displayedSeconds.value = remainingSec; // Update UI state
+
+            // print("[GameScreen Timer] Tick: ${remainingSec}s"); // Optional debug log
+
+            if (remainingSec <= 0 || ref.read(gameProvider).isGameOver) {
+              print("[GameScreen Timer] Stopping UI Timer (Time up or Game Over).");
+              timer.cancel();
+              periodicTimer = null;
+            }
+          });
+          // Initial update
+          displayedSeconds.value = gameState.remainingTime.inSeconds;
+        } else {
+            print("[GameScreen Timer] Not starting UI Timer (Game Over or no action). Resetting display.");
+            // Reset display if game over or no action
+            displayedSeconds.value = gameState.actionTimeLimit.inSeconds;
+        }
+      }
+
+      // Start timer when actionStartTime changes or game over status changes
+      startUiTimer();
+
+      // Cleanup function: Cancel timer when effect reruns or widget disposes
+      return () {
+        print("[GameScreen Timer] Cleaning up UI Timer.");
+        periodicTimer?.cancel();
+      };
+    }, [gameState.actionStartTime, gameState.isGameOver]); // Rerun effect when these change
+
+    // --- Other Hooks (Confetti, Start Game, Motion Listener) ---
+    useEffect(() => confettiController.dispose, []); // Dispose controller
     useEffect(() {
       Future.microtask(() => gameNotifier.startGame());
       return null;
     }, const []);
 
-    // Listen to Motion Events & Trigger Confetti
+    // Listener (no changes needed here for timer)
     useEffect(() {
       print("[GameScreen Listener] Subscribing to motion detector...");
       final StreamSubscription<MotionEvent> subscription = motionDetector.motionEvents.listen(
@@ -82,82 +129,83 @@ class GameScreen extends HookConsumerWidget {
         onError: (e) => print("[GameScreen Listener] Motion Stream Error: $e"),
         onDone: () => print("[GameScreen Listener] Motion Stream Done."),
       );
-
       return () {
         print("[GameScreen Listener] Cancelling motion subscription...");
         subscription.cancel();
       };
-    }, [motionDetector, gameNotifier, gameState.currentActions, confettiController]); // Add confettiController
+    }, [motionDetector, gameNotifier, gameState.currentActions, confettiController]);
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Level ${gameState.level} - Score: ${gameState.score}'),
       ),
-      // --- Stack for Confetti Overlay ---
       body: Stack(
-        alignment: Alignment.topCenter, // Align confetti to top center
+        alignment: Alignment.topCenter,
         children: [
-          // Main Game Area
           Center(
             child: gameState.isGameOver
-                ? _buildGameOver(context, gameNotifier)
-                : _buildGameArea(context, gameState),
+                ? _buildGameOver(context, gameState.score, gameNotifier)
+                : _buildGameArea(context, gameState, displayedSeconds.value),
           ),
-          // Confetti Widget
           Align(
-             alignment: Alignment.topCenter,
-             child: ConfettiWidget(
-                confettiController: confettiController,
-                blastDirectionality: BlastDirectionality.explosive, // Or other directions
-                shouldLoop: false,
-                numberOfParticles: 20, // Adjust number of particles
-                gravity: 0.1,         // Adjust gravity
-                emissionFrequency: 0.05, // Adjust frequency
-                // createParticlePath: drawStar, // Optional: Custom particle shape
-             ),
-           ),
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: confettiController,
+              blastDirectionality: BlastDirectionality.explosive, // Or other directions
+              shouldLoop: false,
+              numberOfParticles: 20, // Adjust number of particles
+              gravity: 0.1,         // Adjust gravity
+              emissionFrequency: 0.05, // Adjust frequency
+              // createParticlePath: drawStar, // Optional: Custom particle shape
+            ),
+          ),
         ],
       ),
     );
   }
 
-  // Helper to build the main game area
-  Widget _buildGameArea(BuildContext context, GameState gameState) {
+  Widget _buildGameArea(BuildContext context, GameState gameState, int displayedSeconds) {
     final textTheme = Theme.of(context).textTheme;
     final currentAction = gameState.currentActions.firstOrNull;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        // Display Timer if action is active
+        if (currentAction != null && !gameState.isGameOver)
+          Text(
+            '${displayedSeconds}s',
+            style: textTheme.headlineLarge?.copyWith(color: Colors.orangeAccent),
+          ),
+        const SizedBox(height: 20),
         Text(
           'Perform Action:',
           style: textTheme.headlineMedium,
         ),
         const SizedBox(height: 40),
-        // TODO: Replace Text with better visual representation (Icon/SVG/Emoji)
         Text(
           currentAction?.name ?? '...',
           style: textTheme.displayLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
-        // TODO: Add Timer display if implemented
       ],
     );
   }
 
-  // Helper to build the game over display
-  Widget _buildGameOver(BuildContext context, GameNotifier gameNotifier) {
-     final textTheme = Theme.of(context).textTheme;
-     return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-           Text('Game Over!', style: textTheme.displayMedium),
-           const SizedBox(height: 20),
-           ElevatedButton(
-             onPressed: () => gameNotifier.startGame(),
-             child: const Text('Play Again?'),
-           )
-        ],
-     );
+  Widget _buildGameOver(BuildContext context, int finalScore, GameNotifier gameNotifier) {
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text('Game Over!', style: textTheme.displayMedium),
+        const SizedBox(height: 20),
+        Text('Final Score: $finalScore', style: textTheme.headlineSmall),
+        const SizedBox(height: 40),
+        ElevatedButton(
+          onPressed: () => gameNotifier.startGame(),
+          child: const Text('Play Again?'),
+        )
+      ],
+    );
   }
 }
 
