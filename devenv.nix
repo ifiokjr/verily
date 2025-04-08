@@ -53,9 +53,9 @@
 
   scripts.melos = {
     exec = ''
-      			set -e
-      			dart run melos $@
-      		'';
+      set -e
+      dart run melos $@
+    '';
     description = "The `melos` executable for managing the workspace.";
     binary = "bash";
   };
