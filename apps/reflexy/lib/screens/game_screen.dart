@@ -219,34 +219,52 @@ class GameScreen extends HookConsumerWidget {
             if (event.type == MotionEventType.drop) {
               motionDetected = true;
               if (requiredAction == GameAction.drop) {
-                  print("[GameScreen Listener] Drop detected and required! Triggering success.");
-                  actionMatched = true;
+                print(
+                  "[GameScreen Listener] Drop detected and required! Triggering success.",
+                );
+                actionMatched = true;
               }
             }
             // --- Handle Roll ---
             else if (event.type == MotionEventType.roll) {
               motionDetected = true;
-              if (requiredAction == GameAction.rotateLeft && event.direction == RotationDirection.counterClockwise) {
-                print("[GameScreen Listener] Roll Left (CCW) detected and required! Triggering success.");
+              if (requiredAction == GameAction.rotateLeft &&
+                  event.direction == RotationDirection.counterClockwise) {
+                print(
+                  "[GameScreen Listener] Roll Left (CCW) detected and required! Triggering success.",
+                );
                 actionMatched = true;
-              } else if (requiredAction == GameAction.rotateRight && event.direction == RotationDirection.clockwise) {
-                print("[GameScreen Listener] Roll Right (CW) detected and required! Triggering success.");
+              } else if (requiredAction == GameAction.rotateRight &&
+                  event.direction == RotationDirection.clockwise) {
+                print(
+                  "[GameScreen Listener] Roll Right (CW) detected and required! Triggering success.",
+                );
                 actionMatched = true;
               } else {
-                 print("[GameScreen Listener] Roll detected (${event.direction}), but required action was $requiredAction. Ignoring.");
+                print(
+                  "[GameScreen Listener] Roll detected (${event.direction}), but required action was $requiredAction. Ignoring.",
+                );
               }
             }
             // --- Handle Yaw (Spin) ---
             else if (event.type == MotionEventType.yaw) {
               motionDetected = true;
-               if (requiredAction == GameAction.rotateAntiClockwise && event.direction == RotationDirection.counterClockwise) {
-                print("[GameScreen Listener] Spin Left (Yaw CCW) detected and required! Triggering success.");
+              if (requiredAction == GameAction.rotateAntiClockwise &&
+                  event.direction == RotationDirection.counterClockwise) {
+                print(
+                  "[GameScreen Listener] Spin Left (Yaw CCW) detected and required! Triggering success.",
+                );
                 actionMatched = true;
-              } else if (requiredAction == GameAction.rotateClockwise && event.direction == RotationDirection.clockwise) {
-                print("[GameScreen Listener] Spin Right (Yaw CW) detected and required! Triggering success.");
+              } else if (requiredAction == GameAction.rotateClockwise &&
+                  event.direction == RotationDirection.clockwise) {
+                print(
+                  "[GameScreen Listener] Spin Right (Yaw CW) detected and required! Triggering success.",
+                );
                 actionMatched = true;
               } else {
-                 print("[GameScreen Listener] Yaw detected (${event.direction}), but required action was $requiredAction. Ignoring.");
+                print(
+                  "[GameScreen Listener] Yaw detected (${event.direction}), but required action was $requiredAction. Ignoring.",
+                );
               }
             }
 
@@ -256,11 +274,15 @@ class GameScreen extends HookConsumerWidget {
               confettiController.play();
             } else if (motionDetected) {
               // A relevant motion was detected, but it didn't match the required action.
-              print("[GameScreen Listener] Incorrect motion detected! Triggering red flash.");
+              print(
+                "[GameScreen Listener] Incorrect motion detected! Triggering red flash.",
+              );
               showRedFlash.value = true; // Trigger the flash
             } else {
               // Optional: Log unhandled event types if needed
-               print("[GameScreen Listener] Received unhandled/ignored event type: ${event.type}");
+              print(
+                "[GameScreen Listener] Received unhandled/ignored event type: ${event.type}",
+              );
             }
           },
           onError:
@@ -308,20 +330,24 @@ class GameScreen extends HookConsumerWidget {
           ),
           // --- Red Flash Overlay ---
           // This AnimatedOpacity widget controls the flash effect.
-          Positioned.fill( // Make it cover the entire screen
-             child: IgnorePointer( // Prevent flash from blocking interactions
-                ignoring: !showRedFlash.value,
-                child: AnimatedOpacity(
-                  opacity: showRedFlash.value ? 1.0 : 0.0, // Control visibility
-                  duration: const Duration(milliseconds: 100), // Fade in/out duration
-                  curve: Curves.easeInOut, // Smooth transition
-                  child: Container(
-                     // Semi-transparent red color for the flash
-                     color: Colors.red.withOpacity(0.4),
-                   ),
+          Positioned.fill(
+            // Make it cover the entire screen
+            child: IgnorePointer(
+              // Prevent flash from blocking interactions
+              ignoring: !showRedFlash.value,
+              child: AnimatedOpacity(
+                opacity: showRedFlash.value ? 1.0 : 0.0, // Control visibility
+                duration: const Duration(
+                  milliseconds: 100,
+                ), // Fade in/out duration
+                curve: Curves.easeInOut, // Smooth transition
+                child: Container(
+                  // Semi-transparent red color for the flash
+                  color: Colors.red.withOpacity(0.4),
                 ),
               ),
-           ),
+            ),
+          ),
           // --- Confetti Overlay ---
           // Align confetti to top center for success celebration.
           Align(
