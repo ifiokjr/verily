@@ -31,7 +31,10 @@ alwaysApply: true
 - **Mark completed tasks in `setup/tasks/**.md`** immediately after finishing them.
 - Add new sub-tasks or TODOs discovered during development to the relevant file in `setup/tasks/**.md` under a “Discovered During Work” section.
 
+
 ### Conversational Notes
+
+Always use the most up to date versions of libraries when available. 
 
 Please do NOT make random guesses on variable names or include paths. Always reference the codebase to see if we have something existing before deciding to randomly make new classes or make up member variable names. DO not hallucinate variable names, feel free to ask if you need context for a file.
 
