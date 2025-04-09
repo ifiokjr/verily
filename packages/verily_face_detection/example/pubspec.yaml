@@ -13,7 +13,7 @@ dependencies:
   verily_face_detection:
     path: ../ # Depend on the local package
   camera: ^0.10.5+9 # Match the main package version
-  google_mlkit_commons: ^0.6.0 # Match the main package's dependency implicitly or explicitly
+  google_mlkit_commons: ^0.11.0 # Match the main package's dependency implicitly or explicitly
   permission_handler: ^11.3.1 # Added for camera permissions
 
 dev_dependencies:
