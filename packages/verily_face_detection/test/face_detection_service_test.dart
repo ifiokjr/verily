@@ -65,8 +65,8 @@ void main() {
       // Mock CameraImage properties needed for conversion
       final mockFormat = MockImageFormat(); // Create mock ImageFormat
       when(mockFormat.group).thenReturn(ImageFormatGroup.nv21);
-      // Mock raw value if needed by the converter logic directly (though group is usually enough)
-      // when(mockFormat.raw).thenReturn(somePlatformSpecificValue); // e.g., 35 for Android YUV_420_888
+      // Mock raw value as it seems to be accessed by the conversion logic now
+      when(mockFormat.raw).thenReturn(17); // Using Android's NV21 value as placeholder
 
       when(mockCameraImage.format).thenReturn(mockFormat);
       when(mockCameraImage.width).thenReturn(640);
@@ -116,9 +116,12 @@ void main() {
       expectLater(
         service.gestureStream,
         emits(predicate<List<FacialGesture>>((gestures) {
-          return gestures.length == 1 &&
-                 gestures.first.type == GestureType.blink &&
-                 gestures.first.confidence == closeTo(0.95, 0.001); // 1 - (0.05+0.05)/2
+          if (gestures.length != 1) return false;
+          final gesture = gestures.first;
+          final expectedConfidence = 0.95;
+          final epsilon = 0.01;
+          return gesture.type == GestureType.blink &&
+                 (gesture.confidence - expectedConfidence).abs() < epsilon;
         })),
       );
 
@@ -135,9 +138,12 @@ void main() {
        expectLater(
         service.gestureStream,
         emits(predicate<List<FacialGesture>>((gestures) {
-          return gestures.length == 1 &&
-                 gestures.first.type == GestureType.wink &&
-                 gestures.first.confidence == closeTo(0.95, 0.001); // 1 - 0.05
+          if (gestures.length != 1) return false;
+          final gesture = gestures.first;
+          final expectedConfidence = 0.95; // 1 - 0.05
+          final epsilon = 0.01;
+          return gesture.type == GestureType.wink &&
+                 (gesture.confidence - expectedConfidence).abs() < epsilon;
         })),
       );
 
@@ -154,9 +160,12 @@ void main() {
        expectLater(
         service.gestureStream,
         emits(predicate<List<FacialGesture>>((gestures) {
-          return gestures.length == 1 &&
-                 gestures.first.type == GestureType.wink &&
-                 gestures.first.confidence == closeTo(0.95, 0.001); // 1 - 0.05
+          if (gestures.length != 1) return false;
+          final gesture = gestures.first;
+          final expectedConfidence = 0.95; // 1 - 0.05
+          final epsilon = 0.01;
+          return gesture.type == GestureType.wink &&
+                 (gesture.confidence - expectedConfidence).abs() < epsilon;
         })),
       );
 
@@ -164,44 +173,76 @@ void main() {
     });
 
      test(
-        'processImage should emit openMouth gesture based on landmarks', () async {
-        final openMouthFace = _createMockFace(
-          landmarks: {
-            FaceLandmarkType.bottomMouth: _createLandmark(320, 300),
-            FaceLandmarkType.noseBase: _createLandmark(320, 250),
-          }
-        );
+        'processImage should emit openMouth gesture based on refined logic', () async {
+       // Arrange: Create landmarks representing an open mouth
+       // Mouth width: 360-280 = 80
+       // Mouth corners avg Y: (280+280)/2 = 280
+       // Mouth bottom Y: 315
+       // Mouth opening: 315 - 280 = 35
+       // Ratio: 35 / 80 = 0.4375 ( > threshold 0.35)
+       // Confidence: min(1.0, (0.4375 - 0.35) / (0.6 - 0.35)) = min(1.0, 0.0875 / 0.25) = 0.35
+       final openMouthFace = _createMockFace(
+         landmarks: {
+           FaceLandmarkType.bottomMouth: _createLandmark(320, 315),
+           FaceLandmarkType.leftMouth: _createLandmark(280, 280),
+           FaceLandmarkType.rightMouth: _createLandmark(360, 280),
+           // Include eye landmarks for height calculation fallback if needed
+           FaceLandmarkType.leftEye: _createLandmark(290, 240),
+           FaceLandmarkType.rightEye: _createLandmark(350, 240),
+         }
+       );
        when(mockDetector.processImage(any))
-          .thenAnswer((_) async => [openMouthFace]);
+           .thenAnswer((_) async => [openMouthFace]);
 
-       // Simple expectation, confidence calculation might need adjustment
+       // Act & Assert
        expectLater(
-        service.gestureStream,
-        emits(predicate<List<FacialGesture>>((gestures) {
-          return gestures.any((g) => g.type == GestureType.openMouth && g.confidence > 0);
-        })),
-      );
+         service.gestureStream,
+         emits(predicate<List<FacialGesture>>((gestures) {
+           final openMouthGesture = gestures.firstWhere((g) => g.type == GestureType.openMouth, orElse: () => FacialGesture(type: GestureType.smile, confidence: -1, timestamp: DateTime.now()));
+           final expectedConfidence = 0.35;
+           final epsilon = 0.01;
+           return openMouthGesture.type == GestureType.openMouth &&
+                  (openMouthGesture.confidence - expectedConfidence).abs() < epsilon;
+         })),
+       );
        await service.processImage(mockCameraImage, mockRotation);
     });
 
-     test(
-        'processImage should emit frown gesture based on landmarks', () async {
-        final frowningFace = _createMockFace(
-          landmarks: {
-            FaceLandmarkType.leftMouth: _createLandmark(280, 280),
-            FaceLandmarkType.rightMouth: _createLandmark(360, 280),
-            FaceLandmarkType.noseBase: _createLandmark(320, 270), // Nose base slightly higher than corners
-          }
-        );
-        when(mockDetector.processImage(any))
-            .thenAnswer((_) async => [frowningFace]);
+    test(
+        'processImage should emit frown gesture based on refined logic', () async {
+       // Arrange: Create landmarks for a frown
+       // Eye center Y: (240+240)/2 = 240
+       // Mouth bottom Y: 290 (used for height estimate)
+       // Face height estimate: 290 - 240 = 50
+       // Nose base Y: 270
+       // Left Corner Y rel: (280 - 270) / 50 = 0.2
+       // Right Corner Y rel: (280 - 270) / 50 = 0.2
+       // Avg Corner Y rel: (0.2 + 0.2) / 2 = 0.2 ( > threshold 0.08)
+       // Confidence: min(1.0, (0.2 - 0.08) / (0.2 - 0.08)) = min(1.0, 0.12 / 0.12) = 1.0
+       final frowningFace = _createMockFace(
+         landmarks: {
+           FaceLandmarkType.leftMouth: _createLandmark(280, 280),
+           FaceLandmarkType.rightMouth: _createLandmark(360, 280),
+           FaceLandmarkType.noseBase: _createLandmark(320, 270),
+           FaceLandmarkType.leftEye: _createLandmark(290, 240), // Needed for height estimate
+           FaceLandmarkType.rightEye: _createLandmark(350, 240),
+           FaceLandmarkType.bottomMouth: _createLandmark(320, 290), // Needed for height estimate
+         }
+       );
+       when(mockDetector.processImage(any))
+           .thenAnswer((_) async => [frowningFace]);
 
-        expectLater(
-        service.gestureStream,
-        emits(predicate<List<FacialGesture>>((gestures) {
-          return gestures.any((g) => g.type == GestureType.frown && g.confidence > 0);
-        })),
-      );
+       // Act & Assert
+       expectLater(
+         service.gestureStream,
+         emits(predicate<List<FacialGesture>>((gestures) {
+           final frownGesture = gestures.firstWhere((g) => g.type == GestureType.frown, orElse: () => FacialGesture(type: GestureType.smile, confidence: -1, timestamp: DateTime.now()));
+           final expectedConfidence = 1.0;
+           final epsilon = 0.01;
+           return frownGesture.type == GestureType.frown &&
+                  (frownGesture.confidence - expectedConfidence).abs() < epsilon;
+         })),
+       );
        await service.processImage(mockCameraImage, mockRotation);
     });
 
