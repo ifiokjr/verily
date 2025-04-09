@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:camera/camera.dart';
+import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
 import 'package:verily_face_detection/verily_face_detection.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart'; // For InputImageRotation
 
@@ -47,20 +48,12 @@ class _FaceDetectionPageState extends State<FaceDetectionPage> {
   StreamSubscription? _gestureSubscription;
   bool _isDetecting = false;
   CameraDescription? _selectedCamera;
+  PermissionStatus _cameraPermissionStatus = PermissionStatus.denied;
 
   @override
   void initState() {
     super.initState();
-    if (_cameras.isNotEmpty) {
-      // Prefer front camera if available
-      _selectedCamera = _cameras.firstWhere(
-        (cam) => cam.lensDirection == CameraLensDirection.front,
-        orElse: () => _cameras.first,
-      );
-      _initializeCamera(_selectedCamera!);
-    } else {
-      print("No cameras available");
-    }
+    _checkCameraPermission();
 
     // Listen to gesture stream
     _gestureSubscription = _faceDetectionService.gestureStream.listen((gestures) {
@@ -72,24 +65,78 @@ class _FaceDetectionPageState extends State<FaceDetectionPage> {
     });
   }
 
+  Future<void> _checkCameraPermission() async {
+    final status = await Permission.camera.status;
+    setState(() {
+      _cameraPermissionStatus = status;
+    });
+    if (status.isGranted) {
+      _initializeCameraAndDetection();
+    } else {
+      // Optionally request immediately or show a button
+       _requestCameraPermission();
+    }
+  }
+
+  Future<void> _requestCameraPermission() async {
+    final status = await Permission.camera.request();
+    setState(() {
+      _cameraPermissionStatus = status;
+    });
+    if (status.isGranted) {
+      _initializeCameraAndDetection();
+    }
+  }
+
+  Future<void> _initializeCameraAndDetection() async {
+    if (_cameras.isEmpty) {
+      print("No cameras available");
+      // Show error message to user
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No cameras found on this device.")),
+      );
+      return;
+    }
+
+    // Prefer front camera if available
+    _selectedCamera = _cameras.firstWhere(
+      (cam) => cam.lensDirection == CameraLensDirection.front,
+      orElse: () => _cameras.first,
+    );
+    await _initializeCamera(_selectedCamera!);
+  }
+
   Future<void> _initializeCamera(CameraDescription cameraDescription) async {
+    // Dispose existing controller first if any
+    await _controller?.dispose();
+
     _controller = CameraController(
       cameraDescription,
       ResolutionPreset.medium,
       enableAudio: false,
+      imageFormatGroup: ImageFormatGroup.nv21, // Explicitly set format if needed
     );
 
     try {
       await _controller!.initialize();
       if (!mounted) return;
 
-      // Start image stream
       await _controller!.startImageStream(_processCameraImage);
       setState(() {
         _isDetecting = true;
       });
+    } on CameraException catch (e) {
+       print('Error initializing camera: ${e.code} - ${e.description}');
+       ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(content: Text('Failed to initialize camera: ${e.description}')),
+       );
+       setState(() { _isDetecting = false; }); // Ensure detection stops
     } catch (e) {
-      print('Error initializing camera: $e');
+      print('Unexpected error initializing camera: $e');
+       ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(content: Text('An unexpected error occurred: $e')),
+       );
+       setState(() { _isDetecting = false; });
     }
   }
 
@@ -128,36 +175,78 @@ class _FaceDetectionPageState extends State<FaceDetectionPage> {
   @override
   void dispose() {
     _gestureSubscription?.cancel();
-    _controller?.stopImageStream();
+    _isDetecting = false; // Ensure processing stops
+    _controller?.stopImageStream().catchError((e) {
+      print("Error stopping image stream: $e"); // Log error if stream stop fails
+    });
     _controller?.dispose();
     _faceDetectionService.dispose();
     super.dispose();
+  }
+
+  Widget _buildCameraPreview() {
+    if (_cameraPermissionStatus.isDenied || _cameraPermissionStatus.isPermanentlyDenied) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Camera permission is required to detect faces.'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _requestCameraPermission,
+              child: const Text('Grant Permission'),
+            ),
+            if (_cameraPermissionStatus.isPermanentlyDenied)
+              ElevatedButton(
+                onPressed: openAppSettings,
+                child: const Text('Open Settings'),
+              ),
+          ],
+        ),
+      );
+    }
+
+    if (_controller == null || !_controller!.value.isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Calculate aspect ratio for CameraPreview
+    final size = MediaQuery.of(context).size;
+    var scale = size.aspectRatio * _controller!.value.aspectRatio;
+    if (scale < 1) scale = 1 / scale;
+
+    return Transform.scale(
+      scale: scale,
+      child: Center(
+        child: CameraPreview(_controller!),
+      ),
+    );
+
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Face Gesture Detection'),
+        title: const Text('Face Gesture Detection Example'),
       ),
       body: Column(
         children: [
-          // Camera Preview Placeholder
           Expanded(
             child: Container(
               color: Colors.black,
-              alignment: Alignment.center,
-              child: _controller != null && _controller!.value.isInitialized
-                  ? CameraPreview(_controller!) // Display camera preview
-                  : const Center(child: CircularProgressIndicator()),
+              child: _buildCameraPreview(),
             ),
           ),
           // Detected Gestures Display
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              'Detected Gestures: ${_detectedGestures.map((g) => g.type.name).join(', ')}',
+              _detectedGestures.isEmpty
+                  ? 'Detected Gestures: None'
+                  : 'Detected Gestures: ${_detectedGestures.map((g) => g.type.name).join(', ')}',
               style: Theme.of(context).textTheme.titleMedium,
+              textAlign: TextAlign.center,
             ),
           ),
         ],
