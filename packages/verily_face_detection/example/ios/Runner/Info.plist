@@ -39,6 +39,6 @@
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs camera access to detect facial gestures for verification.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>your usage description here</string>
+	<string>Support for voice verification.</string>
 </dict>
 </plist>

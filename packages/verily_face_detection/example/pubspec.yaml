@@ -12,9 +12,11 @@ dependencies:
     sdk: flutter
   verily_face_detection:
     path: ../ # Depend on the local package
-  camera: ^0.10.5+9 # Match the main package version
+  camera: ^0.11.1 # Match the main package version
   google_mlkit_commons: ^0.11.0 # Match the main package's dependency implicitly or explicitly
   permission_handler: ^11.3.1 # Added for camera permissions
+  flutter_hooks: ^0.21.2 # Flutter hooks for stateful logic
+  hooks_riverpod: ^2.5.1 # Added for hooks + riverpod
 
 dev_dependencies:
   flutter_test:

@@ -2,21 +2,37 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:camera/camera.dart';
-import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
+import 'package:google_mlkit_commons/google_mlkit_commons.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart'; // Import hooks_riverpod
+import 'package:flutter_hooks/flutter_hooks.dart'; // Import flutter_hooks
+import 'package:permission_handler/permission_handler.dart';
 import 'package:verily_face_detection/verily_face_detection.dart';
-import 'package:google_mlkit_commons/google_mlkit_commons.dart'; // For InputImageRotation
 
+// Global variable for cameras (consider moving to a provider if scaling)
 late List<CameraDescription> _cameras;
+
+// Provider for the FaceDetectionService
+final faceDetectionServiceProvider = Provider.autoDispose<FaceDetectionService>((ref) {
+  final service = FaceDetectionService();
+  ref.onDispose(() => service.dispose());
+  return service;
+});
+
+// Provider for the available cameras (async)
+final camerasProvider = FutureProvider<List<CameraDescription>>((ref) async {
+  try {
+    return await availableCameras();
+  } catch (e) {
+    debugPrint('Error initializing cameras: $e');
+    return []; // Return empty list on error
+  }
+});
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    _cameras = await availableCameras();
-  } catch (e) {
-    print('Error initializing cameras: $e');
-    return; // Exit if cameras can't be initialized
-  }
-  runApp(const MyApp());
+  // Initialize cameras here or rely on the provider
+  // _cameras = await availableCameras(); // Can be removed if using provider only
+  runApp(const ProviderScope(child: MyApp())); // Wrap with ProviderScope
 }
 
 class MyApp extends StatelessWidget {
@@ -28,223 +44,198 @@ class MyApp extends StatelessWidget {
       title: 'Face Detection Example',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        brightness: Brightness.dark, // Dark theme for better contrast
       ),
       home: const FaceDetectionPage(),
     );
   }
 }
 
-class FaceDetectionPage extends StatefulWidget {
+// Change to HookConsumerWidget
+class FaceDetectionPage extends HookConsumerWidget {
   const FaceDetectionPage({super.key});
 
   @override
-  State<FaceDetectionPage> createState() => _FaceDetectionPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // --- State Management with Hooks & Riverpod ---
+    final faceDetectionService = ref.watch(faceDetectionServiceProvider);
+    final camerasAsyncValue = ref.watch(camerasProvider);
 
-class _FaceDetectionPageState extends State<FaceDetectionPage> {
-  CameraController? _controller;
-  final FaceDetectionService _faceDetectionService = FaceDetectionService();
-  List<FacialGesture> _detectedGestures = [];
-  StreamSubscription? _gestureSubscription;
-  bool _isDetecting = false;
-  CameraDescription? _selectedCamera;
-  PermissionStatus _cameraPermissionStatus = PermissionStatus.denied;
+    // State for camera controller, selected camera, permission, and detection status
+    final cameraControllerState = useState<CameraController?>(null);
+    final selectedCameraState = useState<CameraDescription?>(null);
+    final permissionStatusState = useState<PermissionStatus>(PermissionStatus.denied);
+    final isDetectingState = useState<bool>(false);
+    final detectedGesturesState = useState<List<FacialGesture>>([]);
+    final errorState = useState<String?>(null);
 
-  @override
-  void initState() {
-    super.initState();
-    _checkCameraPermission();
+    // --- Hooks for Side Effects (useEffect) ---
 
-    // Listen to gesture stream
-    _gestureSubscription = _faceDetectionService.gestureStream.listen((gestures) {
-      if (mounted) {
-        setState(() {
-          _detectedGestures = gestures;
-        });
+    // Effect for checking and requesting permissions
+    useEffect(() {
+      Future<void> checkAndRequestPermission() async {
+        final status = await Permission.camera.status;
+        permissionStatusState.value = status;
+        if (!status.isGranted) {
+          final requestedStatus = await Permission.camera.request();
+          permissionStatusState.value = requestedStatus;
+          if (!requestedStatus.isGranted) {
+             errorState.value = "Camera permission denied.";
+          }
+        }
       }
-    });
-  }
+      checkAndRequestPermission();
+      return null; // No cleanup needed for permission check
+    }, []); // Run only once
 
-  Future<void> _checkCameraPermission() async {
-    final status = await Permission.camera.status;
-    setState(() {
-      _cameraPermissionStatus = status;
-    });
-    if (status.isGranted) {
-      _initializeCameraAndDetection();
-    } else {
-      // Optionally request immediately or show a button
-       _requestCameraPermission();
-    }
-  }
+    // Effect for initializing camera when permission is granted and cameras are available
+    useEffect(() {
+      CameraController? controller;
+      CameraDescription? cameraToUse;
 
-  Future<void> _requestCameraPermission() async {
-    final status = await Permission.camera.request();
-    setState(() {
-      _cameraPermissionStatus = status;
-    });
-    if (status.isGranted) {
-      _initializeCameraAndDetection();
-    }
-  }
+      Future<void> initialize() async {
+        if (permissionStatusState.value.isGranted && camerasAsyncValue.hasValue && camerasAsyncValue.value!.isNotEmpty) {
+          _cameras = camerasAsyncValue.value!;
+          // Prefer front camera
+          cameraToUse = _cameras.firstWhere(
+            (cam) => cam.lensDirection == CameraLensDirection.front,
+            orElse: () => _cameras.first,
+          );
+          selectedCameraState.value = cameraToUse;
 
-  Future<void> _initializeCameraAndDetection() async {
-    if (_cameras.isEmpty) {
-      print("No cameras available");
-      // Show error message to user
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No cameras found on this device.")),
-      );
-      return;
-    }
+          // Dispose previous controller if exists
+          await cameraControllerState.value?.dispose();
 
-    // Prefer front camera if available
-    _selectedCamera = _cameras.firstWhere(
-      (cam) => cam.lensDirection == CameraLensDirection.front,
-      orElse: () => _cameras.first,
-    );
-    await _initializeCamera(_selectedCamera!);
-  }
+          controller = CameraController(
+            cameraToUse!,
+            ResolutionPreset.medium,
+            enableAudio: false,
+            imageFormatGroup: ImageFormatGroup.nv21,
+          );
 
-  Future<void> _initializeCamera(CameraDescription cameraDescription) async {
-    // Dispose existing controller first if any
-    await _controller?.dispose();
+          try {
+            await controller!.initialize();
+            if (!context.mounted) return; // Check mounted after async gap
+            cameraControllerState.value = controller; // Update state with initialized controller
 
-    _controller = CameraController(
-      cameraDescription,
-      ResolutionPreset.medium,
-      enableAudio: false,
-      imageFormatGroup: ImageFormatGroup.nv21, // Explicitly set format if needed
-    );
+            await controller!.startImageStream((image) {
+                _processCameraImage(image, selectedCameraState.value, faceDetectionService, isDetectingState);
+            });
+            isDetectingState.value = true;
+            errorState.value = null; // Clear previous errors
 
-    try {
-      await _controller!.initialize();
-      if (!mounted) return;
+          } on CameraException catch (e) {
+            debugPrint('Error initializing camera: ${e.code} - ${e.description}');
+            errorState.value = 'Failed to initialize camera: ${e.description}';
+            isDetectingState.value = false;
+            cameraControllerState.value = null; // Clear controller on error
+          } catch (e) {
+            debugPrint('Unexpected error initializing camera: $e');
+            errorState.value = 'An unexpected error occurred: $e';
+            isDetectingState.value = false;
+             cameraControllerState.value = null;
+          }
+        }
+      }
 
-      await _controller!.startImageStream(_processCameraImage);
-      setState(() {
-        _isDetecting = true;
-      });
-    } on CameraException catch (e) {
-       print('Error initializing camera: ${e.code} - ${e.description}');
-       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text('Failed to initialize camera: ${e.description}')),
-       );
-       setState(() { _isDetecting = false; }); // Ensure detection stops
-    } catch (e) {
-      print('Unexpected error initializing camera: $e');
-       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text('An unexpected error occurred: $e')),
-       );
-       setState(() { _isDetecting = false; });
-    }
-  }
+      initialize();
 
-  Future<void> _processCameraImage(CameraImage image) async {
-    if (!_isDetecting) return;
+      // Cleanup function: Disposes the camera controller
+      return () async {
+        isDetectingState.value = false;
+        try {
+            await controller?.stopImageStream();
+        } catch (e) {
+            debugPrint("Error stopping image stream: $e");
+        }
+        await controller?.dispose();
+      };
+    }, [permissionStatusState.value, camerasAsyncValue]); // Re-run if permission or cameras change
 
-    final rotation = _getInputImageRotation(
-      _selectedCamera!.sensorOrientation,
-    );
+    // --- Hook for Listening to Gesture Stream ---
+    // Use useStream hook to listen to the gesture stream
+    final gestureStream = useMemoized(() => faceDetectionService.gestureStream, [faceDetectionService]);
+    final gesturesSnapshot = useStream<List<FacialGesture>>(gestureStream, initialData: []);
 
-    try {
-      await _faceDetectionService.processImage(image, rotation);
-    } catch (e) {
-      print("Error processing image: $e");
-      // Optionally stop detection on error
-      // setState(() { _isDetecting = false; });
-    }
-  }
+    // Update state when stream emits new data
+    // Using useEffect to update state based on stream snapshot avoids build errors
+    useEffect(() {
+      if (gesturesSnapshot.hasData) {
+        detectedGesturesState.value = gesturesSnapshot.data!;
+      }
+      return null;
+    }, [gesturesSnapshot.data]);
 
-  // Helper to convert sensor orientation to InputImageRotation
-  InputImageRotation _getInputImageRotation(int sensorOrientation) {
-    switch (sensorOrientation) {
-      case 0:
-        return InputImageRotation.rotation0deg;
-      case 90:
-        return InputImageRotation.rotation90deg;
-      case 180:
-        return InputImageRotation.rotation180deg;
-      case 270:
-        return InputImageRotation.rotation270deg;
-      default:
-        return InputImageRotation.rotation0deg;
-    }
-  }
 
-  @override
-  void dispose() {
-    _gestureSubscription?.cancel();
-    _isDetecting = false; // Ensure processing stops
-    _controller?.stopImageStream().catchError((e) {
-      print("Error stopping image stream: $e"); // Log error if stream stop fails
-    });
-    _controller?.dispose();
-    _faceDetectionService.dispose();
-    super.dispose();
-  }
+    // --- Build UI ---
+    Widget buildCameraPreview() {
+       if (errorState.value != null) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text('Error: ${errorState.value}', style: const TextStyle(color: Colors.red)),
+          )
+        );
+      }
 
-  Widget _buildCameraPreview() {
-    if (_cameraPermissionStatus.isDenied || _cameraPermissionStatus.isPermanentlyDenied) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Camera permission is required to detect faces.'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _requestCameraPermission,
-              child: const Text('Grant Permission'),
-            ),
-            if (_cameraPermissionStatus.isPermanentlyDenied)
+      if (permissionStatusState.value.isDenied || permissionStatusState.value.isPermanentlyDenied) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Camera permission is required.'),
+              const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: openAppSettings,
-                child: const Text('Open Settings'),
+                // Re-trigger permission check/request
+                onPressed: () async {
+                    final status = await Permission.camera.request();
+                    permissionStatusState.value = status;
+                    if (!status.isGranted && status.isPermanentlyDenied) {
+                       await openAppSettings();
+                    }
+                },
+                child: Text(permissionStatusState.value.isPermanentlyDenied ? 'Open Settings' : 'Grant Permission'),
               ),
-          ],
+            ],
+          ),
+        );
+      }
+
+      final controller = cameraControllerState.value;
+      if (controller == null || !controller.value.isInitialized) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      final size = MediaQuery.of(context).size;
+      var scale = size.aspectRatio * controller.value.aspectRatio;
+      if (scale < 1) scale = 1 / scale;
+
+      return Transform.scale(
+        scale: scale,
+        child: Center(
+          child: CameraPreview(controller),
         ),
       );
     }
 
-    if (_controller == null || !_controller!.value.isInitialized) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    // Calculate aspect ratio for CameraPreview
-    final size = MediaQuery.of(context).size;
-    var scale = size.aspectRatio * _controller!.value.aspectRatio;
-    if (scale < 1) scale = 1 / scale;
-
-    return Transform.scale(
-      scale: scale,
-      child: Center(
-        child: CameraPreview(_controller!),
-      ),
-    );
-
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Face Gesture Detection Example'),
+        title: const Text('Face Detection (Hooks)'),
       ),
       body: Column(
         children: [
           Expanded(
             child: Container(
               color: Colors.black,
-              child: _buildCameraPreview(),
+              child: buildCameraPreview(),
             ),
           ),
-          // Detected Gestures Display
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              _detectedGestures.isEmpty
+              detectedGesturesState.value.isEmpty
                   ? 'Detected Gestures: None'
-                  : 'Detected Gestures: ${_detectedGestures.map((g) => g.type.name).join(', ')}',
+                  : 'Detected Gestures: ${detectedGesturesState.value.map((g) => g.type.name).join(', ')}',
               style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
@@ -252,5 +243,45 @@ class _FaceDetectionPageState extends State<FaceDetectionPage> {
         ],
       ),
     );
+  }
+}
+
+// Extracted image processing logic to avoid capturing `this` in closure
+void _processCameraImage(
+    CameraImage image,
+    CameraDescription? cameraDescription,
+    FaceDetectionService faceDetectionService,
+    ValueNotifier<bool> isDetectingState,
+) async {
+  if (!isDetectingState.value || cameraDescription == null) return;
+
+  final rotation = _getInputImageRotation(cameraDescription.sensorOrientation);
+
+  try {
+    // Make sure to only process if detection is still active
+    if (isDetectingState.value) {
+        await faceDetectionService.processImage(image, rotation);
+    }
+  } catch (e) {
+    debugPrint("Error processing image: $e");
+    // Optionally handle error (e.g., update an error state provider)
+    // Consider stopping detection if errors persist
+    // isDetectingState.value = false;
+  }
+}
+
+// Helper function remains the same
+InputImageRotation _getInputImageRotation(int sensorOrientation) {
+  switch (sensorOrientation) {
+    case 0:
+      return InputImageRotation.rotation0deg;
+    case 90:
+      return InputImageRotation.rotation90deg;
+    case 180:
+      return InputImageRotation.rotation180deg;
+    case 270:
+      return InputImageRotation.rotation270deg;
+    default:
+      return InputImageRotation.rotation0deg;
   }
 }
