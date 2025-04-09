@@ -1,0 +1,41 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Material Design inspired gradient -->
+    <linearGradient id="playStoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#6d28d9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5b21b6;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Material accent gradient -->
+    <linearGradient id="accentGradPlay" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f3e8ff;stop-opacity:0.9" />
+    </linearGradient>
+
+    <!-- Material Design shadow -->
+    <filter id="materialShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+      <feOffset dx="0" dy="2" result="offsetBlur"/>
+      <feFlood flood-color="#000000" flood-opacity="0.2"/>
+      <feComposite in2="offsetBlur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Material Design shape -->
+  <path d="M256 32 L 448 144 L 448 368 L 256 480 L 64 368 L 64 144 Z"
+        fill="url(#playStoreGrad)"
+        filter="url(#materialShadow)"/>
+
+  <!-- Stylized 'V' checkmark with material design proportions -->
+  <path d="M160 256 L 236 332 L 352 216"
+        stroke="url(#accentGradPlay)"
+        stroke-width="48"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"/>
+</svg>

@@ -57,7 +57,7 @@ Verily employs a monorepo structure containing distinct applications and shared 
 ## 3. Backend
 
 - **Language:** Rust
-- **Runtime:** Tokio
+- **Async Runtime:** Tokio
 - **Web Framework:** Axum (preferred for building the API and potentially the developer portal).
 - **API Layer:** An HTTP API for:
   - Developer authentication (API key validation).

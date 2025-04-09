@@ -1,0 +1,84 @@
+---
+description: Flutter Package Creation Guide
+globs: packages/*
+alwaysApply: false
+---
+<rule>
+name: flutter_create_package
+description: Guide for creating a new Flutter package within the `/packages` directory.
+
+actions:
+  - type: suggest
+    message: |
+      To create a new Flutter package named `<PACKAGE_NAME>` in the `/packages` directory, follow these steps:
+
+      1.  **Navigate to the packages directory:**
+          ```bash
+          cd packages
+          ```
+
+      2.  **Run the Flutter create command:**
+          ```bash
+          flutter create --template=package <PACKAGE_NAME> --org fun.verily.package
+          ```
+          *(Replace `<PACKAGE_NAME>` with the desired name, e.g., `verily_face_detection`)*
+
+      3.  **Navigate into the new package directory:**
+          ```bash
+          cd <PACKAGE_NAME>
+          ```
+
+      4.  **Update `pubspec.yaml`:**
+          *   Fill in the `description`.
+          *   Set the initial `version` (e.g., 0.0.1).
+          *   Add the `repository` URL (pointing to the monorepo subdirectory).
+          *   Add necessary `dependencies` and `dev_dependencies`.
+
+      5.  **Add Standard Files (referencing `verily_device_motion` as a template):**
+          *   Create `README.md` (describe the package).
+          *   Create `CHANGELOG.md` (start with version 0.0.1).
+          *   Create or copy a suitable `LICENSE` file (e.g., MIT, Apache-2.0).
+          *   Ensure standard `lib/` and `test/` directories exist.
+          *   Consider adding an `example/` directory later.
+
+      6.  **Fetch Dependencies:**
+          ```bash
+          flutter pub get
+          ```
+
+      7.  **Initial Commit:** Add the new package to Git.
+          ```bash
+          git add .
+          git commit -m "feat(<PACKAGE_NAME>): create initial package structure"
+          ```
+
+      **Example `pubspec.yaml` fields:**
+      ```yaml
+      name: <PACKAGE_NAME>
+      description: A new Flutter package for Verily. # Update this!
+      version: 0.0.1
+      publish_to: 'none' # Or configure for pub.dev if intended
+      repository: https://github.com/your-repo/verily/tree/main/packages/<PACKAGE_NAME> # Update this!
+
+      environment:
+        sdk: ^3.7.2
+        flutter: ">=1.17.0"
+
+      dependencies:
+        flutter:
+          sdk: flutter
+        # Add other dependencies here
+
+      dev_dependencies:
+        flutter_test:
+          sdk: flutter
+      ```
+
+examples:
+  - input: "Create a new Flutter package called `verily_face_detection`."
+    output: "Provides steps using `flutter create --template=package verily_face_detection --org fun.verily.package` inside `/packages` and setting up standard files."
+
+metadata:
+  priority: medium
+  version: 1.0
+</rule>

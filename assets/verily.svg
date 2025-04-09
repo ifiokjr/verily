@@ -1,12 +1,44 @@
-<svg width="200" height="200" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="modernGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#14B8A6; stop-opacity:1" /> <stop offset="100%" style="stop-color:#3B82F6; stop-opacity:1" /> </linearGradient>
+    <!-- Main background gradient -->
+    <linearGradient id="backgroundGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#818cf8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c4b5fd;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Accent gradient for the checkmark -->
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.95" />
+      <stop offset="100%" style="stop-color:#f0f9ff;stop-opacity:0.85" />
+    </linearGradient>
+
+    <!-- Subtle inner shadow -->
+    <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
+      <feOffset dx="2" dy="2" result="offsetBlur"/>
+      <feComposite in="SourceAlpha" in2="offsetBlur" operator="out" result="innerShadow"/>
+      <feFlood flood-color="#000000" flood-opacity="0.3" result="color"/>
+      <feComposite in="color" in2="innerShadow" operator="in" result="shadow"/>
+      <feComposite in="shadow" in2="SourceAlpha" operator="in" result="finalShadow"/>
+      <feMerge>
+        <feMergeNode in="finalShadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
 
-  <rect width="100" height="100" rx="22" ry="22" fill="url(#modernGradient)" />
+  <!-- Background rounded square -->
+  <rect x="64" y="64" width="896" height="896" rx="192" ry="192"
+        fill="url(#backgroundGrad)"
+        filter="url(#innerShadow)"/>
 
-  <path d="M 20 30 L 45 70 L 80 30 L 68 30 L 45 60 L 32 30 Z"
-        fill="#FFFFFF" />
-  <title>Verily App Icon Logo - Modern</title>
+  <!-- Stylized 'V' checkmark -->
+  <path d="M312 512 L 464 664 L 712 416"
+        stroke="url(#accentGrad)"
+        stroke-width="96"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"
+        filter="url(#innerShadow)"/>
 </svg>
