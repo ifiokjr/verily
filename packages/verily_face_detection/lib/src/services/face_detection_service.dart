@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:math' show Point;
+import 'dart:math' show Point, max, min;
 import 'dart:ui';
 
 import 'package:camera/camera.dart';
@@ -79,59 +79,64 @@ class FaceDetectionService {
       final Point<int>? mouthLeft = face.landmarks[FaceLandmarkType.leftMouth]?.position;
       final Point<int>? mouthRight = face.landmarks[FaceLandmarkType.rightMouth]?.position;
       final Point<int>? noseBase = face.landmarks[FaceLandmarkType.noseBase]?.position;
-      // Note: ML Kit doesn't explicitly provide a "mouthTop". We might need to infer it
-      // or use other landmarks like noseBase for relative positioning.
       final Point<int>? leftEye = face.landmarks[FaceLandmarkType.leftEye]?.position;
       final Point<int>? rightEye = face.landmarks[FaceLandmarkType.rightEye]?.position;
 
       // --- Calculations ---
+      // Estimate face height (eye line to mouth bottom) for normalization, if possible
       double faceHeightEstimate = 0.0;
-      if (noseBase != null && mouthBottom != null) {
-        faceHeightEstimate = (mouthBottom.y - noseBase.y).abs().toDouble();
-      }
-      if (faceHeightEstimate <= 0 && leftEye != null && mouthBottom != null) { // Fallback height estimate
-        faceHeightEstimate = (mouthBottom.y - leftEye.y).abs().toDouble();
+      if (leftEye != null && rightEye != null && mouthBottom != null) {
+        final double eyeCenterY = (leftEye.y + rightEye.y) / 2.0;
+        faceHeightEstimate = (mouthBottom.y - eyeCenterY).abs().toDouble();
+      } else if (noseBase != null && mouthBottom != null) { // Fallback
+         faceHeightEstimate = (mouthBottom.y - noseBase.y).abs().toDouble();
       }
 
-      double faceWidthEstimate = 0.0;
+      // Estimate mouth width
+      double mouthWidthEstimate = 0.0;
       if (mouthLeft != null && mouthRight != null) {
-        faceWidthEstimate = (mouthRight.x - mouthLeft.x).abs().toDouble();
+        mouthWidthEstimate = (mouthRight.x - mouthLeft.x).abs().toDouble();
       }
-      if (faceWidthEstimate <= 0 && leftEye != null && rightEye != null) { // Fallback width estimate
-        faceWidthEstimate = (rightEye.x - leftEye.x).abs().toDouble();
-      }
-
 
       // --- Gesture Detection ---
 
-      // Detect Open Mouth
-      // Check distance between bottom lip and nose base relative to face height
-      if (mouthBottom != null && noseBase != null && faceHeightEstimate > 0) {
-        final double mouthOpenThreshold = 0.4; // Adjusted threshold (relative to nose base)
-        final double mouthBottomRelY = (mouthBottom.y - noseBase.y) / faceHeightEstimate;
+      // Detect Open Mouth (Refined)
+      // Compare vertical distance between bottom lip and mouth corners line,
+      // normalized by mouth width.
+      if (mouthBottom != null && mouthLeft != null && mouthRight != null && mouthWidthEstimate > 1) { // Avoid division by zero/small width
+          final double mouthCornerYAvg = (mouthLeft.y + mouthRight.y) / 2.0;
+          final double mouthOpening = (mouthBottom.y - mouthCornerYAvg).abs();
+          final double mouthOpenRatio = mouthOpening / mouthWidthEstimate;
 
-        if (mouthBottomRelY > mouthOpenThreshold) {
-          gestures.add(FacialGesture(
-            type: GestureType.openMouth,
-            confidence: (mouthBottomRelY - mouthOpenThreshold) / (1 - mouthOpenThreshold), // Normalize confidence
-            timestamp: now,
-          ));
-        }
+          final double mouthOpenThreshold = 0.35; // Heuristic: Opening is > 35% of mouth width
+
+          if (mouthOpenRatio > mouthOpenThreshold) {
+              gestures.add(FacialGesture(
+                  type: GestureType.openMouth,
+                  // Confidence based on how much it exceeds the threshold
+                  confidence: min(1.0, (mouthOpenRatio - mouthOpenThreshold) / (0.6 - mouthOpenThreshold)),
+                  timestamp: now,
+              ));
+          }
       }
 
-      // Detect Frown
-      // Check if mouth corners are lower than nose base relative to face width
-      if (mouthLeft != null && mouthRight != null && noseBase != null && faceWidthEstimate > 0) {
-          final double frownThreshold = 0.03; // Heuristic: Corners lower than nose base line (adjust)
-          final double leftCornerRelY = (mouthLeft.y - noseBase.y) / faceWidthEstimate;
-          final double rightCornerRelY = (mouthRight.y - noseBase.y) / faceWidthEstimate;
-          final double avgCornerRelYNormalized = (leftCornerRelY + rightCornerRelY) / 2;
+      // Detect Frown (Refined)
+      // Check if mouth corners are significantly lower than the nose base,
+      // normalized by estimated face height.
+      if (mouthLeft != null && mouthRight != null && noseBase != null && faceHeightEstimate > 1) { // Avoid division by zero/small height
+          final double leftCornerRelY = (mouthLeft.y - noseBase.y) / faceHeightEstimate;
+          final double rightCornerRelY = (mouthRight.y - noseBase.y) / faceHeightEstimate;
 
-          // Positive value means corners are lower than nose base
-          if (avgCornerRelYNormalized > frownThreshold) {
+          // Positive value means the corner is lower than the nose base
+          final double avgCornerRelY = (leftCornerRelY + rightCornerRelY) / 2.0;
+
+          final double frownThreshold = 0.08; // Heuristic: Corners > 8% of face height below nose
+
+          if (avgCornerRelY > frownThreshold) {
               gestures.add(FacialGesture(
                   type: GestureType.frown,
-                  confidence: (avgCornerRelYNormalized - frownThreshold) / (0.5 - frownThreshold), // Normalize confidence (assume max frown lowers corners significantly)
+                  // Confidence based on how much it exceeds the threshold
+                  confidence: min(1.0, (avgCornerRelY - frownThreshold) / (0.2 - frownThreshold)),
                   timestamp: now,
               ));
           }
