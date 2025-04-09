@@ -79,9 +79,6 @@ class FaceDetectionPage extends HookConsumerWidget {
         if (!status.isGranted) {
           final requestedStatus = await Permission.camera.request();
           permissionStatusState.value = requestedStatus;
-          if (!requestedStatus.isGranted) {
-             errorState.value = "Camera permission denied.";
-          }
         }
       }
       checkAndRequestPermission();
