@@ -1,0 +1,24 @@
+name: verily_face_detection_example
+description: Demonstrates how to use the verily_face_detection package.
+
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+
+environment:
+  sdk: ^3.7.2
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  verily_face_detection:
+    path: ../ # Depend on the local package
+  camera: ^0.10.5+9 # Match the main package version
+  google_mlkit_commons: ^0.6.0 # Match the main package's dependency implicitly or explicitly
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true

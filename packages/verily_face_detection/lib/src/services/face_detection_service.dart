@@ -1,21 +1,30 @@
 import 'dart:async';
+import 'dart:math' show Point;
+import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart'; // Needed for ImageRotation
+import 'package:google_mlkit_commons/google_mlkit_commons.dart' as ml_commons;
 
 import '../models/facial_gesture.dart';
 
 /// Service responsible for detecting facial gestures using ML Kit Face Detection
 class FaceDetectionService {
-  FaceDetectionService() {
-    _detector = FaceDetector(
-      options: FaceDetectorOptions(
-        enableLandmarks: true,
-        enableClassification: true,
-        performanceMode: FaceDetectorMode.accurate,
-      ),
-    );
+  /// Creates an instance of [FaceDetectionService].
+  ///
+  /// Optionally accepts a [FaceDetector] for testing purposes.
+  FaceDetectionService({FaceDetector? detector}) {
+    _detector = detector ??
+        FaceDetector(
+          options: FaceDetectorOptions(
+            enableLandmarks: true,
+            enableClassification: true,
+            performanceMode: FaceDetectorMode.accurate,
+          ),
+        );
   }
 
   late final FaceDetector _detector;
@@ -65,8 +74,71 @@ class FaceDetectionService {
         }
       }
 
-      // Additional gesture detection logic will be implemented here
-      // TODO: Implement detection for frown, open mouth, and tongue out
+      // --- Landmark Extraction ---
+      final Point<int>? mouthBottom = face.landmarks[FaceLandmarkType.bottomMouth]?.position;
+      final Point<int>? mouthLeft = face.landmarks[FaceLandmarkType.leftMouth]?.position;
+      final Point<int>? mouthRight = face.landmarks[FaceLandmarkType.rightMouth]?.position;
+      final Point<int>? noseBase = face.landmarks[FaceLandmarkType.noseBase]?.position;
+      // Note: ML Kit doesn't explicitly provide a "mouthTop". We might need to infer it
+      // or use other landmarks like noseBase for relative positioning.
+      final Point<int>? leftEye = face.landmarks[FaceLandmarkType.leftEye]?.position;
+      final Point<int>? rightEye = face.landmarks[FaceLandmarkType.rightEye]?.position;
+
+      // --- Calculations ---
+      double faceHeightEstimate = 0.0;
+      if (noseBase != null && mouthBottom != null) {
+        faceHeightEstimate = (mouthBottom.y - noseBase.y).abs().toDouble();
+      }
+      if (faceHeightEstimate <= 0 && leftEye != null && mouthBottom != null) { // Fallback height estimate
+        faceHeightEstimate = (mouthBottom.y - leftEye.y).abs().toDouble();
+      }
+
+      double faceWidthEstimate = 0.0;
+      if (mouthLeft != null && mouthRight != null) {
+        faceWidthEstimate = (mouthRight.x - mouthLeft.x).abs().toDouble();
+      }
+      if (faceWidthEstimate <= 0 && leftEye != null && rightEye != null) { // Fallback width estimate
+        faceWidthEstimate = (rightEye.x - leftEye.x).abs().toDouble();
+      }
+
+
+      // --- Gesture Detection ---
+
+      // Detect Open Mouth
+      // Check distance between bottom lip and nose base relative to face height
+      if (mouthBottom != null && noseBase != null && faceHeightEstimate > 0) {
+        final double mouthOpenThreshold = 0.4; // Adjusted threshold (relative to nose base)
+        final double mouthBottomRelY = (mouthBottom.y - noseBase.y) / faceHeightEstimate;
+
+        if (mouthBottomRelY > mouthOpenThreshold) {
+          gestures.add(FacialGesture(
+            type: GestureType.openMouth,
+            confidence: (mouthBottomRelY - mouthOpenThreshold) / (1 - mouthOpenThreshold), // Normalize confidence
+            timestamp: now,
+          ));
+        }
+      }
+
+      // Detect Frown
+      // Check if mouth corners are lower than nose base relative to face width
+      if (mouthLeft != null && mouthRight != null && noseBase != null && faceWidthEstimate > 0) {
+          final double frownThreshold = 0.03; // Heuristic: Corners lower than nose base line (adjust)
+          final double leftCornerRelY = (mouthLeft.y - noseBase.y) / faceWidthEstimate;
+          final double rightCornerRelY = (mouthRight.y - noseBase.y) / faceWidthEstimate;
+          final double avgCornerRelYNormalized = (leftCornerRelY + rightCornerRelY) / 2;
+
+          // Positive value means corners are lower than nose base
+          if (avgCornerRelYNormalized > frownThreshold) {
+              gestures.add(FacialGesture(
+                  type: GestureType.frown,
+                  confidence: (avgCornerRelYNormalized - frownThreshold) / (0.5 - frownThreshold), // Normalize confidence (assume max frown lowers corners significantly)
+                  timestamp: now,
+              ));
+          }
+      }
+
+      // TODO: Implement detection for tongue out (likely requires Face Mesh API)
+      // ML Kit Face Detection landmarks are usually insufficient for tongue detection.
     }
 
     _gestureController.add(gestures);
@@ -77,9 +149,35 @@ class FaceDetectionService {
     CameraImage image,
     InputImageRotation rotation,
   ) {
-    // TODO: Implement conversion logic based on platform
-    // This will require platform-specific code for iOS and Android
-    return null;
+    final WriteBuffer allBytes = WriteBuffer();
+    for (final Plane plane in image.planes) {
+      allBytes.putUint8List(plane.bytes);
+    }
+    final bytes = allBytes.done().buffer.asUint8List();
+
+    if (bytes.isEmpty) {
+      debugPrint("Warning: Image bytes are empty.");
+      return null;
+    }
+
+    final imageSize = Size(image.width.toDouble(), image.height.toDouble());
+
+    final imageFormat = InputImageFormatValue.fromRawValue(image.format.raw) ?? InputImageFormat.nv21;
+
+    // Assumes the first plane contains the necessary row stride info
+    final bytesPerRow = image.planes.isNotEmpty ? image.planes[0].bytesPerRow : 0;
+
+    final inputImageMetadata = InputImageMetadata(
+      size: imageSize,
+      rotation: rotation, // Use the provided rotation
+      format: imageFormat,
+      bytesPerRow: bytesPerRow,
+    );
+
+    return InputImage.fromBytes(
+      bytes: bytes,
+      metadata: inputImageMetadata, // Use metadata instead of inputImageData
+    );
   }
 
   /// Dispose of resources

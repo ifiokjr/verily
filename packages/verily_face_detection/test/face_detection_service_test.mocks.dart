@@ -3,12 +3,18 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i7;
+import 'dart:math' as _i4;
+import 'dart:typed_data' as _i9;
+import 'dart:ui' as _i3;
 
-import 'package:google_mlkit_commons/google_mlkit_commons.dart' as _i5;
+import 'package:camera/src/camera_image.dart' as _i5;
+import 'package:camera_platform_interface/camera_platform_interface.dart'
+    as _i10;
+import 'package:google_mlkit_commons/google_mlkit_commons.dart' as _i8;
 import 'package:google_mlkit_face_detection/src/face_detector.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i3;
+import 'package:mockito/src/dummies.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -27,6 +33,22 @@ import 'package:mockito/src/dummies.dart' as _i3;
 class _FakeFaceDetectorOptions_0 extends _i1.SmartFake
     implements _i2.FaceDetectorOptions {
   _FakeFaceDetectorOptions_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeRect_1 extends _i1.SmartFake implements _i3.Rect {
+  _FakeRect_1(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakePoint_2<T extends num> extends _i1.SmartFake
+    implements _i4.Point<T> {
+  _FakePoint_2(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeImageFormat_3 extends _i1.SmartFake implements _i5.ImageFormat {
+  _FakeImageFormat_3(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -53,24 +75,154 @@ class MockFaceDetector extends _i1.Mock implements _i2.FaceDetector {
   String get id =>
       (super.noSuchMethod(
             Invocation.getter(#id),
-            returnValue: _i3.dummyValue<String>(this, Invocation.getter(#id)),
+            returnValue: _i6.dummyValue<String>(this, Invocation.getter(#id)),
           )
           as String);
 
   @override
-  _i4.Future<List<_i2.Face>> processImage(_i5.InputImage? inputImage) =>
+  _i7.Future<List<_i2.Face>> processImage(_i8.InputImage? inputImage) =>
       (super.noSuchMethod(
             Invocation.method(#processImage, [inputImage]),
-            returnValue: _i4.Future<List<_i2.Face>>.value(<_i2.Face>[]),
+            returnValue: _i7.Future<List<_i2.Face>>.value(<_i2.Face>[]),
           )
-          as _i4.Future<List<_i2.Face>>);
+          as _i7.Future<List<_i2.Face>>);
 
   @override
-  _i4.Future<void> close() =>
+  _i7.Future<void> close() =>
       (super.noSuchMethod(
             Invocation.method(#close, []),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i7.Future<void>);
+}
+
+/// A class which mocks [Face].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockFace extends _i1.Mock implements _i2.Face {
+  MockFace() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.Rect get boundingBox =>
+      (super.noSuchMethod(
+            Invocation.getter(#boundingBox),
+            returnValue: _FakeRect_1(this, Invocation.getter(#boundingBox)),
+          )
+          as _i3.Rect);
+
+  @override
+  Map<_i2.FaceLandmarkType, _i2.FaceLandmark?> get landmarks =>
+      (super.noSuchMethod(
+            Invocation.getter(#landmarks),
+            returnValue: <_i2.FaceLandmarkType, _i2.FaceLandmark?>{},
+          )
+          as Map<_i2.FaceLandmarkType, _i2.FaceLandmark?>);
+
+  @override
+  Map<_i2.FaceContourType, _i2.FaceContour?> get contours =>
+      (super.noSuchMethod(
+            Invocation.getter(#contours),
+            returnValue: <_i2.FaceContourType, _i2.FaceContour?>{},
+          )
+          as Map<_i2.FaceContourType, _i2.FaceContour?>);
+}
+
+/// A class which mocks [FaceLandmark].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockFaceLandmark extends _i1.Mock implements _i2.FaceLandmark {
+  MockFaceLandmark() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.FaceLandmarkType get type =>
+      (super.noSuchMethod(
+            Invocation.getter(#type),
+            returnValue: _i2.FaceLandmarkType.bottomMouth,
+          )
+          as _i2.FaceLandmarkType);
+
+  @override
+  _i4.Point<int> get position =>
+      (super.noSuchMethod(
+            Invocation.getter(#position),
+            returnValue: _FakePoint_2<int>(this, Invocation.getter(#position)),
+          )
+          as _i4.Point<int>);
+}
+
+/// A class which mocks [CameraImage].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockCameraImage extends _i1.Mock implements _i5.CameraImage {
+  MockCameraImage() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.ImageFormat get format =>
+      (super.noSuchMethod(
+            Invocation.getter(#format),
+            returnValue: _FakeImageFormat_3(this, Invocation.getter(#format)),
+          )
+          as _i5.ImageFormat);
+
+  @override
+  int get height =>
+      (super.noSuchMethod(Invocation.getter(#height), returnValue: 0) as int);
+
+  @override
+  int get width =>
+      (super.noSuchMethod(Invocation.getter(#width), returnValue: 0) as int);
+
+  @override
+  List<_i5.Plane> get planes =>
+      (super.noSuchMethod(
+            Invocation.getter(#planes),
+            returnValue: <_i5.Plane>[],
+          )
+          as List<_i5.Plane>);
+}
+
+/// A class which mocks [Plane].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockPlane extends _i1.Mock implements _i5.Plane {
+  MockPlane() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i9.Uint8List get bytes =>
+      (super.noSuchMethod(
+            Invocation.getter(#bytes),
+            returnValue: _i9.Uint8List(0),
+          )
+          as _i9.Uint8List);
+
+  @override
+  int get bytesPerRow =>
+      (super.noSuchMethod(Invocation.getter(#bytesPerRow), returnValue: 0)
+          as int);
+}
+
+/// A class which mocks [ImageFormat].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockImageFormat extends _i1.Mock implements _i5.ImageFormat {
+  MockImageFormat() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i10.ImageFormatGroup get group =>
+      (super.noSuchMethod(
+            Invocation.getter(#group),
+            returnValue: _i10.ImageFormatGroup.unknown,
+          )
+          as _i10.ImageFormatGroup);
 }
