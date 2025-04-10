@@ -1,3 +1,0 @@
-rust_input: crate::api,verily_core,verily_functions,verily_db
-rust_root: rust/
-dart_output: lib/src/rust

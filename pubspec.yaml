@@ -6,9 +6,8 @@ workspace:
   - apps/reflexy
   - apps/verily
   - apps/verily_create
-  - packages/verily_sdk
   - packages/verily_device_motion
-  - packages/verily_rpc
+  - packages/verily_trpc
 dev_dependencies:
   melos: ^7.0.0-dev.7
   flutter_lints: ^5.0.0
