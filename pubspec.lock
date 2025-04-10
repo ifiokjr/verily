@@ -1610,13 +1610,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
-  verily_ui:
-    dependency: transitive
-    description:
-      path: "packages/verily_ui"
-      relative: true
-    source: path
-    version: "0.0.1"
   vm_service:
     dependency: transitive
     description:

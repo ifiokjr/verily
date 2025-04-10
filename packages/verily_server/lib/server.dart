@@ -11,20 +11,34 @@ import 'src/generated/endpoints.dart';
 // configuring Relic (Serverpod's web-server), or need custom setup work.
 
 void run(List<String> args) async {
-  // Configure Auth module (optional - using defaults for now)
-  // auth.AuthConfig.set(auth.AuthConfig(
-  //   sendValidationEmail: (session, email, validationCode) async {
-  //     print('Validation code: $validationCode'); // Basic console output for now
-  //     // TODO: Implement actual email sending (e.g., using mailer package)
-  //     return true; // Return true if email sending is considered successful
-  //   },
-  //   sendPasswordResetEmail: (session, userInfo, validationCode) async {
-  //     print('Password reset code: $validationCode for ${userInfo.email}');
-  //     // TODO: Implement actual email sending
-  //     return true;
-  //   },
-  //   // minPasswordLength: 10, // Example customization
-  // ));
+  // Configure Auth module
+  auth.AuthConfig.set(
+    auth.AuthConfig(
+      // Callback for sending validation email
+      sendValidationEmail: (session, email, validationCode) async {
+        // Log the validation code to the console for debugging/testing
+        print('--- Email Validation Code for $email: $validationCode ---');
+        // In production, replace the print statement with actual email sending logic.
+        // Example using a hypothetical email service:
+        // final success = await EmailService.sendValidation(to: email, code: validationCode);
+        // return success;
+        return true; // Assume sending is successful for now
+      },
+      // Callback for sending password reset email
+      sendPasswordResetEmail: (session, userInfo, validationCode) async {
+        // Log the reset code to the console for debugging/testing
+        print(
+          '--- Password Reset Code for ${userInfo.email ?? userInfo.userName}: $validationCode ---',
+        );
+        // In production, replace the print statement with actual email sending logic.
+        // final success = await EmailService.sendPasswordReset(to: userInfo.email!, code: validationCode);
+        // return success;
+        return true; // Assume sending is successful for now
+      },
+      // Optional: Add other configurations like minimum password length
+      // minPasswordLength: 10,
+    ),
+  );
 
   // Initialize Serverpod and connect it with your generated code.
   final pod = Serverpod(
