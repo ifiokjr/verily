@@ -1,0 +1,65 @@
+[package]
+name = "verily_db"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+aes-gcm-siv = { workspace = true, features = ["std"], optional = true }
+anyhow = { workspace = true }
+argon2 = { workspace = true, features = ["std"], optional = true }
+axum = { workspace = true, features = ["macros"], optional = true }
+base64 = { workspace = true }
+chrono = { workspace = true, features = ["serde", "clock"] }
+derive_more = { workspace = true, features = ["deref", "deref_mut", "from", "into", "debug"] }
+fixed = { workspace = true, features = ["serde"] }
+futures = { workspace = true }
+log = { workspace = true }
+num_enum = { workspace = true }
+rand = { workspace = true, optional = true }
+rustrict = { workspace = true, optional = true }
+serde = { workspace = true, features = ["derive"] }
+serde-big-array = { workspace = true }
+serde_json = { workspace = true }
+serde_with = { workspace = true }
+simple_logger = { workspace = true }
+solana-sdk = { workspace = true }
+verily_core = { workspace = true }
+sqlx = { workspace = true, features = ["chrono", "runtime-tokio", "uuid"], optional = true }
+strum = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+typed-builder = { workspace = true }
+url = { workspace = true, features = ["serde"] }
+uuid = { workspace = true, features = ["serde"] }
+validator = { workspace = true }
+webauthn-rs = { workspace = true, optional = true }
+welds = { workspace = true, features = ["sqlite", "check"], optional = true }
+
+[dev-dependencies]
+assert2 = { workspace = true }
+insta = { workspace = true, features = ["json", "redactions", "ron", "yaml"] }
+verily_functions = { workspace = true, features = ["ssr"] }
+test-log = { workspace = true, features = ["log", "trace"] }
+tokio = { workspace = true, features = ["test-util", "rt", "macros", "time"] }
+
+[features]
+ssr = [
+	"dep:aes-gcm-siv",
+	"dep:argon2",
+	"dep:axum",
+	"dep:rand",
+	"dep:sqlx",
+	"dep:webauthn-rs",
+	"dep:welds",
+	"dep:rustrict",
+	"verily_core/ssr",
+	"uuid/v3",
+	"uuid/v7",
+]
+
+[lints]
+workspace = true

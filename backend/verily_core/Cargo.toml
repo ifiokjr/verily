@@ -1,0 +1,78 @@
+[package]
+name = "verily_core"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+
+[dependencies]
+aes-gcm-siv = { workspace = true, optional = true, features = ["std"] }
+anyhow = { workspace = true }
+argon2 = { workspace = true, optional = true, features = ["std"] }
+axum = { workspace = true, optional = true, features = ["macros"] }
+base64 = { workspace = true, optional = true }
+bs58 = { workspace = true }
+chrono = { workspace = true, features = ["serde", "clock"] }
+derive_more = { workspace = true, features = ["deref"] }
+fixed = { workspace = true, features = ["serde"] }
+http = { workspace = true, optional = true }
+jsonwebtoken = { workspace = true, optional = true }
+log = { workspace = true }
+num_enum = { workspace = true }
+phonenumber = { workspace = true }
+rand = { workspace = true, optional = true }
+reqwest = { workspace = true, optional = true, features = ["json"] }
+rustrict = { workspace = true, optional = true }
+serde = { workspace = true, features = ["derive"] }
+serde-big-array = { workspace = true }
+serde_json = { workspace = true }
+serde_with = { workspace = true }
+simple_logger = { workspace = true }
+solana-sdk = { workspace = true }
+sqlx = { workspace = true, optional = true }
+strum = { workspace = true, features = ["derive"] }
+server_fn = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"], optional = true }
+typed-builder = { workspace = true }
+url = { workspace = true, features = ["serde"] }
+uuid = { workspace = true, features = ["serde"] }
+validator = { workspace = true }
+webauthn-rs = { workspace = true, optional = true }
+webauthn-rs-core = { workspace = true, optional = true }
+welds = { workspace = true, features = ["sqlite", "check"], optional = true }
+
+[dev-dependencies]
+assert2 = { workspace = true }
+openssl = { workspace = true }
+
+[features]
+ssr = [
+	"dep:aes-gcm-siv",
+	"dep:argon2",
+	"dep:axum",
+	"dep:base64",
+	"dep:http",
+	"dep:jsonwebtoken",
+	"dep:rand",
+	"dep:reqwest",
+	"dep:rustrict",
+	"dep:sqlx",
+	"dep:webauthn-rs-core",
+	"dep:webauthn-rs",
+	"dep:welds",
+	"dep:tokio",
+	"server_fn/ssr",
+	"uuid/v7",
+]
+
+
+[lints]
+workspace = true

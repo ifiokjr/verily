@@ -1,5 +1,11 @@
 [workspace]
-members = []
+members = [
+	"backend/verily_backend",
+	"backend/verily_core",
+	"backend/verily_db",
+	"backend/verily_functions",
+	"packages/verily_rpc/rust"
+]
 resolver = "2"
 
 [workspace.package]
@@ -29,6 +35,7 @@ cfg-if = "1"
 check_keyword = "0.3"
 chrono = { version = "0.4", features = ["serde"] }
 chrono-humanize = "0.2"
+flutter_rust_bridge = "=2.9.0"
 codee = "0.3"
 console = "0.15"
 console_error_panic_hook = "0.1"
@@ -146,16 +153,21 @@ webauthn-rs-core = "0.5"
 webauthn-rs-proto = "0.5"
 welds = "0.4"
 
+# internal
+verily_core = { path = "backend/verily_core", version = "0.0.0" }
+verily_db = { path = "backend/verily_db", version = "0.0.0" }
+verily_functions = { path = "backend/verily_functions", version = "0.0.0" }
+
+
 [workspace.metadata.bin]
 cargo-insta = { version = "1.42.2" }
 cargo-llvm-cov = { version = "0.6.16" }
-cargo-nextest = { version = "0.9.92" }
+cargo-nextest = { version = "0.9.93" }
 query-security-txt = { version = "1.1.1", bins = ["query-security-txt"] }
-solana-verify = { version = "0.4.1", bins = ["solana-verify"] }
+solana-verify = { version = "0.4.3", bins = ["solana-verify"] }
 sqlx-cli = { version = "0.8.3", bins = ["sqlx"] }
-tauri-cli = { version = "2.3.1" }
-wasm-pack = { version = "0.13.1", bins = ["wasm-pack"] }
 welds-cli = { version = "0.4.2", bins = ["welds"] }
+
 
 [workspace.metadata.solana]
 tools-version = "1.43"

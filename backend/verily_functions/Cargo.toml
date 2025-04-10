@@ -1,0 +1,18 @@
+[package]
+name = "verily_functions"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+
+[features]
+ssr = []
+
+[lints]
+workspace = true
+

@@ -17,7 +17,8 @@ class FaceDetectionService {
   ///
   /// Optionally accepts a [FaceDetector] for testing purposes.
   FaceDetectionService({FaceDetector? detector}) {
-    _detector = detector ??
+    _detector =
+        detector ??
         FaceDetector(
           options: FaceDetectorOptions(
             enableLandmarks: true,
@@ -34,7 +35,10 @@ class FaceDetectionService {
   Stream<List<FacialGesture>> get gestureStream => _gestureController.stream;
 
   /// Process a camera image and detect facial gestures
-  Future<void> processImage(CameraImage image, InputImageRotation rotation) async {
+  Future<void> processImage(
+    CameraImage image,
+    InputImageRotation rotation,
+  ) async {
     final inputImage = _convertCameraImageToInputImage(image, rotation);
     if (inputImage == null) return;
 
@@ -44,11 +48,13 @@ class FaceDetectionService {
 
     for (final face in faces) {
       if (face.smilingProbability != null && face.smilingProbability! > 0.7) {
-        gestures.add(FacialGesture(
-          type: GestureType.smile,
-          confidence: face.smilingProbability!,
-          timestamp: now,
-        ));
+        gestures.add(
+          FacialGesture(
+            type: GestureType.smile,
+            confidence: face.smilingProbability!,
+            timestamp: now,
+          ),
+        );
       }
 
       // Detect blink by checking left and right eye open probabilities
@@ -58,29 +64,44 @@ class FaceDetectionService {
         final rightEyeClosed = face.rightEyeOpenProbability! < 0.1;
 
         if (leftEyeClosed && rightEyeClosed) {
-          gestures.add(FacialGesture(
-            type: GestureType.blink,
-            confidence: 1 - (face.leftEyeOpenProbability! + face.rightEyeOpenProbability!) / 2,
-            timestamp: now,
-          ));
+          gestures.add(
+            FacialGesture(
+              type: GestureType.blink,
+              confidence:
+                  1 -
+                  (face.leftEyeOpenProbability! +
+                          face.rightEyeOpenProbability!) /
+                      2,
+              timestamp: now,
+            ),
+          );
         } else if (leftEyeClosed || rightEyeClosed) {
-          gestures.add(FacialGesture(
-            type: GestureType.wink,
-            confidence: leftEyeClosed
-                ? 1 - face.leftEyeOpenProbability!
-                : 1 - face.rightEyeOpenProbability!,
-            timestamp: now,
-          ));
+          gestures.add(
+            FacialGesture(
+              type: GestureType.wink,
+              confidence:
+                  leftEyeClosed
+                      ? 1 - face.leftEyeOpenProbability!
+                      : 1 - face.rightEyeOpenProbability!,
+              timestamp: now,
+            ),
+          );
         }
       }
 
       // --- Landmark Extraction ---
-      final Point<int>? mouthBottom = face.landmarks[FaceLandmarkType.bottomMouth]?.position;
-      final Point<int>? mouthLeft = face.landmarks[FaceLandmarkType.leftMouth]?.position;
-      final Point<int>? mouthRight = face.landmarks[FaceLandmarkType.rightMouth]?.position;
-      final Point<int>? noseBase = face.landmarks[FaceLandmarkType.noseBase]?.position;
-      final Point<int>? leftEye = face.landmarks[FaceLandmarkType.leftEye]?.position;
-      final Point<int>? rightEye = face.landmarks[FaceLandmarkType.rightEye]?.position;
+      final Point<int>? mouthBottom =
+          face.landmarks[FaceLandmarkType.bottomMouth]?.position;
+      final Point<int>? mouthLeft =
+          face.landmarks[FaceLandmarkType.leftMouth]?.position;
+      final Point<int>? mouthRight =
+          face.landmarks[FaceLandmarkType.rightMouth]?.position;
+      final Point<int>? noseBase =
+          face.landmarks[FaceLandmarkType.noseBase]?.position;
+      final Point<int>? leftEye =
+          face.landmarks[FaceLandmarkType.leftEye]?.position;
+      final Point<int>? rightEye =
+          face.landmarks[FaceLandmarkType.rightEye]?.position;
 
       // --- Calculations ---
       // Estimate face height (eye line to mouth bottom) for normalization, if possible
@@ -88,8 +109,9 @@ class FaceDetectionService {
       if (leftEye != null && rightEye != null && mouthBottom != null) {
         final double eyeCenterY = (leftEye.y + rightEye.y) / 2.0;
         faceHeightEstimate = (mouthBottom.y - eyeCenterY).abs().toDouble();
-      } else if (noseBase != null && mouthBottom != null) { // Fallback
-         faceHeightEstimate = (mouthBottom.y - noseBase.y).abs().toDouble();
+      } else if (noseBase != null && mouthBottom != null) {
+        // Fallback
+        faceHeightEstimate = (mouthBottom.y - noseBase.y).abs().toDouble();
       }
 
       // Estimate mouth width
@@ -103,43 +125,66 @@ class FaceDetectionService {
       // Detect Open Mouth (Refined)
       // Compare vertical distance between bottom lip and mouth corners line,
       // normalized by mouth width.
-      if (mouthBottom != null && mouthLeft != null && mouthRight != null && mouthWidthEstimate > 1) { // Avoid division by zero/small width
-          final double mouthCornerYAvg = (mouthLeft.y + mouthRight.y) / 2.0;
-          final double mouthOpening = (mouthBottom.y - mouthCornerYAvg).abs();
-          final double mouthOpenRatio = mouthOpening / mouthWidthEstimate;
+      if (mouthBottom != null &&
+          mouthLeft != null &&
+          mouthRight != null &&
+          mouthWidthEstimate > 1) {
+        // Avoid division by zero/small width
+        final double mouthCornerYAvg = (mouthLeft.y + mouthRight.y) / 2.0;
+        final double mouthOpening = (mouthBottom.y - mouthCornerYAvg).abs();
+        final double mouthOpenRatio = mouthOpening / mouthWidthEstimate;
 
-          final double mouthOpenThreshold = 0.35; // Heuristic: Opening is > 35% of mouth width
+        final double mouthOpenThreshold =
+            0.35; // Heuristic: Opening is > 35% of mouth width
 
-          if (mouthOpenRatio > mouthOpenThreshold) {
-              gestures.add(FacialGesture(
-                  type: GestureType.openMouth,
-                  // Confidence based on how much it exceeds the threshold
-                  confidence: min(1.0, (mouthOpenRatio - mouthOpenThreshold) / (0.6 - mouthOpenThreshold)),
-                  timestamp: now,
-              ));
-          }
+        if (mouthOpenRatio > mouthOpenThreshold) {
+          gestures.add(
+            FacialGesture(
+              type: GestureType.openMouth,
+              // Confidence based on how much it exceeds the threshold
+              confidence: min(
+                1.0,
+                (mouthOpenRatio - mouthOpenThreshold) /
+                    (0.6 - mouthOpenThreshold),
+              ),
+              timestamp: now,
+            ),
+          );
+        }
       }
 
       // Detect Frown (Refined)
       // Check if mouth corners are significantly lower than the nose base,
       // normalized by estimated face height.
-      if (mouthLeft != null && mouthRight != null && noseBase != null && faceHeightEstimate > 1) { // Avoid division by zero/small height
-          final double leftCornerRelY = (mouthLeft.y - noseBase.y) / faceHeightEstimate;
-          final double rightCornerRelY = (mouthRight.y - noseBase.y) / faceHeightEstimate;
+      if (mouthLeft != null &&
+          mouthRight != null &&
+          noseBase != null &&
+          faceHeightEstimate > 1) {
+        // Avoid division by zero/small height
+        final double leftCornerRelY =
+            (mouthLeft.y - noseBase.y) / faceHeightEstimate;
+        final double rightCornerRelY =
+            (mouthRight.y - noseBase.y) / faceHeightEstimate;
 
-          // Positive value means the corner is lower than the nose base
-          final double avgCornerRelY = (leftCornerRelY + rightCornerRelY) / 2.0;
+        // Positive value means the corner is lower than the nose base
+        final double avgCornerRelY = (leftCornerRelY + rightCornerRelY) / 2.0;
 
-          final double frownThreshold = 0.08; // Heuristic: Corners > 8% of face height below nose
+        final double frownThreshold =
+            0.08; // Heuristic: Corners > 8% of face height below nose
 
-          if (avgCornerRelY > frownThreshold) {
-              gestures.add(FacialGesture(
-                  type: GestureType.frown,
-                  // Confidence based on how much it exceeds the threshold
-                  confidence: min(1.0, (avgCornerRelY - frownThreshold) / (0.2 - frownThreshold)),
-                  timestamp: now,
-              ));
-          }
+        if (avgCornerRelY > frownThreshold) {
+          gestures.add(
+            FacialGesture(
+              type: GestureType.frown,
+              // Confidence based on how much it exceeds the threshold
+              confidence: min(
+                1.0,
+                (avgCornerRelY - frownThreshold) / (0.2 - frownThreshold),
+              ),
+              timestamp: now,
+            ),
+          );
+        }
       }
 
       // TODO: Implement detection for tongue out (likely requires Face Mesh API)
@@ -167,10 +212,13 @@ class FaceDetectionService {
 
     final imageSize = Size(image.width.toDouble(), image.height.toDouble());
 
-    final imageFormat = InputImageFormatValue.fromRawValue(image.format.raw) ?? InputImageFormat.nv21;
+    final imageFormat =
+        InputImageFormatValue.fromRawValue(image.format.raw) ??
+        InputImageFormat.nv21;
 
     // Assumes the first plane contains the necessary row stride info
-    final bytesPerRow = image.planes.isNotEmpty ? image.planes[0].bytesPerRow : 0;
+    final bytesPerRow =
+        image.planes.isNotEmpty ? image.planes[0].bytesPerRow : 0;
 
     final inputImageMetadata = InputImageMetadata(
       size: imageSize,

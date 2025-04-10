@@ -1,0 +1,177 @@
+---
+description: Rule for generating Rust Welds model structs for OpenBudget DB.
+globs: crates/openbudget_db/src/models/*.rs,backend/verily_db/src/models/*.rs
+alwaysApply: false
+---
+# Rust Welds Model Generation Rule (verily_db)
+
+When asked to create or update Rust database models using the `welds` ORM for the Verily project, follow these conventions based on the existing models in `backend/verily_db/src/models/`:
+
+## File Structure and Module Registration
+
+1.  **File Location:** Create a new file named `snake_case_model_name.rs` inside `crates/verily_db/src/models/`. If multiple related structs are defined (e.g., `Category`, `CategoryGroup`), they can reside in the same file named after the primary entity (e.g., `category.rs`).
+2.  **Module Declaration:** In `crates/verily_db/src/models/mod.rs`:
+    *   Add `mod snake_case_model_name;`
+    *   Add `pub use self::snake_case_model_name::*;`
+3.  **Imports:** Start the model file with `use super::*;`. Group SSR-specific imports if necessary (`#[cfg(feature = "ssr")] mod ssr_imports { ... }`).
+
+## Struct Definition
+
+4.  **Naming:** Define structs as `pub struct PascalCaseModelNameModel { ... }`. Always append `Model` to the struct name.
+5.  **Derives:**
+    *   Always derive `Debug`, `Clone`, `Serialize`, `Deserialize`.
+    *   Conditionally derive `#[cfg_attr(feature = "ssr", derive(WeldsModel, TypedBuilder))]`.
+6.  **Welds Attributes:**
+    *   `#[cfg_attr(feature = "ssr", welds(table = "sql_table_name"))]`: Link to the corresponding plural `snake_case` SQL table name.
+    *   `#[cfg_attr(feature = "ssr", welds(primary_key))]`: Mark the field corresponding to the SQL primary key (usually `pub id: Uuid`). If the PK is not `id`, specify it in the `model_methods!` macro in `mod.rs`.
+    *   `#[cfg_attr(feature = "ssr", welds(BelongsTo(relation_name, RelatedModelNameModel, "foreign_key_column")))]`: Define `BelongsTo` relationships. `relation_name` should be singular `snake_case`.
+    *   `#[cfg_attr(feature = "ssr", welds(HasMany(relation_name, RelatedModelNameModel, "foreign_key_in_other_table")))]`: Define `HasMany` relationships. `relation_name` should be plural `snake_case`.
+7.  **Field Definitions:**
+    *   Declare fields as `pub snake_case_field_name: Type;`, matching SQL column names.
+    *   Map SQL types to Rust types:
+        *   `TEXT (Uuid)` -> `Uuid`
+        *   `TEXT (String)` -> `String`
+        *   `TEXT (DateTime)` -> `DateTime<Utc>`
+        *   `TEXT (NaiveDate)` -> `NaiveDate`
+        *   `TEXT (Json)` -> `serde_json::Value` (or a specific deserializable struct)
+        *   `INTEGER (Enum)` -> Custom Rust `enum` (see below)
+        *   `INTEGER (bool)` -> `bool`
+        *   `INTEGER (u8)` -> `u8`
+        *   `BLOB (U64)` -> `U64` (from `crate::U64`)
+        *   `BLOB (U64F64)` -> `U64F64` (from `crate::U64F64`)
+        *   `BLOB (Binary)` -> `Vec<u8>`
+        *   Nullable SQL column -> `Option<RustType>`
+8.  **TypedBuilder Attributes (`#[cfg_attr(feature = "ssr", builder(...))]`):**
+    *   Apply `builder` attributes to fields for easy instantiation.
+    *   `default = Uuid::now_v7()`: For primary key `id: Uuid`.
+    *   `default = Utc::now()`: For `created_at` and `updated_at`.
+    *   `default`: For boolean flags (defaults to `false`) or simple default enum variants. Use `default = EnumName::Variant` if the default is not `#[default]`. Use `default = u8::MAX` for `sort_index`.
+    *   `setter(into)`: For `String` fields.
+    *   `default, setter(strip_option(fallback = some_opt_func))`: For `Option<T>` fields (e.g., `deleted_at`, `description`). Define `fn some_opt_func() -> Option<T> { None }` if needed, or use existing ones like `deleted_at_opt`.
+
+## Enum Definitions (for `INTEGER` columns)
+
+9.  **Naming:** `pub enum PascalCaseEnumName { ... }`.
+10. **Derives:** `Default, Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq, IntoPrimitive, FromPrimitive`. Conditionally `#[cfg_attr(feature = "ssr", derive(SqlxType))]`.
+11. **Attributes:** `#[repr(u8)]` and `#[serde(rename_all = "snake_case")]`.
+12. **Default:** Mark the default variant with `#[default]`.
+13. **Values:** Assign explicit `u8` values if they don't start from 0 or have gaps (e.g., `Complete = 255`).
+
+## Implementation (`impl`) Blocks
+
+14. **Gating:** Gate `impl` blocks containing database logic with `#[cfg(feature = "ssr")]`.
+15. **UUID Generation:** If the primary key (`id`) is derived from other fields (e.g., using `Uuid::new_v3`), provide a static `uuid(...)` function.
+16. **Builder Helper:** Provide a static `builder(...)` function that wraps the `TypedBuilder`'s private builder (using `#[cfg_attr(feature = "ssr", builder(builder_method(vis = "pub(self)", name = private_builder)))]`) and often pre-populates the `id` using the `uuid` function. Define a type alias for the specific builder state (e.g., `type CreateModelNameModel = ModelNameModelBuilder<((Uuid,), (String,), ...)>;`).
+17. **Query Helpers:** Add common query methods like `find_by_xyz(...)` if needed.
+18. **Relationship Accessors:** Welds generates accessors for relationships defined via attributes. You might add helper methods on top if needed.
+
+## `mod.rs` Macro Registration
+
+19. In `crates/verily_db/src/models/mod.rs`, register the model with the helper macros:
+    *   `model_methods!(PascalCaseModelNameModel);` (If the primary key is `id: Uuid`)
+    *   `model_methods!(PascalCaseModelNameModel, non_uuid_pk_field_name);` (If the primary key is not `id: Uuid`)
+    *   `deleted_at!(PascalCaseModelNameModel);` (If the model has a `deleted_at` field for soft deletes)
+
+## Testing
+
+20. **Test Module:** Include a test module gated with `#[cfg(all(test, feature = "ssr"))] mod tests { ... }`.
+21. **Imports:** `use verily_core::DbResult;`, `use test_log::test;`, `use super::*;`, `use crate::{get_schema_issues, setup_memory_db};`.
+22. **Schema Check:** Include an async test `table_schema_check` that calls `get_schema_issues::<PascalCaseModelNameModel>(&db).await?` and asserts the result is empty. Create separate tests for each model struct defined in the file.
+23. **Other Tests:** Add tests for custom logic, triggers (e.g., `create_user_auto_creates_actor`), builder methods, etc.
+
+## Example Model Structure
+
+```rust
+use super::*;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "ssr", derive(WeldsModel, TypedBuilder))]
+#[cfg_attr(feature = "ssr", welds(table = "example_items"))]
+#[cfg_attr(feature = "ssr", welds(BelongsTo(owner, ActorModel, "owner_id")))] // Example relationship
+pub struct ExampleItemModel {
+    #[cfg_attr(feature = "ssr", welds(primary_key))]
+    #[cfg_attr(feature = "ssr", builder(default = Uuid::now_v7()))]
+    pub id: Uuid,
+
+    #[cfg_attr(feature = "ssr", builder(setter(into)))]
+    pub owner_id: Uuid, // Foreign key
+
+    #[cfg_attr(feature = "ssr", builder(setter(into)))]
+    pub name: String,
+
+    #[cfg_attr(feature = "ssr", builder(default))]
+    pub status: ExampleStatus, // Enum field
+
+    #[cfg_attr(feature = "ssr", builder(default, setter(strip_option(fallback = config_data_opt))))]
+    pub config_data: Option<Value>, // JSON field
+
+    #[cfg_attr(feature = "ssr", builder(default, setter(strip_option(fallback = value_blob_opt))))]
+    pub value_blob: Option<Vec<u8>>, // BLOB field
+
+    #[cfg_attr(feature = "ssr", builder(default = Utc::now()))]
+    pub created_at: DateTime<Utc>,
+
+    #[cfg_attr(feature = "ssr", builder(default = Utc::now()))]
+    pub updated_at: DateTime<Utc>,
+
+    #[cfg_attr(feature = "ssr", builder(default, setter(strip_option(fallback = deleted_at_opt))))]
+    pub deleted_at: Option<DateTime<Utc>>, // Soft delete field
+}
+
+#[derive(
+    Default, Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq, IntoPrimitive, FromPrimitive,
+)]
+#[cfg_attr(feature = "ssr", derive(SqlxType))]
+#[repr(u8)]
+#[serde(rename_all = "snake_case")]
+pub enum ExampleStatus {
+    #[default]
+    Active = 0,
+    Pending = 1,
+    Archived = 2,
+}
+
+#[cfg(feature="ssr")]
+fn config_data_opt() -> Option<Value> { None }
+#[cfg(feature="ssr")]
+fn value_blob_opt() -> Option<Vec<u8>> { None }
+
+// Optional impl block for helpers
+#[cfg(feature = "ssr")]
+impl ExampleItemModel {
+    // Example: If ID was composite or derived
+    // pub fn uuid(owner_id: Uuid, name: &str) -> Uuid {
+    //    Uuid::new_v3(&Uuid::NAMESPACE_OID, crate::string_bytes!(b"example", owner_id.as_bytes(), name.as_bytes()))
+    // }
+
+    // Example: Custom builder setup
+    // type CreateExampleItemModel = ExampleItemModelBuilder<((Uuid,), (Uuid,), (String,), ... )>;
+    // pub fn builder(owner_id: Uuid, name: String) -> CreateExampleItemModel {
+    //     Self::private_builder()
+    //          .id(Self::uuid(owner_id, &name)) // if using derived UUID
+    //         .owner_id(owner_id)
+    //         .name(name)
+    // }
+}
+
+
+#[cfg(all(test, feature = "ssr"))]
+mod tests {
+    use verily_core::DbResult;
+    use test_log::test;
+
+    use super::*;
+    use crate::{get_schema_issues, setup_memory_db};
+
+    #[test(tokio::test)]
+    async fn table_schema_check() -> DbResult<()> {
+        let db = setup_memory_db().await?;
+        let issues = get_schema_issues::<ExampleItemModel>(&db).await?;
+        assert2::check!(issues.is_empty(), "Schema issues found: {:?}", issues);
+        Ok(())
+    }
+}
+
+```
+
+Ensure you adapt the examples and placeholders (`PascalCaseModelName`, `snake_case_model_name`, `sql_table_name`, etc.) to the specific model being generated.
