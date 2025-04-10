@@ -1,0 +1,29 @@
+# Logs an attempt by a user to complete a verifiable action.
+class: VerificationAttempt
+table: verification_attempt
+
+fields:
+  # The action being attempted.
+  # Relation fields must be nullable.
+  action: Action?, relation
+  # An identifier for the user attempting the action. This could be a device ID, session ID, or linked UserInfo ID if using full user accounts.
+  userId: String # Consider linking to UserInfo if user accounts are implemented
+  # The current status of the attempt (e.g., 'pending', 'in_progress', 'completed', 'failed').
+  # Consider using an Enum for this.
+  status: String # TODO: Convert to Enum (e.g., VerificationStatus)
+  # Timestamp when the attempt started.
+  startedAt: DateTime
+  # Timestamp when the attempt was last updated.
+  updatedAt: DateTime
+  # Timestamp when the attempt concluded (completed or failed).
+  completedAt: DateTime?
+  # JSON encoded string storing progress details, like completed step IDs or specific verification results.
+  progressData: String? # Consider a more structured type like Map<String, dynamic> or a dedicated class
+
+indexes:
+  verification_attempt_actionId_idx:
+    fields: actionId
+    unique: false
+  verification_attempt_userId_idx:
+    fields: userId
+    unique: false

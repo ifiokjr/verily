@@ -4,7 +4,7 @@ table: action_step
 
 fields:
   # The action this step belongs to. This is the parent relation.
-  action: Action?, relation(parent=action)
+  action: Action?, relation
   # The type of verification required for this step (e.g., 'location', 'face', 'motion').
   # Consider using an Enum for this for type safety.
   stepType: String # TODO: Convert to Enum (e.g., VerificationType)

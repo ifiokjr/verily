@@ -4,7 +4,7 @@ table: webhook
 
 fields:
   # The action this webhook is associated with.
-  action: Action?, relation(parent=action)
+  action: Action?, relation
   # The URL to which the webhook notification should be sent.
   url: String
   # A secret used for signing webhook requests to verify authenticity.
