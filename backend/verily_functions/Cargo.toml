@@ -9,9 +9,20 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+leptos = { workspace = true }
+server_fn = { workspace = true }
+verily_core = { workspace = true }
+verily_db = { workspace = true }
 
 [features]
-ssr = []
+reqwest = ["server_fn/reqwest"]
+browser = ["server_fn/browser"]
+ssr = [
+	"leptos/ssr",
+	"server_fn/ssr",
+	"verily_core/ssr",
+	"verily_db/ssr",
+]
 
 [lints]
 workspace = true

@@ -6,6 +6,7 @@ pub mod prelude {
     #[cfg(feature = "ssr")]
     pub use leptos::prelude::provide_context;
     pub use leptos::prelude::server;
+    pub use leptos::prelude::server_fn::error::FromServerFnError;
     #[cfg(feature = "ssr")]
     pub use leptos::prelude::use_context;
     #[cfg(feature = "ssr")]

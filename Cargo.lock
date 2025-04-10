@@ -4030,6 +4030,7 @@ dependencies = [
  "js-sys",
  "log",
  "mime",
+ "mime_guess",
  "native-tls",
  "once_cell",
  "percent-encoding",
@@ -4042,11 +4043,13 @@ dependencies = [
  "system-configuration",
  "tokio",
  "tokio-native-tls",
+ "tokio-util",
  "tower",
  "tower-service",
  "url",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+ "wasm-streams",
  "web-sys",
  "windows-registry",
 ]
@@ -4524,6 +4527,7 @@ dependencies = [
  "js-sys",
  "once_cell",
  "pin-project-lite",
+ "reqwest",
  "send_wrapper",
  "serde",
  "serde_json",
@@ -4532,6 +4536,7 @@ dependencies = [
  "thiserror 2.0.12",
  "throw_error",
  "tokio",
+ "tokio-tungstenite",
  "tower",
  "tower-layer",
  "url",
@@ -6973,12 +6978,21 @@ dependencies = [
 [[package]]
 name = "verily_functions"
 version = "0.0.0"
+dependencies = [
+ "leptos",
+ "server_fn",
+ "verily_core",
+ "verily_db",
+]
 
 [[package]]
 name = "verily_rpc"
 version = "0.0.0"
 dependencies = [
  "flutter_rust_bridge",
+ "server_fn",
+ "verily_core",
+ "verily_functions",
 ]
 
 [[package]]

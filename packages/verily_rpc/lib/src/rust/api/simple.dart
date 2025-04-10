@@ -8,3 +8,13 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 String greet({required String name}) =>
     RustLib.instance.api.crateApiSimpleGreet(name: name);
+
+void setUrls({required String apiUrl}) =>
+    RustLib.instance.api.crateApiSimpleSetUrls(apiUrl: apiUrl);
+
+/// Call a server function
+Future<AppResultString> helloWorld() =>
+    RustLib.instance.api.crateApiSimpleHelloWorld();
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<AppResult < String >>>
+abstract class AppResultString implements RustOpaqueInterface {}

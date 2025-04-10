@@ -1,14 +1,11 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+use verily_core::{AppError, prelude::*};
+
+pub fn set_urls(api_url: String) {
+    let url = Box::leak(api_url.into_boxed_str());
+    server_fn::client::set_server_url(url);
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+#[server]
+pub async fn hello_world() -> Result<String, AppError> {
+    Ok("Hello, world!".to_string())
 }
