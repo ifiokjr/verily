@@ -11,7 +11,6 @@ rust-version.workspace = true
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-
 [dependencies]
 aes-gcm-siv = { workspace = true, optional = true, features = ["std"] }
 anyhow = { workspace = true }
@@ -24,6 +23,8 @@ derive_more = { workspace = true, features = ["deref"] }
 fixed = { workspace = true, features = ["serde"] }
 http = { workspace = true, optional = true }
 jsonwebtoken = { workspace = true, optional = true }
+leptos = { workspace = true }
+leptos_axum = { workspace = true, optional = true }
 log = { workspace = true }
 num_enum = { workspace = true }
 phonenumber = { workspace = true }
@@ -34,11 +35,11 @@ serde = { workspace = true, features = ["derive"] }
 serde-big-array = { workspace = true }
 serde_json = { workspace = true }
 serde_with = { workspace = true }
+server_fn = { workspace = true }
 simple_logger = { workspace = true }
 solana-sdk = { workspace = true }
 sqlx = { workspace = true, optional = true }
 strum = { workspace = true, features = ["derive"] }
-server_fn = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"], optional = true }
 typed-builder = { workspace = true }
@@ -69,10 +70,12 @@ ssr = [
 	"dep:webauthn-rs",
 	"dep:welds",
 	"dep:tokio",
+	"dep:leptos_axum",
+	"leptos/ssr",
 	"server_fn/ssr",
+	"server_fn/axum",
 	"uuid/v7",
 ]
-
 
 [lints]
 workspace = true

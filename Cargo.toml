@@ -4,7 +4,7 @@ members = [
 	"backend/verily_core",
 	"backend/verily_db",
 	"backend/verily_functions",
-	"packages/verily_rpc/rust"
+	"packages/verily_rpc/rust",
 ]
 resolver = "2"
 
@@ -35,7 +35,6 @@ cfg-if = "1"
 check_keyword = "0.3"
 chrono = { version = "0.4", features = ["serde"] }
 chrono-humanize = "0.2"
-flutter_rust_bridge = "=2.9.0"
 codee = "0.3"
 console = "0.15"
 console_error_panic_hook = "0.1"
@@ -51,6 +50,7 @@ env_logger = "0.11"
 fake = "4"
 fixed = "1.29"
 fixed_math = "0.4"
+flutter_rust_bridge = "=2.9.0"
 futures = "0.3"
 futures-timeout = "0.1"
 futures-timer = "3"
@@ -72,6 +72,8 @@ insta = "1"
 js-sys = "0.3"
 jsonwebtoken = "9"
 lazy_static = "1"
+leptos = "0.8.0-beta"
+leptos_axum = "0.8.0-beta"
 log = "0.4"
 memory_wallet = "0.1"
 mime_guess = "2"
@@ -158,7 +160,6 @@ verily_core = { path = "backend/verily_core", version = "0.0.0" }
 verily_db = { path = "backend/verily_db", version = "0.0.0" }
 verily_functions = { path = "backend/verily_functions", version = "0.0.0" }
 
-
 [workspace.metadata.bin]
 cargo-insta = { version = "1.42.2" }
 cargo-llvm-cov = { version = "0.6.16" }
@@ -167,7 +168,6 @@ query-security-txt = { version = "1.1.1", bins = ["query-security-txt"] }
 solana-verify = { version = "0.4.3", bins = ["solana-verify"] }
 sqlx-cli = { version = "0.8.3", bins = ["sqlx"] }
 welds-cli = { version = "0.4.2", bins = ["welds"] }
-
 
 [workspace.metadata.solana]
 tools-version = "1.43"

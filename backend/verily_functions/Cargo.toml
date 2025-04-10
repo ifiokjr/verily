@@ -15,4 +15,3 @@ ssr = []
 
 [lints]
 workspace = true
-

@@ -28,7 +28,6 @@ serde_json = { workspace = true }
 serde_with = { workspace = true }
 simple_logger = { workspace = true }
 solana-sdk = { workspace = true }
-verily_core = { workspace = true }
 sqlx = { workspace = true, features = ["chrono", "runtime-tokio", "uuid"], optional = true }
 strum = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
@@ -36,15 +35,16 @@ typed-builder = { workspace = true }
 url = { workspace = true, features = ["serde"] }
 uuid = { workspace = true, features = ["serde"] }
 validator = { workspace = true }
+verily_core = { workspace = true }
 webauthn-rs = { workspace = true, optional = true }
 welds = { workspace = true, features = ["sqlite", "check"], optional = true }
 
 [dev-dependencies]
 assert2 = { workspace = true }
 insta = { workspace = true, features = ["json", "redactions", "ron", "yaml"] }
-verily_functions = { workspace = true, features = ["ssr"] }
 test-log = { workspace = true, features = ["log", "trace"] }
 tokio = { workspace = true, features = ["test-util", "rt", "macros", "time"] }
+verily_functions = { workspace = true, features = ["ssr"] }
 
 [features]
 ssr = [

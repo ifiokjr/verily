@@ -8,7 +8,47 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
+anyhow = { workspace = true }
+axum = { workspace = true, features = ["macros"] }
+chrono = { workspace = true, features = ["serde", "clock"] }
+console_error_panic_hook = { workspace = true }
+console_log = { workspace = true }
+derive_more = { workspace = true, features = ["deref", "deref_mut", "from", "into", "debug"] }
+http = { workspace = true }
+js-sys = { workspace = true }
+leptos = { workspace = true }
+leptos_axum = { workspace = true }
+log = { workspace = true }
+num_enum = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+simple_logger = { workspace = true }
+strum = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+tower = { workspace = true }
+tower-http = { workspace = true, features = ["fs", "compression-gzip", "compression-br"] }
+tracing = { workspace = true }
+url = { workspace = true, features = ["serde"] }
+verily_core = { workspace = true, features = ["ssr"] }
+verily_db = { workspace = true, features = ["ssr"] }
+verily_functions = { workspace = true, features = ["ssr"] }
+wasm_client_solana = { workspace = true, features = ["ssr"] }
+webauthn-rs = { workspace = true, features = ["danger-user-presence-only-security-keys"] }
+
+[dev-dependencies]
+anyhow = { workspace = true }
+assert2 = { workspace = true }
+insta = { workspace = true, features = ["json", "redactions", "ron", "yaml"] }
+memory_wallet = { workspace = true }
+rstest = { workspace = true }
+test-log = { workspace = true, features = ["log", "trace"] }
+test_utils_insta = { workspace = true }
+test_utils_keypairs = { workspace = true }
+tokio = { workspace = true, features = ["test-util", "rt", "macros", "time"] }
 
 [lints]
 workspace = true
