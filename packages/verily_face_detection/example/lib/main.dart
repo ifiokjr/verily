@@ -12,11 +12,13 @@ import 'package:verily_face_detection/verily_face_detection.dart';
 late List<CameraDescription> _cameras;
 
 // Provider for the FaceDetectionService
-final faceDetectionServiceProvider = Provider.autoDispose<FaceDetectionService>((ref) {
-  final service = FaceDetectionService();
-  ref.onDispose(() => service.dispose());
-  return service;
-});
+final faceDetectionServiceProvider = Provider.autoDispose<FaceDetectionService>(
+  (ref) {
+    final service = FaceDetectionService();
+    ref.onDispose(() => service.dispose());
+    return service;
+  },
+);
 
 // Provider for the available cameras (async)
 final camerasProvider = FutureProvider<List<CameraDescription>>((ref) async {
@@ -55,6 +57,20 @@ class MyApp extends StatelessWidget {
 class FaceDetectionPage extends HookConsumerWidget {
   const FaceDetectionPage({super.key});
 
+  Future<void> _checkAndRequestPermission(
+    ValueNotifier<PermissionStatus> permissionStatusState,
+  ) async {
+    final status = await Permission.camera.status;
+    debugPrint('camera permission status: $status');
+    permissionStatusState.value = status;
+
+    if (!status.isGranted) {
+      debugPrint('requesting camera permission...');
+      final requestedStatus = await Permission.camera.request();
+      permissionStatusState.value = requestedStatus;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // --- State Management with Hooks & Riverpod ---
@@ -64,95 +80,106 @@ class FaceDetectionPage extends HookConsumerWidget {
     // State for camera controller, selected camera, permission, and detection status
     final cameraControllerState = useState<CameraController?>(null);
     final selectedCameraState = useState<CameraDescription?>(null);
-    final permissionStatusState = useState<PermissionStatus>(PermissionStatus.denied);
+    final permissionStatusState = useState<PermissionStatus>(
+      PermissionStatus.denied,
+    );
     final isDetectingState = useState<bool>(false);
     final detectedGesturesState = useState<List<FacialGesture>>([]);
     final errorState = useState<String?>(null);
+    final result = useMemoized(
+      () => _checkAndRequestPermission(permissionStatusState),
+    );
+    useFuture(result);
 
     // --- Hooks for Side Effects (useEffect) ---
 
-    // Effect for checking and requesting permissions
-    useEffect(() {
-      Future<void> checkAndRequestPermission() async {
-        final status = await Permission.camera.status;
-        permissionStatusState.value = status;
-        if (!status.isGranted) {
-          final requestedStatus = await Permission.camera.request();
-          permissionStatusState.value = requestedStatus;
-        }
-      }
-      checkAndRequestPermission();
-      return null; // No cleanup needed for permission check
-    }, []); // Run only once
-
     // Effect for initializing camera when permission is granted and cameras are available
-    useEffect(() {
-      CameraController? controller;
-      CameraDescription? cameraToUse;
+    useEffect(
+      () {
+        CameraController? controller;
+        CameraDescription? cameraToUse;
 
-      Future<void> initialize() async {
-        if (permissionStatusState.value.isGranted && camerasAsyncValue.hasValue && camerasAsyncValue.value!.isNotEmpty) {
-          _cameras = camerasAsyncValue.value!;
-          // Prefer front camera
-          cameraToUse = _cameras.firstWhere(
-            (cam) => cam.lensDirection == CameraLensDirection.front,
-            orElse: () => _cameras.first,
-          );
-          selectedCameraState.value = cameraToUse;
+        Future<void> initialize() async {
+          if (permissionStatusState.value.isGranted &&
+              camerasAsyncValue.hasValue &&
+              camerasAsyncValue.value!.isNotEmpty) {
+            _cameras = camerasAsyncValue.value!;
+            // Prefer front camera
+            cameraToUse = _cameras.firstWhere(
+              (cam) => cam.lensDirection == CameraLensDirection.front,
+              orElse: () => _cameras.first,
+            );
+            selectedCameraState.value = cameraToUse;
 
-          // Dispose previous controller if exists
-          await cameraControllerState.value?.dispose();
+            // Dispose previous controller if exists
+            await cameraControllerState.value?.dispose();
 
-          controller = CameraController(
-            cameraToUse!,
-            ResolutionPreset.medium,
-            enableAudio: false,
-            imageFormatGroup: ImageFormatGroup.nv21,
-          );
+            controller = CameraController(
+              cameraToUse!,
+              ResolutionPreset.medium,
+              enableAudio: false,
+              imageFormatGroup: ImageFormatGroup.nv21,
+            );
 
-          try {
-            await controller!.initialize();
-            if (!context.mounted) return; // Check mounted after async gap
-            cameraControllerState.value = controller; // Update state with initialized controller
+            try {
+              await controller!.initialize();
+              if (!context.mounted) return; // Check mounted after async gap
+              cameraControllerState.value =
+                  controller; // Update state with initialized controller
 
-            await controller!.startImageStream((image) {
-                _processCameraImage(image, selectedCameraState.value, faceDetectionService, isDetectingState);
-            });
-            isDetectingState.value = true;
-            errorState.value = null; // Clear previous errors
-
-          } on CameraException catch (e) {
-            debugPrint('Error initializing camera: ${e.code} - ${e.description}');
-            errorState.value = 'Failed to initialize camera: ${e.description}';
-            isDetectingState.value = false;
-            cameraControllerState.value = null; // Clear controller on error
-          } catch (e) {
-            debugPrint('Unexpected error initializing camera: $e');
-            errorState.value = 'An unexpected error occurred: $e';
-            isDetectingState.value = false;
-             cameraControllerState.value = null;
+              await controller!.startImageStream((image) {
+                _processCameraImage(
+                  image,
+                  selectedCameraState.value,
+                  faceDetectionService,
+                  isDetectingState,
+                );
+              });
+              isDetectingState.value = true;
+              errorState.value = null; // Clear previous errors
+            } on CameraException catch (e) {
+              debugPrint(
+                'Error initializing camera: ${e.code} - ${e.description}',
+              );
+              errorState.value =
+                  'Failed to initialize camera: ${e.description}';
+              isDetectingState.value = false;
+              cameraControllerState.value = null; // Clear controller on error
+            } catch (e) {
+              debugPrint('Unexpected error initializing camera: $e');
+              errorState.value = 'An unexpected error occurred: $e';
+              isDetectingState.value = false;
+              cameraControllerState.value = null;
+            }
           }
         }
-      }
 
-      initialize();
+        initialize();
 
-      // Cleanup function: Disposes the camera controller
-      return () async {
-        isDetectingState.value = false;
-        try {
+        // Cleanup function: Disposes the camera controller
+        return () async {
+          isDetectingState.value = false;
+          try {
             await controller?.stopImageStream();
-        } catch (e) {
+          } catch (e) {
             debugPrint("Error stopping image stream: $e");
-        }
-        await controller?.dispose();
-      };
-    }, [permissionStatusState.value, camerasAsyncValue]); // Re-run if permission or cameras change
+          }
+          await controller?.dispose();
+        };
+      },
+      [permissionStatusState.value, camerasAsyncValue],
+    ); // Re-run if permission or cameras change
 
     // --- Hook for Listening to Gesture Stream ---
     // Use useStream hook to listen to the gesture stream
-    final gestureStream = useMemoized(() => faceDetectionService.gestureStream, [faceDetectionService]);
-    final gesturesSnapshot = useStream<List<FacialGesture>>(gestureStream, initialData: []);
+    final gestureStream = useMemoized(
+      () => faceDetectionService.gestureStream,
+      [faceDetectionService],
+    );
+    final gesturesSnapshot = useStream<List<FacialGesture>>(
+      gestureStream,
+      initialData: [],
+    );
 
     // Update state when stream emits new data
     // Using useEffect to update state based on stream snapshot avoids build errors
@@ -163,19 +190,22 @@ class FaceDetectionPage extends HookConsumerWidget {
       return null;
     }, [gesturesSnapshot.data]);
 
-
     // --- Build UI ---
     Widget buildCameraPreview() {
-       if (errorState.value != null) {
+      if (errorState.value != null) {
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text('Error: ${errorState.value}', style: const TextStyle(color: Colors.red)),
-          )
+            child: Text(
+              'Error: ${errorState.value}',
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
         );
       }
 
-      if (permissionStatusState.value.isDenied || permissionStatusState.value.isPermanentlyDenied) {
+      if (permissionStatusState.value.isDenied ||
+          permissionStatusState.value.isPermanentlyDenied) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -185,13 +215,17 @@ class FaceDetectionPage extends HookConsumerWidget {
               ElevatedButton(
                 // Re-trigger permission check/request
                 onPressed: () async {
-                    final status = await Permission.camera.request();
-                    permissionStatusState.value = status;
-                    if (!status.isGranted && status.isPermanentlyDenied) {
-                       await openAppSettings();
-                    }
+                  final status = await Permission.camera.request();
+                  permissionStatusState.value = status;
+                  if (!status.isGranted && status.isPermanentlyDenied) {
+                    await openAppSettings();
+                  }
                 },
-                child: Text(permissionStatusState.value.isPermanentlyDenied ? 'Open Settings' : 'Grant Permission'),
+                child: Text(
+                  permissionStatusState.value.isPermanentlyDenied
+                      ? 'Open Settings'
+                      : 'Grant Permission',
+                ),
               ),
             ],
           ),
@@ -209,23 +243,16 @@ class FaceDetectionPage extends HookConsumerWidget {
 
       return Transform.scale(
         scale: scale,
-        child: Center(
-          child: CameraPreview(controller),
-        ),
+        child: Center(child: CameraPreview(controller)),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Face Detection (Hooks)'),
-      ),
+      appBar: AppBar(title: const Text('Face Detection (Hooks)')),
       body: Column(
         children: [
           Expanded(
-            child: Container(
-              color: Colors.black,
-              child: buildCameraPreview(),
-            ),
+            child: Container(color: Colors.black, child: buildCameraPreview()),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -245,10 +272,10 @@ class FaceDetectionPage extends HookConsumerWidget {
 
 // Extracted image processing logic to avoid capturing `this` in closure
 void _processCameraImage(
-    CameraImage image,
-    CameraDescription? cameraDescription,
-    FaceDetectionService faceDetectionService,
-    ValueNotifier<bool> isDetectingState,
+  CameraImage image,
+  CameraDescription? cameraDescription,
+  FaceDetectionService faceDetectionService,
+  ValueNotifier<bool> isDetectingState,
 ) async {
   if (!isDetectingState.value || cameraDescription == null) return;
 
@@ -257,7 +284,7 @@ void _processCameraImage(
   try {
     // Make sure to only process if detection is still active
     if (isDetectingState.value) {
-        await faceDetectionService.processImage(image, rotation);
+      await faceDetectionService.processImage(image, rotation);
     }
   } catch (e) {
     debugPrint("Error processing image: $e");

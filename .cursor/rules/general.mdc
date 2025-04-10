@@ -8,6 +8,7 @@ alwaysApply: true
 - **Always read `setup/requirements/product_requirements.md`, `setup/requirements/technical_requirements.md` and `setup/requirements/ui_requirements.md`** at the start of a new conversation to understand the project's architecture, goals, style, and constraints.
 - **Check `setup/tasks/**.md`** before starting a new task. If the task isn’t listed, add it with a brief description and today's date.
 - **Use consistent naming conventions, file structure, and architecture patterns** as described in `setup/requirements/**.md`.
+- **NEVER EVER EVER downgrade** a version that has already been set unless I ask or you specifically request permission too!! The versions should always be maintained unless explicitly told otherwise.
 
 ### 🧱 Code Structure & Modularity
 

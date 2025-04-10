@@ -17,7 +17,7 @@
 				"exts": ["sh", "bash"]
 			},
 			{
-				"command": "dart-format {{file_path}}",
+				"command": ".devenv/profile/bin/dart-format {{file_path}}",
 				"exts": ["dart"],
 				"stdin": false
 			}
