@@ -38,6 +38,7 @@ dependencies:
   hooks_riverpod: ^2.5.1
   flutter_hooks: ^0.21.2
   cupertino_icons: ^1.0.8
+  verily_ui: 0.1.0
 
 dev_dependencies:
   flutter_test:
