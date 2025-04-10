@@ -24,24 +24,22 @@ This can be used for a variety of use cases related to blockchain KYC, 2FA, game
 
 ### Backend
 
-Rust will be used for the backend.
-
-- axum
-- oxide_auth
-- server_fn (for api)
-- sqlx and welds (for sqlite db)
-- tokio (for async)
-- serde (for serialization)
-- log (for logging) and tracing (for tracing)
-
-The database will be sqlite and will be used to store the verification flows and the user's data.
+- Deno + tRPC will be used for the backend, providing type-safe API endpoints.
+- Communication with Flutter will use the `trpc-client-dart` package.
+- Dependencies:
+  - `@trpc/server`
+  - `zod` (for validation)
+  - Deno Standard Library
+- Data Storage:
+  - Initially: File-based JSON
+  - Future: SQLite or PostgreSQL
 
 ### Frontend
 
 The following integrations will be used for the flutter module.
 
 - flutter_nearby_connections
-- flutter_mlkit
+- google_ml_kit (and child libraries)
 - geolocator
 - sensors_plus
 

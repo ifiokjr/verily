@@ -7,10 +7,11 @@ This document details the technical specifications, architecture, and technologi
 Verily employs a monorepo structure containing distinct applications and shared packages.
 
 - **`/apps`:** Contains the end-user applications.
-  - `verily`: The primary Flutter application for action verification.
-  - `reflexy`: The Flutter demo game application.
-- **`/packages`:** Contains reusable Flutter components (packages and potentially modules).
-  - `verily_sdk`: Flutter Module aggregating core functionalities for embedding.
+  - `verily_create`: The Flutter web application for creators.
+  - `verily`: The primary Flutter mobile application for action verification.
+  - `reflexy`: The Flutter demo game application showcasing package usage.
+- **`/packages`:** Contains reusable Flutter components and the tRPC client.
+  - `verily_trpc`: Package housing the auto-generated Dart client for the tRPC API, using `trpc-client-dart`.
   - `verily_device_motion`: Package for accelerometer/gyroscope access and verification.
   - `verily_face_detection`: Package for ML Kit face detection.
   - `verily_pose_detection`: Package for ML Kit pose detection (body landmarks).
@@ -18,8 +19,9 @@ Verily employs a monorepo structure containing distinct applications and shared 
   - `verily_camera`: Core camera handling utilities (used by other vision packages).
   - `verily_audio`: Package for microphone access and basic audio analysis/verification (if needed).
   - (Potentially others: `verily_nfc`, `verily_bluetooth`, `verily_barcode_scanning`, `verily_text_recognition`, `verily_object_detection`, etc., based on ML Kit capabilities and use cases).
-- **`/backend` (Conceptual):** Contains the Rust backend service.
-- **`/specs`:** Contains specification documents.
+- **`/backend`:** Contains the Deno backend service.
+- **`/setup`:** Contains requirement documents, tasks, and setup scripts.
+- **`/migrations`:** Contains database migration files (if using a persistent DB).
 
 ## 2. Frontend (Flutter)
 
@@ -27,51 +29,64 @@ Verily employs a monorepo structure containing distinct applications and shared 
 
 - **Platform:** Flutter (using `fvm` for version management).
 - **State Management:** Riverpod (Leveraging the `flutter` rule).
+- **API Communication:** Via the generated tRPC client in `packages/verily_trpc`.
 - **Core Dependencies:**
   - `flutter_riverpod`
-  - Dependencies on relevant `/packages/verily_*` packages.
+  - `trpc_client` (dependency within `verily_trpc` and potentially used directly in apps)
+  - Dependencies on relevant `/packages/verily_*` sensor/ML packages.
   - `permission_handler`: For requesting sensor permissions.
   - `uni_links` or similar: For handling deep linking to open the `Verily` app.
-  - `http` or `dio`: For communication with the backend (if the Verily app needs to directly call back).
 - **Build/Distribution:** Standard Flutter build processes. Consider Shorebird for future over-the-air updates.
 
 ### 2.2. Packages (`/packages`)
 
-- **Type:** Primarily Flutter Packages, except for `verily_sdk` which is a Flutter Module.
-- **Purpose:** Encapsulate specific sensor access and ML verification logic.
+- **Type:** Primarily Flutter Packages.
+- **Purpose:** Encapsulate specific sensor access, ML verification logic, and the tRPC client.
 - **Key Dependencies (within relevant packages):**
   - `google_ml_kit_*` suite (e.g., `google_mlkit_face_detection`, `google_mlkit_pose_detection`).
   - `sensors_plus` (in `verily_device_motion`).
   - `geolocator` (in `verily_location`).
   - `camera` (core dependency, likely managed in `verily_camera` or directly in vision packages).
   - Potentially `nfc_manager`, `flutter_blue_plus`, `flutter_nearby_connections`, etc., for respective packages.
-- **Design:** Packages should expose a clear, high-level API for initiating monitoring/verification and returning results (e.g., `Future<bool> verifySmile()`, `Stream<DeviceRotation> monitorRotation()`).
+- **Design:** Sensor/ML packages should expose a clear, high-level API. `verily_trpc` will contain the generated Dart client based on the backend's tRPC router definition.
 
-### 2.3. Verily SDK (`/packages/verily_sdk`)
+### 2.3. Verily tRPC Package (`/packages/verily_trpc`)
 
-- **Type:** Flutter Module.
-- **Purpose:** Provide a single integration point for native applications.
-- **Functionality:** Acts as a facade, importing and re-exporting the APIs of the individual `verily_*` packages. It will need platform channel implementations (or potentially FFI via `flutter_rust_bridge` if interacting with Rust logic directly) to expose its functionality to the native host (Android/iOS).
-- **Integration:** Developers integrating the SDK into native apps will use standard Flutter module integration methods (e.g., `FlutterEngine`, `MethodChannel` on Android/iOS).
+- **Purpose:** Centralizes the type-safe communication layer with the Deno backend.
+- **Generation:** Uses `trpc-client-dart` and `build_runner` to generate Dart models and router definitions directly from the backend's tRPC `AppRouter` type definition.
+- **Dependencies:** `trpc_client`, `freezed_annotation`, `json_annotation`.
+- **Build Dependencies:** `build_runner`, `freezed`, `json_serializable`, `trpc_client_generator`.
 
-## 3. Backend
+## 3. Backend (Deno + tRPC)
 
-- **Language:** Rust
-- **Async Runtime:** Tokio
-- **Web Framework:** Axum (preferred for building the API and potentially the developer portal).
-- **API Layer:** An HTTP API for:
-  - Developer authentication (API key validation).
-  - Defining/managing verification flows.
-  - Receiving verification completion notifications from the Verily app.
-  - Potentially serving the "Install Verily" webpage.
-- **Server Functions (`server_fn`):** While initially considered, using `axum` for a dedicated backend API seems more appropriate for managing developer state, API keys, and persistent webhook configurations. `server_fn` might be less suitable for this stateful, multi-tenant backend scenario compared to a traditional web framework.
-- **Database:** SQLite initially (using `sqlx`). Consider PostgreSQL for future scalability.
-  - **Schema:** Tables for developers, API keys, verification flow definitions, registered webhooks, potentially audit logs of verification events.
-- **Authentication:** `oxide-auth` or custom implementation for developer portal login (if built). API key validation for API requests.
-- **Webhook Dispatch:** Robust mechanism to send signed POST requests to developer-registered webhook URLs upon verification completion. Needs retry logic.
-- **Serialization:** Serde
-- **Logging/Tracing:** `tracing`, `log`.
-- **Deployment:** Containerized deployment (Docker) to a cloud platform (e.g., Fly.io, Google Cloud Run, AWS Fargate).
+- **Runtime:** Deno
+- **API Framework:** tRPC (`@trpc/server`)
+- **Dependencies:**
+    - `@trpc/server`, `@trpc/client` (for potential server-to-server calls if needed)
+    - `zod` (for input validation)
+    - Deno Standard Library (`std`)
+- **Structure:** Follows standard tRPC structure:
+    - Initialization (`trpc.ts`)
+    - Router definitions (`router.ts` or similar, defining `AppRouter`)
+    - Procedure implementations (queries and mutations)
+    - Context creation (`context.ts`)
+    - Server adapter (e.g., `standalone` or integrated with a Deno web framework like Oak if needed later)
+- **Data Storage:**
+    - **Initial:** File-based JSON storage (similar to the Deno/tRPC blog example) for rapid development.
+    - **Future:** Migrate to SQLite or PostgreSQL using a Deno-compatible driver/ORM (e.g., `deno-sqlite`, `postgres`, potentially Drizzle ORM with a Deno adapter).
+- **Schema:** (Applicable when using a database)
+    - `Creators`: Stores creator information and authentication details.
+    - `Actions`: Stores definition of verifiable actions (name, description, configuration).
+    - `ActionSteps`: Stores individual steps within an action (type, parameters, order).
+    - `Webhooks`: Stores creator-defined webhooks (URL, associated action/events, secret).
+    - `VerificationAttempts`: Logs attempts to complete actions (user identifier, status, timestamps, progress).
+- **Authentication:**
+    - Creator authentication handled via tRPC middleware (e.g., checking API keys or session tokens passed in context).
+    - User authentication within the Verily app (various methods) potentially managed via backend procedures.
+- **Webhook Dispatch:** Logic within tRPC procedures or dedicated backend functions to send signed POST requests to registered webhook URLs upon verification events. Needs retry logic.
+- **Deployment:**
+    - Deno Deploy (ideal for serverless Deno apps)
+    - Containerized deployment (Docker) to cloud platforms (Fly.io, Google Cloud Run, AWS Fargate, etc.)
 
 ## 4. Machine Learning
 
@@ -79,13 +94,13 @@ Verily employs a monorepo structure containing distinct applications and shared 
   - Face Detection
   - Pose Detection
   - Consider others: Text Recognition, Barcode Scanning, Object Detection, Selfie Segmentation based on defined verification actions.
-- **Secondary:** Core ML (iOS) / TensorFlow Lite (Android/general) - Only if custom models or specific platform optimizations are absolutely necessary, as this increases complexity significantly.
+- **Secondary:** Core ML (iOS) / TensorFlow Lite (Android/general) - Only if custom models or specific platform optimizations are absolutely necessary.
 
 ## 5. Testing Strategy
 
-- **Unit Tests (Dart/Flutter):** For business logic within packages and apps (view models, state management logic, utility functions).
+- **Unit Tests (Dart/Flutter):** For business logic within Flutter packages and apps (view models, Riverpod providers, utility functions).
 - **Widget Tests (Flutter):** For UI components in isolation.
-- **Integration Tests (Flutter):** Limited use due to hardware dependency. Can test app navigation and state flow with mocked sensor/ML data.
+- **Backend Tests (Deno/TypeScript):** Using Deno's built-in test runner (`deno test`) for tRPC procedures, data layer logic, and utility functions.
+- **Integration Tests (Flutter):** Can test app navigation and state flow with mocked tRPC responses.
 - **Manual Testing (via `Reflexy`):** Primary method for testing core sensor and ML verification functionality on physical devices.
-- **Backend Tests (Rust):** Unit and integration tests for API endpoints, database interactions, and webhook logic.
-- **End-to-End (E2E):** Complex to automate fully. Manual E2E tests involving a developer app -> backend -> Verily App -> backend -> webhook notification flow are necessary.
+- **End-to-End (E2E):** Manual E2E tests involving creator app -> backend -> Verily App -> backend -> webhook notification flow. Automated E2E might be possible using tools that can orchestrate backend and frontend interactions.

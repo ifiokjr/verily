@@ -5,10 +5,6 @@
 	"exec": {
 		"commands": [
 			{
-				"command": "rustfmt +nightly --unstable-features --edition 2024",
-				"exts": ["rs"]
-			},
-			{
 				"command": "nixfmt",
 				"exts": ["nix"]
 			},

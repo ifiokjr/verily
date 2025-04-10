@@ -107,3 +107,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Rust toolchain
+**/target/
+
+# Rust logs
+# **/rustc-ice-*.txt
+# Generated files
