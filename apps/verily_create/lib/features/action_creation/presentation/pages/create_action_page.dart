@@ -128,7 +128,6 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
                 Center(
                   child: ElevatedButton(
                     onPressed: _submitAction,
-                    child: const Text('Save Action'),
                     // Applying Apple HIG: Primary button for main form submission.
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
@@ -136,6 +135,7 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
                         vertical: 12,
                       ),
                     ),
+                    child: const Text('Save Action'),
                   ),
                 ),
               ],

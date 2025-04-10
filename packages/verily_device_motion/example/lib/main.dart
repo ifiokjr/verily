@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -29,7 +28,8 @@ MotionDetectorService useMotionDetector({
     );
     detectorRef.value!.startListening();
     print(
-        '[MotionDetector Hook] Initialized with sensitivities: drop=$initialDropSensitivity, yaw=$initialYawSensitivity, roll=$initialRollSensitivity');
+      '[MotionDetector Hook] Initialized with sensitivities: drop=$initialDropSensitivity, yaw=$initialYawSensitivity, roll=$initialRollSensitivity',
+    );
 
     // Cleanup on unmount
     return () {
@@ -45,8 +45,9 @@ MotionDetectorService useMotionDetector({
 }
 
 // Provider for the motion counts
-final motionCountsProvider =
-    StateProvider<MotionCounts>((ref) => const MotionCounts());
+final motionCountsProvider = StateProvider<MotionCounts>(
+  (ref) => const MotionCounts(),
+);
 
 // Main app
 void main() {
@@ -63,10 +64,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Verily Motion Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const MotionCounterScreen(),
     );
   }
@@ -151,10 +149,7 @@ class MotionCounterScreen extends HookConsumerWidget {
             const SizedBox(height: 20),
 
             // --- Drop Counter ---
-            _buildCounterCard(
-              title: 'Drops',
-              count: counts.dropCount,
-            ),
+            _buildCounterCard(title: 'Drops', count: counts.dropCount),
             const SizedBox(height: 10),
             _SensitivitySlider(
               label: 'Drop Sensitivity (Effective on Restart)',

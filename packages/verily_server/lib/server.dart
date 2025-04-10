@@ -1,4 +1,5 @@
 import 'package:serverpod/serverpod.dart';
+import 'package:serverpod_auth_server/serverpod_auth_server.dart' as auth;
 
 import 'package:verily_server/src/web/routes/root.dart';
 
@@ -10,11 +11,27 @@ import 'src/generated/endpoints.dart';
 // configuring Relic (Serverpod's web-server), or need custom setup work.
 
 void run(List<String> args) async {
+  // Configure Auth module (optional - using defaults for now)
+  // auth.AuthConfig.set(auth.AuthConfig(
+  //   sendValidationEmail: (session, email, validationCode) async {
+  //     print('Validation code: $validationCode'); // Basic console output for now
+  //     // TODO: Implement actual email sending (e.g., using mailer package)
+  //     return true; // Return true if email sending is considered successful
+  //   },
+  //   sendPasswordResetEmail: (session, userInfo, validationCode) async {
+  //     print('Password reset code: $validationCode for ${userInfo.email}');
+  //     // TODO: Implement actual email sending
+  //     return true;
+  //   },
+  //   // minPasswordLength: 10, // Example customization
+  // ));
+
   // Initialize Serverpod and connect it with your generated code.
   final pod = Serverpod(
     args,
     Protocol(),
     Endpoints(),
+    authenticationHandler: auth.authenticationHandler,
   );
 
   // If you are using any future calls, they need to be registered here.

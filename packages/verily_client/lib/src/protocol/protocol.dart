@@ -15,6 +15,7 @@ import 'action_step.dart' as _i3;
 import 'example.dart' as _i4;
 import 'verification_attempt.dart' as _i5;
 import 'webhook.dart' as _i6;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i7;
 export 'action.dart';
 export 'action_step.dart';
 export 'example.dart';
@@ -76,6 +77,9 @@ class Protocol extends _i1.SerializationManager {
           ? (data as List).map((e) => deserialize<_i6.Webhook>(e)).toList()
           : null) as T;
     }
+    try {
+      return _i7.Protocol().deserialize<T>(data, t);
+    } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
 
@@ -97,6 +101,10 @@ class Protocol extends _i1.SerializationManager {
     }
     if (data is _i6.Webhook) {
       return 'Webhook';
+    }
+    className = _i7.Protocol().getClassNameForObject(data);
+    if (className != null) {
+      return 'serverpod_auth.$className';
     }
     return null;
   }
@@ -121,6 +129,10 @@ class Protocol extends _i1.SerializationManager {
     }
     if (dataClassName == 'Webhook') {
       return deserialize<_i6.Webhook>(data['data']);
+    }
+    if (dataClassName.startsWith('serverpod_auth.')) {
+      data['className'] = dataClassName.substring(15);
+      return _i7.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }

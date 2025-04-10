@@ -37,15 +37,18 @@ abstract class Webhook implements _i1.TableRow<int>, _i1.ProtocolSerialization {
     return WebhookImplicit._(
       id: jsonSerialization['id'] as int?,
       actionId: jsonSerialization['actionId'] as int,
-      action: jsonSerialization['action'] == null
-          ? null
-          : _i2.Action.fromJson(
-              (jsonSerialization['action'] as Map<String, dynamic>)),
+      action:
+          jsonSerialization['action'] == null
+              ? null
+              : _i2.Action.fromJson(
+                (jsonSerialization['action'] as Map<String, dynamic>),
+              ),
       url: jsonSerialization['url'] as String,
       secret: jsonSerialization['secret'] as String,
       triggerEvents: jsonSerialization['triggerEvents'] as String,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
       $_actionWebhooksActionId:
           jsonSerialization['_actionWebhooksActionId'] as int?,
     );
@@ -157,14 +160,14 @@ class _WebhookImpl extends Webhook {
     required String triggerEvents,
     required DateTime createdAt,
   }) : super._(
-          id: id,
-          actionId: actionId,
-          action: action,
-          url: url,
-          secret: secret,
-          triggerEvents: triggerEvents,
-          createdAt: createdAt,
-        );
+         id: id,
+         actionId: actionId,
+         action: action,
+         url: url,
+         secret: secret,
+         triggerEvents: triggerEvents,
+         createdAt: createdAt,
+       );
 
   /// Returns a shallow copy of this [Webhook]
   /// with some or all fields replaced by the given arguments.
@@ -187,7 +190,7 @@ class _WebhookImpl extends Webhook {
       secret: secret ?? this.secret,
       triggerEvents: triggerEvents ?? this.triggerEvents,
       createdAt: createdAt ?? this.createdAt,
-      $_actionWebhooksActionId: this._actionWebhooksActionId,
+      $_actionWebhooksActionId: _actionWebhooksActionId,
     );
   }
 }
@@ -202,21 +205,18 @@ class WebhookImplicit extends _WebhookImpl {
     required String triggerEvents,
     required DateTime createdAt,
     int? $_actionWebhooksActionId,
-  })  : _actionWebhooksActionId = $_actionWebhooksActionId,
-        super(
-          id: id,
-          actionId: actionId,
-          action: action,
-          url: url,
-          secret: secret,
-          triggerEvents: triggerEvents,
-          createdAt: createdAt,
-        );
+  }) : _actionWebhooksActionId = $_actionWebhooksActionId,
+       super(
+         id: id,
+         actionId: actionId,
+         action: action,
+         url: url,
+         secret: secret,
+         triggerEvents: triggerEvents,
+         createdAt: createdAt,
+       );
 
-  factory WebhookImplicit(
-    Webhook webhook, {
-    int? $_actionWebhooksActionId,
-  }) {
+  factory WebhookImplicit(Webhook webhook, {int? $_actionWebhooksActionId}) {
     return WebhookImplicit._(
       id: webhook.id,
       actionId: webhook.actionId,
@@ -235,30 +235,12 @@ class WebhookImplicit extends _WebhookImpl {
 
 class WebhookTable extends _i1.Table<int> {
   WebhookTable({super.tableRelation}) : super(tableName: 'webhook') {
-    actionId = _i1.ColumnInt(
-      'actionId',
-      this,
-    );
-    url = _i1.ColumnString(
-      'url',
-      this,
-    );
-    secret = _i1.ColumnString(
-      'secret',
-      this,
-    );
-    triggerEvents = _i1.ColumnString(
-      'triggerEvents',
-      this,
-    );
-    createdAt = _i1.ColumnDateTime(
-      'createdAt',
-      this,
-    );
-    $_actionWebhooksActionId = _i1.ColumnInt(
-      '_actionWebhooksActionId',
-      this,
-    );
+    actionId = _i1.ColumnInt('actionId', this);
+    url = _i1.ColumnString('url', this);
+    secret = _i1.ColumnString('secret', this);
+    triggerEvents = _i1.ColumnString('triggerEvents', this);
+    createdAt = _i1.ColumnDateTime('createdAt', this);
+    $_actionWebhooksActionId = _i1.ColumnInt('_actionWebhooksActionId', this);
   }
 
   late final _i1.ColumnInt actionId;
@@ -282,32 +264,33 @@ class WebhookTable extends _i1.Table<int> {
       field: Webhook.t.actionId,
       foreignField: _i2.Action.t.id,
       tableRelation: tableRelation,
-      createTable: (foreignTableRelation) =>
-          _i2.ActionTable(tableRelation: foreignTableRelation),
+      createTable:
+          (foreignTableRelation) =>
+              _i2.ActionTable(tableRelation: foreignTableRelation),
     );
     return _action!;
   }
 
   @override
   List<_i1.Column> get columns => [
-        id,
-        actionId,
-        url,
-        secret,
-        triggerEvents,
-        createdAt,
-        $_actionWebhooksActionId,
-      ];
+    id,
+    actionId,
+    url,
+    secret,
+    triggerEvents,
+    createdAt,
+    $_actionWebhooksActionId,
+  ];
 
   @override
   List<_i1.Column> get managedColumns => [
-        id,
-        actionId,
-        url,
-        secret,
-        triggerEvents,
-        createdAt,
-      ];
+    id,
+    actionId,
+    url,
+    secret,
+    triggerEvents,
+    createdAt,
+  ];
 
   @override
   _i1.Table? getRelationTable(String relationField) {
@@ -465,10 +448,7 @@ class WebhookRepository {
     List<Webhook> rows, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.insert<Webhook>(
-      rows,
-      transaction: transaction,
-    );
+    return session.db.insert<Webhook>(rows, transaction: transaction);
   }
 
   /// Inserts a single [Webhook] and returns the inserted row.
@@ -479,10 +459,7 @@ class WebhookRepository {
     Webhook row, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.insertRow<Webhook>(
-      row,
-      transaction: transaction,
-    );
+    return session.db.insertRow<Webhook>(row, transaction: transaction);
   }
 
   /// Updates all [Webhook]s in the list and returns the updated rows. If
@@ -527,10 +504,7 @@ class WebhookRepository {
     List<Webhook> rows, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.delete<Webhook>(
-      rows,
-      transaction: transaction,
-    );
+    return session.db.delete<Webhook>(rows, transaction: transaction);
   }
 
   /// Deletes a single [Webhook].
@@ -539,10 +513,7 @@ class WebhookRepository {
     Webhook row, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.deleteRow<Webhook>(
-      row,
-      transaction: transaction,
-    );
+    return session.db.deleteRow<Webhook>(row, transaction: transaction);
   }
 
   /// Deletes all rows matching the [where] expression.

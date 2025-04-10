@@ -134,7 +134,7 @@ class FaceDetectionService {
         final double mouthOpening = (mouthBottom.y - mouthCornerYAvg).abs();
         final double mouthOpenRatio = mouthOpening / mouthWidthEstimate;
 
-        final double mouthOpenThreshold =
+        const double mouthOpenThreshold =
             0.35; // Heuristic: Opening is > 35% of mouth width
 
         if (mouthOpenRatio > mouthOpenThreshold) {
@@ -169,7 +169,7 @@ class FaceDetectionService {
         // Positive value means the corner is lower than the nose base
         final double avgCornerRelY = (leftCornerRelY + rightCornerRelY) / 2.0;
 
-        final double frownThreshold =
+        const double frownThreshold =
             0.08; // Heuristic: Corners > 8% of face height below nose
 
         if (avgCornerRelY > frownThreshold) {

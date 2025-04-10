@@ -130,8 +130,8 @@ void main() {
             predicate<List<FacialGesture>>((gestures) {
               if (gestures.length != 1) return false;
               final gesture = gestures.first;
-              final expectedConfidence = 0.95;
-              final epsilon = 0.01;
+              const expectedConfidence = 0.95;
+              const epsilon = 0.01;
               return gesture.type == GestureType.blink &&
                   (gesture.confidence - expectedConfidence).abs() < epsilon;
             }),
@@ -159,8 +159,8 @@ void main() {
             predicate<List<FacialGesture>>((gestures) {
               if (gestures.length != 1) return false;
               final gesture = gestures.first;
-              final expectedConfidence = 0.95; // 1 - 0.05
-              final epsilon = 0.01;
+              const expectedConfidence = 0.95; // 1 - 0.05
+              const epsilon = 0.01;
               return gesture.type == GestureType.wink &&
                   (gesture.confidence - expectedConfidence).abs() < epsilon;
             }),
@@ -188,8 +188,8 @@ void main() {
             predicate<List<FacialGesture>>((gestures) {
               if (gestures.length != 1) return false;
               final gesture = gestures.first;
-              final expectedConfidence = 0.95; // 1 - 0.05
-              final epsilon = 0.01;
+              const expectedConfidence = 0.95; // 1 - 0.05
+              const epsilon = 0.01;
               return gesture.type == GestureType.wink &&
                   (gesture.confidence - expectedConfidence).abs() < epsilon;
             }),
@@ -238,8 +238,8 @@ void main() {
                       timestamp: DateTime.now(),
                     ),
               );
-              final expectedConfidence = 0.35;
-              final epsilon = 0.01;
+              const expectedConfidence = 0.35;
+              const epsilon = 0.01;
               return openMouthGesture.type == GestureType.openMouth &&
                   (openMouthGesture.confidence - expectedConfidence).abs() <
                       epsilon;
@@ -296,8 +296,8 @@ void main() {
                       timestamp: DateTime.now(),
                     ),
               );
-              final expectedConfidence = 1.0;
-              final epsilon = 0.01;
+              const expectedConfidence = 1.0;
+              const epsilon = 0.01;
               return frownGesture.type == GestureType.frown &&
                   (frownGesture.confidence - expectedConfidence).abs() <
                       epsilon;
