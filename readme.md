@@ -1,4 +1,4 @@
-# verify
+# verily
 
 I would like to create an app which runs on mobile that can track and verify that a user has performed a certain action.
 
@@ -14,7 +14,7 @@ The actions can have a series of steps and parameters.
 - Access to nfc
 - Access to bluetooth
 
-It would bundle in mlkit and coremltools to verify the actions.
+It would bundle in mlkit to verify the actions.
 
 So the user can create a verification flow that requires the user to take a picture of themself smiling from a given location and the sdk will verify that the user has performed the action.
 
@@ -24,15 +24,9 @@ This can be used for a variety of use cases related to blockchain KYC, 2FA, game
 
 ### Backend
 
-- Deno + tRPC will be used for the backend, providing type-safe API endpoints.
-- Communication with Flutter will use the `trpc-client-dart` package.
-- Dependencies:
-  - `@trpc/server`
-  - `zod` (for validation)
-  - Deno Standard Library
-- Data Storage:
-  - Initially: File-based JSON
-  - Future: SQLite or PostgreSQL
+- Serverpod (https://docs.serverpod.dev/) get started here.
+- Postgres DB managed by serverpod
+- pulumi for deployment
 
 ### Frontend
 

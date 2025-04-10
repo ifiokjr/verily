@@ -1,0 +1,21 @@
+# Represents a webhook URL to be called upon action verification events.
+class: Webhook
+table: webhook
+
+fields:
+  # The action this webhook is associated with.
+  action: Action?, relation(parent=action)
+  # The URL to which the webhook notification should be sent.
+  url: String
+  # A secret used for signing webhook requests to verify authenticity.
+  secret: String
+  # Comma-separated list of events that trigger this webhook (e.g., 'completed', 'failed', 'started').
+  # Consider using an Enum or separate boolean fields if the list of events is fixed and small.
+  triggerEvents: String # TODO: Potentially use an Enum or multiple booleans
+  # Timestamp when the webhook was created.
+  createdAt: DateTime
+
+indexes:
+  webhook_actionId_idx:
+    fields: actionId
+    unique: false

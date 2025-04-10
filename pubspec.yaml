@@ -7,7 +7,8 @@ workspace:
   - apps/verily
   - apps/verily_create
   - packages/verily_device_motion
-  - packages/verily_trpc
+  - packages/verily_client
+  - packages/verily_server
 dev_dependencies:
   melos: ^7.0.0-dev.7
   flutter_lints: ^5.0.0

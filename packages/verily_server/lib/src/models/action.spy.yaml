@@ -1,0 +1,27 @@
+# Represents a verifiable action composed of multiple steps.
+class: Action
+table: action # Explicitly defining table name is good practice
+
+fields:
+  # The user-friendly name of the action.
+  name: String
+  # A detailed description of what the action entails.
+  description: String
+  # Link to the creator who defined this action. Assumes usage of serverpod_auth module.
+  # This establishes a one-to-many relationship: one creator can have many actions.
+  creatorId: int
+  # The sequence of steps required to complete this action.
+  # This establishes a one-to-many relationship: one action has many steps.
+  # The relation uses 'parent=action' assuming ActionStep has an 'action' field pointing back.
+  steps: List<ActionStep>?, relation(parent=action)
+  # Webhooks associated with this action.
+  # This establishes a one-to-many relationship: one action can have many webhooks.
+  # The relation uses 'parent=action' assuming Webhook has an 'action' field pointing back.
+  webhooks: List<Webhook>?, relation(parent=action)
+  # Timestamp when the action was created.
+  createdAt: DateTime
+
+indexes:
+  action_creatorId_idx:
+    fields: creatorId
+    unique: false

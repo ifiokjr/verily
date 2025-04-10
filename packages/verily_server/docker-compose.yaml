@@ -1,0 +1,44 @@
+services:
+  # Development services
+  postgres:
+    image: postgres:16.3
+    ports:
+      - "8090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: verily
+      POSTGRES_PASSWORD: "JQUc8oSeXI7zpcYZ2w2gaq5JaxIZ6dt8"
+    volumes:
+      - verily_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6.2.6
+    ports:
+      - "8091:6379"
+    command: redis-server --requirepass "etvxeO4lBWJmR2zWfnH1fiP3FuaLz7ai"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+  # Test services
+  postgres_test:
+    image: postgres:16.3
+    ports:
+      - "9090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: verily_test
+      POSTGRES_PASSWORD: "6QaRWDPlYLoBobNYguiJm7tFoZjqvTmI"
+    volumes:
+      - verily_test_data:/var/lib/postgresql/data
+
+  redis_test:
+    image: redis:6.2.6
+    ports:
+      - "9091:6379"
+    command: redis-server --requirepass "6e4U86m-CzgaBxqqBAGqKmAek9194Bc7"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+volumes:
+  verily_data:
+  verily_test_data:
