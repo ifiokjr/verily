@@ -49,6 +49,7 @@ dev_dependencies:
   riverpod_generator: ^2.6.4
   # Keep build_runner ONLY here
   build_runner: ^2.4.15
+  freezed: ^3.0.6
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -2,11 +2,13 @@ import 'dart:convert'; // For jsonDecode
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart'; // Import GoRouter
 import 'package:verily_client/verily_client.dart' as vc;
 
 import 'providers/action_providers.dart';
 // Import the verification flow provider
 import '../verification/providers/verification_flow_provider.dart';
+import '../../routing/app_router.dart'; // Correct import for routing
 
 /// Screen to display the details and steps of a specific action.
 class ActionDetailScreen extends ConsumerWidget {
@@ -61,19 +63,11 @@ class ActionDetailScreen extends ConsumerWidget {
                       .read(verificationFlowProvider.notifier)
                       .startFlow(actionId);
 
-                  // Optionally, show immediate feedback (or navigate later based on state)
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Initializing verification for Action: ${action.name}',
-                      ),
-                    ),
+                  // Navigate to the verification screen
+                  context.goNamed(
+                    AppRouteNames.verifyAction,
+                    pathParameters: {'actionId': actionId.toString()},
                   );
-
-                  // TODO: Navigate to the verification flow screen.
-                  // Navigation should likely happen based on state changes in
-                  // verificationFlowProvider (e.g., when flowStatus becomes inProgress).
-                  // context.push('/verify/$actionId');
                 },
                 child: const Text('Start Verification'),
               ),

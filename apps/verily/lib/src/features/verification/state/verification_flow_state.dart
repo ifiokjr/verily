@@ -21,7 +21,7 @@ enum StepStatus {
 
 /// State for managing the action verification process.
 @freezed
-class VerificationFlowState with _$VerificationFlowState {
+abstract class VerificationFlowState with _$VerificationFlowState {
   const factory VerificationFlowState({
     /// The action currently being verified.
     vc.Action? action,

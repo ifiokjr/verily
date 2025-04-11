@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/actions/actions_screen.dart';
 import '../features/actions/action_detail_screen.dart'; // Will create this next
+import '../features/verification/screens/verification_screen.dart'; // Import VerificationScreen
 import '../screens/home_screen.dart';
 
 // Define route paths
@@ -10,6 +11,8 @@ class AppRoutePaths {
   static const String home = '/';
   static const String actions = '/actions';
   static const String actionDetail = 'action/:actionId'; // Parameterized route
+  static const String verifyAction =
+      '/verify/:actionId'; // New route for verification
 }
 
 // Define route names (optional but good practice)
@@ -17,6 +20,7 @@ class AppRouteNames {
   static const String home = 'home';
   static const String actions = 'actions';
   static const String actionDetail = 'actionDetail';
+  static const String verifyAction = 'verifyAction'; // New route name
 }
 
 /// GoRouter configuration
@@ -47,7 +51,24 @@ final goRouter = GoRouter(
         return ActionDetailScreen(actionId: actionId);
       },
     ),
+    // Verification Flow screen
+    GoRoute(
+      path: AppRoutePaths.verifyAction, // Use the new path
+      name: AppRouteNames.verifyAction, // Use the new name
+      builder: (context, state) {
+        final actionIdString = state.pathParameters['actionId'];
+        final actionId = int.tryParse(actionIdString ?? '') ?? -1;
+        // Note: VerificationScreen doesn't strictly need the ID if it relies
+        // solely on the provider state, which is initiated by startFlow.
+        // However, passing it might be useful for context or direct fetching if needed.
+        return const VerificationScreen();
+      },
+    ),
     // TODO: Add routes for Profile, Settings etc. if needed as separate screens
   ],
-  // TODO: Add error handling (e.g., errorBuilder for 404s)
+  errorBuilder:
+      (context, state) => Scaffold(
+        appBar: AppBar(title: const Text('Page Not Found')),
+        body: Center(child: Text('Error: ${state.error?.message}')),
+      ),
 );
