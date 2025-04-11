@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart'; // For date formatting
 import 'package:verily_create/features/action_creation/presentation/pages/action_list_page.dart'; // Import provider
 import 'package:verily_create/main.dart'; // Import client
 
@@ -15,62 +16,89 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  bool _isLoading = false; // State to handle loading during submission
+  final _locationIdController = TextEditingController(); // Placeholder
+  final _maxCompletionTimeController = TextEditingController();
 
-  // TODO: Add controllers/state for location, time constraints, strictOrder
+  DateTime? _validFrom;
+  DateTime? _validUntil;
+  bool _isStrictOrder = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    // TODO: Dispose other controllers
+    _locationIdController.dispose();
+    _maxCompletionTimeController.dispose();
     super.dispose();
   }
 
+  Future<void> _selectDate(BuildContext context, bool isFromDate) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: (isFromDate ? _validFrom : _validUntil) ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      setState(() {
+        if (isFromDate) {
+          _validFrom = picked;
+        } else {
+          _validUntil = picked;
+        }
+      });
+    }
+  }
+
   Future<void> _submitAction() async {
-    if (_isLoading) return; // Prevent double submission
+    if (_isLoading) return;
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      // Form is valid, collect data
       final name = _nameController.text;
       final description = _descriptionController.text;
-      // TODO: Get values from other form fields (locationId, etc.)
-      final int? locationId = null;
-      final DateTime? validFrom = null;
-      final DateTime? validUntil = null;
-      final int? maxCompletionTimeSeconds = null;
-      final bool strictOrder = true; // Default for now
+      final int? locationId = int.tryParse(_locationIdController.text);
+      final int? maxCompletionTimeSeconds = int.tryParse(
+        _maxCompletionTimeController.text,
+      );
+
+      // Basic validation for dates
+      if (_validFrom != null &&
+          _validUntil != null &&
+          _validUntil!.isBefore(_validFrom!)) {
+        _showErrorSnackbar(
+          '"Valid Until" date cannot be before "Valid From" date.',
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
 
       try {
-        // Call Serverpod endpoint via client
         final newAction = await client.action.createAction(
           name: name,
           description: description,
           locationId: locationId,
-          validFrom: validFrom,
-          validUntil: validUntil,
+          validFrom: _validFrom, // Already DateTime?
+          validUntil: _validUntil, // Already DateTime?
           maxCompletionTimeSeconds: maxCompletionTimeSeconds,
-          strictOrder: strictOrder,
+          strictOrder: _isStrictOrder,
         );
 
         if (newAction != null) {
-          // Success!
-          ref.invalidate(myActionsProvider); // Refresh the action list
+          ref.invalidate(myActionsProvider);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Action "${newAction.name}" created!')),
           );
           if (Navigator.canPop(context)) {
-            Navigator.pop(context); // Go back to the list
+            Navigator.pop(context);
           }
         } else {
-          // Handle unexpected null response from createAction
           _showErrorSnackbar(
             'Failed to create action. Server returned unexpected response.',
           );
         }
       } catch (e) {
-        // Handle errors (e.g., network, server-side validation)
         print('Error creating action: $e');
         _showErrorSnackbar('Error creating action: ${e.toString()}');
       } finally {
@@ -92,16 +120,16 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final dateFormat = DateFormat.yMd(); // Date formatter
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create New Action'),
-        // Applying Apple HIG: Clear title, consistent back navigation.
         centerTitle: false,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: TextButton(
-              // Disable button while loading
               onPressed: _isLoading ? null : _submitAction,
               child:
                   _isLoading
@@ -115,7 +143,6 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
           ),
         ],
       ),
-      // Applying Apple HIG: Use Form for input grouping, clear labels, padding.
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -124,6 +151,7 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                // --- Action Details Section ---
                 Text(
                   'Action Details',
                   style: Theme.of(context).textTheme.titleLarge,
@@ -137,9 +165,8 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a name for the action';
-                    }
+                    if (value == null || value.isEmpty)
+                      return 'Please enter a name';
                     return null;
                   },
                 ),
@@ -153,14 +180,107 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
                   ),
                   maxLines: 3,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
+                    if (value == null || value.isEmpty)
                       return 'Please enter a description';
-                    }
                     return null;
                   },
                 ),
                 const SizedBox(height: 24),
-                // --- Placeholder for adding Action Steps ---
+
+                // --- Optional Settings Section ---
+                Text(
+                  'Optional Settings',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                // Location (Placeholder)
+                TextFormField(
+                  controller: _locationIdController,
+                  decoration: const InputDecoration(
+                    labelText: 'Location ID (Optional)',
+                    hintText: 'Enter numeric ID of a pre-defined location',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  // No validator needed as it's optional, parsed with tryParse
+                ),
+                const SizedBox(height: 16),
+                // Valid From / Until
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => _selectDate(context, true),
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'Valid From (Optional)',
+                            border: OutlineInputBorder(),
+                          ),
+                          child: Text(
+                            _validFrom == null
+                                ? 'Not Set'
+                                : dateFormat.format(_validFrom!),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => _selectDate(context, false),
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'Valid Until (Optional)',
+                            border: OutlineInputBorder(),
+                          ),
+                          child: Text(
+                            _validUntil == null
+                                ? 'Not Set'
+                                : dateFormat.format(_validUntil!),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Max Completion Time
+                TextFormField(
+                  controller: _maxCompletionTimeController,
+                  decoration: const InputDecoration(
+                    labelText: 'Max Completion Time (seconds, Optional)',
+                    hintText: 'e.g., 300 for 5 minutes',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value != null &&
+                        value.isNotEmpty &&
+                        int.tryParse(value) == null) {
+                      return 'Please enter a valid number of seconds';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 8),
+                // Strict Order
+                SwitchListTile(
+                  title: const Text('Enforce Strict Step Order'),
+                  subtitle: const Text(
+                    'If enabled, steps must be completed sequentially.',
+                  ),
+                  value: _isStrictOrder,
+                  onChanged: (bool value) {
+                    setState(() {
+                      _isStrictOrder = value;
+                    });
+                  },
+                  contentPadding:
+                      EdgeInsets.zero, // Use ListTile default padding
+                ),
+                const SizedBox(height: 24),
+
+                // --- Action Steps Section (Placeholder) ---
                 Text(
                   'Action Steps',
                   style: Theme.of(context).textTheme.titleLarge,
@@ -180,13 +300,10 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
                     ),
                   ),
                 ),
-                // --- End Placeholder ---
                 const SizedBox(height: 32),
                 Center(
                   child: ElevatedButton(
-                    // Disable button while loading
                     onPressed: _isLoading ? null : _submitAction,
-                    // Applying Apple HIG: Primary button for main form submission.
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 32,
