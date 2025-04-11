@@ -16,9 +16,9 @@ dependencies:
   google_mlkit_face_detection: ^0.13.1
   camera: ^0.11.1
   google_mlkit_commons: ^0.11.0
-  flutter_riverpod: ^2.5.1
+  flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.3.5
-  freezed_annotation: ^2.4.1
+  freezed_annotation: ^3.0.0
   image: ^4.1.7
   rxdart: ^0.28.0
   json_annotation: ^4.9.0
@@ -27,8 +27,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
-  build_runner: ^2.4.11
-  freezed: ^2.5.2
+  build_runner: ^2.4.15
+  freezed: ^3.0.6
   riverpod_generator: ^2.4.0
   mockito: ^5.4.4
   json_serializable: ^6.8.0

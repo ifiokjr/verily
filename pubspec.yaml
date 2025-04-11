@@ -15,6 +15,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   custom_lint:
   riverpod_lint:
+  riverpod_generator: ^2.6.1
   serverpod_cli: 2.5.1
 
 melos:
