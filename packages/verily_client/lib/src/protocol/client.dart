@@ -76,6 +76,15 @@ class EndpointAction extends _i1.EndpointRef {
         {'actionId': actionId},
       );
 
+  /// Retrieves full details for a single Action, including steps and webhooks.
+  /// Verifies ownership.
+  _i2.Future<_i3.Action?> getActionDetails(int actionId) =>
+      caller.callServerEndpoint<_i3.Action?>(
+        'action',
+        'getActionDetails',
+        {'actionId': actionId},
+      );
+
   /// Adds a new ActionStep to an existing Action.
   /// Verifies ownership of the parent Action.
   _i2.Future<_i4.ActionStep?> addActionStep(_i4.ActionStep actionStep) =>

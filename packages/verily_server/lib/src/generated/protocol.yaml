@@ -3,6 +3,7 @@ action:
   - getMyActions:
   - updateAction:
   - deleteAction:
+  - getActionDetails:
   - addActionStep:
   - updateActionStep:
   - deleteActionStep:

@@ -137,6 +137,24 @@ class Endpoints extends _i1.EndpointDispatch {
             params['actionId'],
           ),
         ),
+        'getActionDetails': _i1.MethodConnector(
+          name: 'getActionDetails',
+          params: {
+            'actionId': _i1.ParameterDescription(
+              name: 'actionId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            )
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['action'] as _i2.ActionEndpoint).getActionDetails(
+            session,
+            params['actionId'],
+          ),
+        ),
         'addActionStep': _i1.MethodConnector(
           name: 'addActionStep',
           params: {

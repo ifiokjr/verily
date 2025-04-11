@@ -60,7 +60,7 @@
 - [x] **Action Management UI:**
   - [x] List existing actions. *_(Completed)_*
   - [x] Form to create/edit actions (name, description). *_(Create logic implemented)_*
-  - [ ] Interface to add/edit/reorder action steps (selecting type, configuring parameters).
+  - [ ] Interface to add/edit/reorder action steps (selecting type, configuring parameters). *_(Display steps implemented)_*
   - [ ] Interface to manage webhooks for actions.
   - [ ] Display generated Action URL/QR code.
 - [x] **Serverpod Integration:**

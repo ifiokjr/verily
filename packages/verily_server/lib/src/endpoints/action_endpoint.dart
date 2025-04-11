@@ -195,6 +195,44 @@ class ActionEndpoint extends Endpoint {
     return success;
   }
 
+  /// Retrieves full details for a single Action, including steps and webhooks.
+  /// Verifies ownership.
+  Future<Action?> getActionDetails(Session session, int actionId) async {
+    final authenticationInfo = await session.authenticated;
+    final userId = authenticationInfo?.userId;
+    if (userId == null) {
+      throw Exception('User authentication failed unexpectedly.');
+    }
+
+    // Find the action and verify ownership
+    Action? action = await Action.db.findById(
+      session,
+      actionId,
+      // Include related steps and webhooks in the query
+      include: Action.include(
+        steps: ActionStep.includeList(),
+        webhooks: Webhook.includeList(),
+      ),
+    );
+
+    if (action == null || action.userInfoId != userId || action.isDeleted) {
+      session.log(
+        'Get Details failed: Action $actionId not found, user $userId not owner, or action deleted.',
+        level: LogLevel.warning,
+      );
+      return null;
+    }
+
+    // Sort steps by order before returning (optional, but good for UI)
+    action.steps?.sort((a, b) => a.order.compareTo(b.order));
+
+    session.log(
+      'Fetched details for Action id: $actionId',
+      level: LogLevel.debug,
+    );
+    return action;
+  }
+
   // --- ActionStep Methods ---
 
   /// Adds a new ActionStep to an existing Action.

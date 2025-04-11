@@ -262,6 +262,35 @@ class _ActionEndpoint {
     });
   }
 
+  _i3.Future<_i4.Action?> getActionDetails(
+    _i1.TestSessionBuilder sessionBuilder,
+    int actionId,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+        endpoint: 'action',
+        method: 'getActionDetails',
+      );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'action',
+          methodName: 'getActionDetails',
+          parameters: _i1.testObjectToJson({'actionId': actionId}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue = await (_localCallContext.method.call(
+          _localUniqueSession,
+          _localCallContext.arguments,
+        ) as _i3.Future<_i4.Action?>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
   _i3.Future<_i5.ActionStep?> addActionStep(
     _i1.TestSessionBuilder sessionBuilder,
     _i5.ActionStep actionStep,
