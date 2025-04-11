@@ -1,0 +1,31 @@
+---
+description: 
+globs: **/*.yaml,**/pubspec.yaml,**/*.dart
+alwaysApply: false
+---
+This is a flutter monorepo.
+
+### Monorepo
+
+- This repo uses melos@7 for managing the api docs: https://github.com/invertase/melos/tree/main/docs/
+- All dev dependencies should be added to the root `pubspsec.yaml`. They can then be used throughout the codebase after addition.
+- The backend code is written with serverpod and the frontend projects are built with flutter. 
+
+### ⛔️ MUST READ
+
+- NEVER upgrade OR downgrade dependencies within the yaml file.
+- NEVER add dev dependencies to the individual package `pubspec.yaml` files. Only add them to the root `pubspec.yaml`.  
+- NEVER add the `flutter_lints` dependency back to the file. 
+- If a dependency is to be added always check that it is the latest version of the application and make sure it exactly matches the versions used throughout the codebase.
+
+
+### Package / App `pubspec.yaml`
+
+These should have the following
+
+```yaml
+version: 0.1.0
+environment:
+  sdk: ^3.7.2
+  flutter: ">=1.17.0"
+```
