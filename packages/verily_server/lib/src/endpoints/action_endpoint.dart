@@ -1,5 +1,5 @@
 import 'package:serverpod/serverpod.dart';
-import 'package:serverpod_auth_server/serverpod_auth_server.dart' as auth;
+import 'package:serverpod_auth_server/serverpod_auth_server.dart'; // Import auth module directly
 // Import the generated protocol (contains Action, etc.)
 import '../generated/protocol.dart';
 
@@ -17,6 +17,7 @@ class ActionEndpoint extends Endpoint {
     required String description,
   }) async {
     // Get the authenticated user's ID. `requireLogin` ensures this won't be null.
+    // The `auth` getter is an extension method from the imported package.
     int userId = (await session.auth.authenticatedUserId)!;
 
     // Prepare the new Action object.

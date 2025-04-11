@@ -1,8 +1,10 @@
 name: verily_face_detection
-description: A Flutter package for real-time facial gesture detection and tracking, part of the Verily SDK.
+description: A Flutter package for detecting faces using Google ML Kit, optimized
+  for Verily applications. Provides real-time face detection, landmark identification,
+  and classification features like smile and eye-open probabilities.
 version: 0.0.1
-publish_to: "none"
-repository: https://github.com/your-repo/verily/tree/main/packages/verily_face_detection
+publish_to: none
+repository: https://github.com/ifiokjr/verily/tree/main/packages/verily_face_detection
 
 environment:
   sdk: ^3.7.2
@@ -13,18 +15,23 @@ dependencies:
     sdk: flutter
   google_mlkit_face_detection: ^0.13.1
   camera: ^0.11.1
-  rxdart: ^0.27.7
+  google_mlkit_commons: ^0.11.0
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
   freezed_annotation: ^2.4.1
-  json_annotation: ^4.8.1
+  image: ^4.1.7
+  rxdart: ^0.28.0
+  json_annotation: ^4.9.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
-  build_runner: ^2.4.8
-  freezed: ^2.4.7
-  json_serializable: ^6.7.1
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.11
+  freezed: ^2.5.2
+  riverpod_generator: ^2.4.0
   mockito: ^5.4.4
+  json_serializable: ^6.8.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

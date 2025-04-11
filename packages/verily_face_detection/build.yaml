@@ -1,0 +1,23 @@
+targets:
+  $default:
+    sources:
+      - "lib/**"
+      - "test/**"
+    builders:
+      riverpod_generator:
+        enabled: true
+      json_serializable:
+        options:
+          any_map: false
+          checked: false
+          constructor: ""
+          disallow_unrecognized_keys: false
+          explicit_to_json: false
+          field_rename: snake
+          generic_argument_factories: false
+          ignore_unannotated: false
+          include_if_null: true
+      mockito|mockBuilder:
+        enabled: true
+        generate_for:
+          - test/**

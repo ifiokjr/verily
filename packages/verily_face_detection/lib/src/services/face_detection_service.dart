@@ -1,13 +1,11 @@
 import 'dart:async';
-import 'dart:math' show Point, max, min;
-import 'dart:ui';
+import 'dart:math';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart'; // Needed for ImageRotation
-import 'package:google_mlkit_commons/google_mlkit_commons.dart' as ml_commons;
 
 import '../models/facial_gesture.dart';
 
