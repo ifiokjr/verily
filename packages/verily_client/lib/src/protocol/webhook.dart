@@ -10,42 +10,42 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import 'action.dart' as _i2;
 
 abstract class Webhook implements _i1.SerializableModel {
   Webhook._({
     this.id,
     required this.actionId,
-    this.action,
     required this.url,
-    required this.secret,
-    required this.triggerEvents,
+    this.secret,
+    required this.subscribedEvents,
+    bool? isActive,
     required this.createdAt,
-  });
+    required this.updatedAt,
+  }) : isActive = isActive ?? true;
 
   factory Webhook({
     int? id,
     required int actionId,
-    _i2.Action? action,
     required String url,
-    required String secret,
-    required String triggerEvents,
+    String? secret,
+    required String subscribedEvents,
+    bool? isActive,
     required DateTime createdAt,
+    required DateTime updatedAt,
   }) = _WebhookImpl;
 
   factory Webhook.fromJson(Map<String, dynamic> jsonSerialization) {
     return Webhook(
       id: jsonSerialization['id'] as int?,
       actionId: jsonSerialization['actionId'] as int,
-      action: jsonSerialization['action'] == null
-          ? null
-          : _i2.Action.fromJson(
-              (jsonSerialization['action'] as Map<String, dynamic>)),
       url: jsonSerialization['url'] as String,
-      secret: jsonSerialization['secret'] as String,
-      triggerEvents: jsonSerialization['triggerEvents'] as String,
+      secret: jsonSerialization['secret'] as String?,
+      subscribedEvents: jsonSerialization['subscribedEvents'] as String,
+      isActive: jsonSerialization['isActive'] as bool,
       createdAt:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      updatedAt:
+          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
     );
   }
 
@@ -56,15 +56,17 @@ abstract class Webhook implements _i1.SerializableModel {
 
   int actionId;
 
-  _i2.Action? action;
-
   String url;
 
-  String secret;
+  String? secret;
 
-  String triggerEvents;
+  String subscribedEvents;
+
+  bool isActive;
 
   DateTime createdAt;
+
+  DateTime updatedAt;
 
   /// Returns a shallow copy of this [Webhook]
   /// with some or all fields replaced by the given arguments.
@@ -72,22 +74,24 @@ abstract class Webhook implements _i1.SerializableModel {
   Webhook copyWith({
     int? id,
     int? actionId,
-    _i2.Action? action,
     String? url,
     String? secret,
-    String? triggerEvents,
+    String? subscribedEvents,
+    bool? isActive,
     DateTime? createdAt,
+    DateTime? updatedAt,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
       'actionId': actionId,
-      if (action != null) 'action': action?.toJson(),
       'url': url,
-      'secret': secret,
-      'triggerEvents': triggerEvents,
+      if (secret != null) 'secret': secret,
+      'subscribedEvents': subscribedEvents,
+      'isActive': isActive,
       'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
     };
   }
 
@@ -103,19 +107,21 @@ class _WebhookImpl extends Webhook {
   _WebhookImpl({
     int? id,
     required int actionId,
-    _i2.Action? action,
     required String url,
-    required String secret,
-    required String triggerEvents,
+    String? secret,
+    required String subscribedEvents,
+    bool? isActive,
     required DateTime createdAt,
+    required DateTime updatedAt,
   }) : super._(
           id: id,
           actionId: actionId,
-          action: action,
           url: url,
           secret: secret,
-          triggerEvents: triggerEvents,
+          subscribedEvents: subscribedEvents,
+          isActive: isActive,
           createdAt: createdAt,
+          updatedAt: updatedAt,
         );
 
   /// Returns a shallow copy of this [Webhook]
@@ -125,20 +131,22 @@ class _WebhookImpl extends Webhook {
   Webhook copyWith({
     Object? id = _Undefined,
     int? actionId,
-    Object? action = _Undefined,
     String? url,
-    String? secret,
-    String? triggerEvents,
+    Object? secret = _Undefined,
+    String? subscribedEvents,
+    bool? isActive,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return Webhook(
       id: id is int? ? id : this.id,
       actionId: actionId ?? this.actionId,
-      action: action is _i2.Action? ? action : this.action?.copyWith(),
       url: url ?? this.url,
-      secret: secret ?? this.secret,
-      triggerEvents: triggerEvents ?? this.triggerEvents,
+      secret: secret is String? ? secret : this.secret,
+      subscribedEvents: subscribedEvents ?? this.subscribedEvents,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

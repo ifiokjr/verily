@@ -10,42 +10,42 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import 'action.dart' as _i2;
 
 abstract class ActionStep implements _i1.SerializableModel {
   ActionStep._({
     this.id,
     required this.actionId,
-    this.action,
-    required this.stepType,
-    required this.parameters,
+    required this.type,
     required this.order,
+    required this.parameters,
+    this.instruction,
     required this.createdAt,
+    required this.updatedAt,
   });
 
   factory ActionStep({
     int? id,
     required int actionId,
-    _i2.Action? action,
-    required String stepType,
-    required String parameters,
+    required String type,
     required int order,
+    required String parameters,
+    String? instruction,
     required DateTime createdAt,
+    required DateTime updatedAt,
   }) = _ActionStepImpl;
 
   factory ActionStep.fromJson(Map<String, dynamic> jsonSerialization) {
     return ActionStep(
       id: jsonSerialization['id'] as int?,
       actionId: jsonSerialization['actionId'] as int,
-      action: jsonSerialization['action'] == null
-          ? null
-          : _i2.Action.fromJson(
-              (jsonSerialization['action'] as Map<String, dynamic>)),
-      stepType: jsonSerialization['stepType'] as String,
-      parameters: jsonSerialization['parameters'] as String,
+      type: jsonSerialization['type'] as String,
       order: jsonSerialization['order'] as int,
+      parameters: jsonSerialization['parameters'] as String,
+      instruction: jsonSerialization['instruction'] as String?,
       createdAt:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      updatedAt:
+          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
     );
   }
 
@@ -56,15 +56,17 @@ abstract class ActionStep implements _i1.SerializableModel {
 
   int actionId;
 
-  _i2.Action? action;
-
-  String stepType;
-
-  String parameters;
+  String type;
 
   int order;
 
+  String parameters;
+
+  String? instruction;
+
   DateTime createdAt;
+
+  DateTime updatedAt;
 
   /// Returns a shallow copy of this [ActionStep]
   /// with some or all fields replaced by the given arguments.
@@ -72,22 +74,24 @@ abstract class ActionStep implements _i1.SerializableModel {
   ActionStep copyWith({
     int? id,
     int? actionId,
-    _i2.Action? action,
-    String? stepType,
-    String? parameters,
+    String? type,
     int? order,
+    String? parameters,
+    String? instruction,
     DateTime? createdAt,
+    DateTime? updatedAt,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
       'actionId': actionId,
-      if (action != null) 'action': action?.toJson(),
-      'stepType': stepType,
-      'parameters': parameters,
+      'type': type,
       'order': order,
+      'parameters': parameters,
+      if (instruction != null) 'instruction': instruction,
       'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
     };
   }
 
@@ -103,19 +107,21 @@ class _ActionStepImpl extends ActionStep {
   _ActionStepImpl({
     int? id,
     required int actionId,
-    _i2.Action? action,
-    required String stepType,
-    required String parameters,
+    required String type,
     required int order,
+    required String parameters,
+    String? instruction,
     required DateTime createdAt,
+    required DateTime updatedAt,
   }) : super._(
           id: id,
           actionId: actionId,
-          action: action,
-          stepType: stepType,
-          parameters: parameters,
+          type: type,
           order: order,
+          parameters: parameters,
+          instruction: instruction,
           createdAt: createdAt,
+          updatedAt: updatedAt,
         );
 
   /// Returns a shallow copy of this [ActionStep]
@@ -125,20 +131,22 @@ class _ActionStepImpl extends ActionStep {
   ActionStep copyWith({
     Object? id = _Undefined,
     int? actionId,
-    Object? action = _Undefined,
-    String? stepType,
-    String? parameters,
+    String? type,
     int? order,
+    String? parameters,
+    Object? instruction = _Undefined,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return ActionStep(
       id: id is int? ? id : this.id,
       actionId: actionId ?? this.actionId,
-      action: action is _i2.Action? ? action : this.action?.copyWith(),
-      stepType: stepType ?? this.stepType,
-      parameters: parameters ?? this.parameters,
+      type: type ?? this.type,
       order: order ?? this.order,
+      parameters: parameters ?? this.parameters,
+      instruction: instruction is String? ? instruction : this.instruction,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

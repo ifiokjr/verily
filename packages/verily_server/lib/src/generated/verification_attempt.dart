@@ -10,53 +10,45 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
-import 'action.dart' as _i2;
 
 abstract class VerificationAttempt
     implements _i1.TableRow<int>, _i1.ProtocolSerialization {
   VerificationAttempt._({
     this.id,
     required this.actionId,
-    this.action,
     required this.userId,
     required this.status,
     required this.startedAt,
-    required this.updatedAt,
-    this.completedAt,
-    this.progressData,
+    this.lastUpdatedAt,
+    this.stepProgress,
+    this.errorMessage,
   });
 
   factory VerificationAttempt({
     int? id,
     required int actionId,
-    _i2.Action? action,
     required String userId,
     required String status,
     required DateTime startedAt,
-    required DateTime updatedAt,
-    DateTime? completedAt,
-    String? progressData,
+    DateTime? lastUpdatedAt,
+    String? stepProgress,
+    String? errorMessage,
   }) = _VerificationAttemptImpl;
 
   factory VerificationAttempt.fromJson(Map<String, dynamic> jsonSerialization) {
     return VerificationAttempt(
       id: jsonSerialization['id'] as int?,
       actionId: jsonSerialization['actionId'] as int,
-      action: jsonSerialization['action'] == null
-          ? null
-          : _i2.Action.fromJson(
-              (jsonSerialization['action'] as Map<String, dynamic>)),
       userId: jsonSerialization['userId'] as String,
       status: jsonSerialization['status'] as String,
       startedAt:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startedAt']),
-      updatedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
-      completedAt: jsonSerialization['completedAt'] == null
+      lastUpdatedAt: jsonSerialization['lastUpdatedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(
-              jsonSerialization['completedAt']),
-      progressData: jsonSerialization['progressData'] as String?,
+              jsonSerialization['lastUpdatedAt']),
+      stepProgress: jsonSerialization['stepProgress'] as String?,
+      errorMessage: jsonSerialization['errorMessage'] as String?,
     );
   }
 
@@ -69,19 +61,17 @@ abstract class VerificationAttempt
 
   int actionId;
 
-  _i2.Action? action;
-
   String userId;
 
   String status;
 
   DateTime startedAt;
 
-  DateTime updatedAt;
+  DateTime? lastUpdatedAt;
 
-  DateTime? completedAt;
+  String? stepProgress;
 
-  String? progressData;
+  String? errorMessage;
 
   @override
   _i1.Table<int> get table => t;
@@ -92,26 +82,24 @@ abstract class VerificationAttempt
   VerificationAttempt copyWith({
     int? id,
     int? actionId,
-    _i2.Action? action,
     String? userId,
     String? status,
     DateTime? startedAt,
-    DateTime? updatedAt,
-    DateTime? completedAt,
-    String? progressData,
+    DateTime? lastUpdatedAt,
+    String? stepProgress,
+    String? errorMessage,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
       'actionId': actionId,
-      if (action != null) 'action': action?.toJson(),
       'userId': userId,
       'status': status,
       'startedAt': startedAt.toJson(),
-      'updatedAt': updatedAt.toJson(),
-      if (completedAt != null) 'completedAt': completedAt?.toJson(),
-      if (progressData != null) 'progressData': progressData,
+      if (lastUpdatedAt != null) 'lastUpdatedAt': lastUpdatedAt?.toJson(),
+      if (stepProgress != null) 'stepProgress': stepProgress,
+      if (errorMessage != null) 'errorMessage': errorMessage,
     };
   }
 
@@ -120,18 +108,17 @@ abstract class VerificationAttempt
     return {
       if (id != null) 'id': id,
       'actionId': actionId,
-      if (action != null) 'action': action?.toJsonForProtocol(),
       'userId': userId,
       'status': status,
       'startedAt': startedAt.toJson(),
-      'updatedAt': updatedAt.toJson(),
-      if (completedAt != null) 'completedAt': completedAt?.toJson(),
-      if (progressData != null) 'progressData': progressData,
+      if (lastUpdatedAt != null) 'lastUpdatedAt': lastUpdatedAt?.toJson(),
+      if (stepProgress != null) 'stepProgress': stepProgress,
+      if (errorMessage != null) 'errorMessage': errorMessage,
     };
   }
 
-  static VerificationAttemptInclude include({_i2.ActionInclude? action}) {
-    return VerificationAttemptInclude._(action: action);
+  static VerificationAttemptInclude include() {
+    return VerificationAttemptInclude._();
   }
 
   static VerificationAttemptIncludeList includeList({
@@ -166,23 +153,21 @@ class _VerificationAttemptImpl extends VerificationAttempt {
   _VerificationAttemptImpl({
     int? id,
     required int actionId,
-    _i2.Action? action,
     required String userId,
     required String status,
     required DateTime startedAt,
-    required DateTime updatedAt,
-    DateTime? completedAt,
-    String? progressData,
+    DateTime? lastUpdatedAt,
+    String? stepProgress,
+    String? errorMessage,
   }) : super._(
           id: id,
           actionId: actionId,
-          action: action,
           userId: userId,
           status: status,
           startedAt: startedAt,
-          updatedAt: updatedAt,
-          completedAt: completedAt,
-          progressData: progressData,
+          lastUpdatedAt: lastUpdatedAt,
+          stepProgress: stepProgress,
+          errorMessage: errorMessage,
         );
 
   /// Returns a shallow copy of this [VerificationAttempt]
@@ -192,24 +177,23 @@ class _VerificationAttemptImpl extends VerificationAttempt {
   VerificationAttempt copyWith({
     Object? id = _Undefined,
     int? actionId,
-    Object? action = _Undefined,
     String? userId,
     String? status,
     DateTime? startedAt,
-    DateTime? updatedAt,
-    Object? completedAt = _Undefined,
-    Object? progressData = _Undefined,
+    Object? lastUpdatedAt = _Undefined,
+    Object? stepProgress = _Undefined,
+    Object? errorMessage = _Undefined,
   }) {
     return VerificationAttempt(
       id: id is int? ? id : this.id,
       actionId: actionId ?? this.actionId,
-      action: action is _i2.Action? ? action : this.action?.copyWith(),
       userId: userId ?? this.userId,
       status: status ?? this.status,
       startedAt: startedAt ?? this.startedAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      completedAt: completedAt is DateTime? ? completedAt : this.completedAt,
-      progressData: progressData is String? ? progressData : this.progressData,
+      lastUpdatedAt:
+          lastUpdatedAt is DateTime? ? lastUpdatedAt : this.lastUpdatedAt,
+      stepProgress: stepProgress is String? ? stepProgress : this.stepProgress,
+      errorMessage: errorMessage is String? ? errorMessage : this.errorMessage,
     );
   }
 }
@@ -233,23 +217,21 @@ class VerificationAttemptTable extends _i1.Table<int> {
       'startedAt',
       this,
     );
-    updatedAt = _i1.ColumnDateTime(
-      'updatedAt',
+    lastUpdatedAt = _i1.ColumnDateTime(
+      'lastUpdatedAt',
       this,
     );
-    completedAt = _i1.ColumnDateTime(
-      'completedAt',
+    stepProgress = _i1.ColumnString(
+      'stepProgress',
       this,
     );
-    progressData = _i1.ColumnString(
-      'progressData',
+    errorMessage = _i1.ColumnString(
+      'errorMessage',
       this,
     );
   }
 
   late final _i1.ColumnInt actionId;
-
-  _i2.ActionTable? _action;
 
   late final _i1.ColumnString userId;
 
@@ -257,24 +239,11 @@ class VerificationAttemptTable extends _i1.Table<int> {
 
   late final _i1.ColumnDateTime startedAt;
 
-  late final _i1.ColumnDateTime updatedAt;
+  late final _i1.ColumnDateTime lastUpdatedAt;
 
-  late final _i1.ColumnDateTime completedAt;
+  late final _i1.ColumnString stepProgress;
 
-  late final _i1.ColumnString progressData;
-
-  _i2.ActionTable get action {
-    if (_action != null) return _action!;
-    _action = _i1.createRelationTable(
-      relationFieldName: 'action',
-      field: VerificationAttempt.t.actionId,
-      foreignField: _i2.Action.t.id,
-      tableRelation: tableRelation,
-      createTable: (foreignTableRelation) =>
-          _i2.ActionTable(tableRelation: foreignTableRelation),
-    );
-    return _action!;
-  }
+  late final _i1.ColumnString errorMessage;
 
   @override
   List<_i1.Column> get columns => [
@@ -283,29 +252,17 @@ class VerificationAttemptTable extends _i1.Table<int> {
         userId,
         status,
         startedAt,
-        updatedAt,
-        completedAt,
-        progressData,
+        lastUpdatedAt,
+        stepProgress,
+        errorMessage,
       ];
-
-  @override
-  _i1.Table? getRelationTable(String relationField) {
-    if (relationField == 'action') {
-      return action;
-    }
-    return null;
-  }
 }
 
 class VerificationAttemptInclude extends _i1.IncludeObject {
-  VerificationAttemptInclude._({_i2.ActionInclude? action}) {
-    _action = action;
-  }
-
-  _i2.ActionInclude? _action;
+  VerificationAttemptInclude._();
 
   @override
-  Map<String, _i1.Include?> get includes => {'action': _action};
+  Map<String, _i1.Include?> get includes => {};
 
   @override
   _i1.Table<int> get table => VerificationAttempt.t;
@@ -333,8 +290,6 @@ class VerificationAttemptIncludeList extends _i1.IncludeList {
 
 class VerificationAttemptRepository {
   const VerificationAttemptRepository._();
-
-  final attachRow = const VerificationAttemptAttachRowRepository._();
 
   /// Returns a list of [VerificationAttempt]s matching the given query parameters.
   ///
@@ -367,7 +322,6 @@ class VerificationAttemptRepository {
     bool orderDescending = false,
     _i1.OrderByListBuilder<VerificationAttemptTable>? orderByList,
     _i1.Transaction? transaction,
-    VerificationAttemptInclude? include,
   }) async {
     return session.db.find<VerificationAttempt>(
       where: where?.call(VerificationAttempt.t),
@@ -377,7 +331,6 @@ class VerificationAttemptRepository {
       limit: limit,
       offset: offset,
       transaction: transaction,
-      include: include,
     );
   }
 
@@ -406,7 +359,6 @@ class VerificationAttemptRepository {
     bool orderDescending = false,
     _i1.OrderByListBuilder<VerificationAttemptTable>? orderByList,
     _i1.Transaction? transaction,
-    VerificationAttemptInclude? include,
   }) async {
     return session.db.findFirstRow<VerificationAttempt>(
       where: where?.call(VerificationAttempt.t),
@@ -415,7 +367,6 @@ class VerificationAttemptRepository {
       orderDescending: orderDescending,
       offset: offset,
       transaction: transaction,
-      include: include,
     );
   }
 
@@ -424,12 +375,10 @@ class VerificationAttemptRepository {
     _i1.Session session,
     int id, {
     _i1.Transaction? transaction,
-    VerificationAttemptInclude? include,
   }) async {
     return session.db.findById<VerificationAttempt>(
       id,
       transaction: transaction,
-      include: include,
     );
   }
 
@@ -547,34 +496,6 @@ class VerificationAttemptRepository {
     return session.db.count<VerificationAttempt>(
       where: where?.call(VerificationAttempt.t),
       limit: limit,
-      transaction: transaction,
-    );
-  }
-}
-
-class VerificationAttemptAttachRowRepository {
-  const VerificationAttemptAttachRowRepository._();
-
-  /// Creates a relation between the given [VerificationAttempt] and [Action]
-  /// by setting the [VerificationAttempt]'s foreign key `actionId` to refer to the [Action].
-  Future<void> action(
-    _i1.Session session,
-    VerificationAttempt verificationAttempt,
-    _i2.Action action, {
-    _i1.Transaction? transaction,
-  }) async {
-    if (verificationAttempt.id == null) {
-      throw ArgumentError.notNull('verificationAttempt.id');
-    }
-    if (action.id == null) {
-      throw ArgumentError.notNull('action.id');
-    }
-
-    var $verificationAttempt =
-        verificationAttempt.copyWith(actionId: action.id);
-    await session.db.updateRow<VerificationAttempt>(
-      $verificationAttempt,
-      columns: [VerificationAttempt.t.actionId],
       transaction: transaction,
     );
   }

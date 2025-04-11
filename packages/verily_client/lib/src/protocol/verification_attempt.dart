@@ -10,52 +10,44 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import 'action.dart' as _i2;
 
 abstract class VerificationAttempt implements _i1.SerializableModel {
   VerificationAttempt._({
     this.id,
     required this.actionId,
-    this.action,
     required this.userId,
     required this.status,
     required this.startedAt,
-    required this.updatedAt,
-    this.completedAt,
-    this.progressData,
+    this.lastUpdatedAt,
+    this.stepProgress,
+    this.errorMessage,
   });
 
   factory VerificationAttempt({
     int? id,
     required int actionId,
-    _i2.Action? action,
     required String userId,
     required String status,
     required DateTime startedAt,
-    required DateTime updatedAt,
-    DateTime? completedAt,
-    String? progressData,
+    DateTime? lastUpdatedAt,
+    String? stepProgress,
+    String? errorMessage,
   }) = _VerificationAttemptImpl;
 
   factory VerificationAttempt.fromJson(Map<String, dynamic> jsonSerialization) {
     return VerificationAttempt(
       id: jsonSerialization['id'] as int?,
       actionId: jsonSerialization['actionId'] as int,
-      action: jsonSerialization['action'] == null
-          ? null
-          : _i2.Action.fromJson(
-              (jsonSerialization['action'] as Map<String, dynamic>)),
       userId: jsonSerialization['userId'] as String,
       status: jsonSerialization['status'] as String,
       startedAt:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startedAt']),
-      updatedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
-      completedAt: jsonSerialization['completedAt'] == null
+      lastUpdatedAt: jsonSerialization['lastUpdatedAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(
-              jsonSerialization['completedAt']),
-      progressData: jsonSerialization['progressData'] as String?,
+              jsonSerialization['lastUpdatedAt']),
+      stepProgress: jsonSerialization['stepProgress'] as String?,
+      errorMessage: jsonSerialization['errorMessage'] as String?,
     );
   }
 
@@ -66,19 +58,17 @@ abstract class VerificationAttempt implements _i1.SerializableModel {
 
   int actionId;
 
-  _i2.Action? action;
-
   String userId;
 
   String status;
 
   DateTime startedAt;
 
-  DateTime updatedAt;
+  DateTime? lastUpdatedAt;
 
-  DateTime? completedAt;
+  String? stepProgress;
 
-  String? progressData;
+  String? errorMessage;
 
   /// Returns a shallow copy of this [VerificationAttempt]
   /// with some or all fields replaced by the given arguments.
@@ -86,26 +76,24 @@ abstract class VerificationAttempt implements _i1.SerializableModel {
   VerificationAttempt copyWith({
     int? id,
     int? actionId,
-    _i2.Action? action,
     String? userId,
     String? status,
     DateTime? startedAt,
-    DateTime? updatedAt,
-    DateTime? completedAt,
-    String? progressData,
+    DateTime? lastUpdatedAt,
+    String? stepProgress,
+    String? errorMessage,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
       'actionId': actionId,
-      if (action != null) 'action': action?.toJson(),
       'userId': userId,
       'status': status,
       'startedAt': startedAt.toJson(),
-      'updatedAt': updatedAt.toJson(),
-      if (completedAt != null) 'completedAt': completedAt?.toJson(),
-      if (progressData != null) 'progressData': progressData,
+      if (lastUpdatedAt != null) 'lastUpdatedAt': lastUpdatedAt?.toJson(),
+      if (stepProgress != null) 'stepProgress': stepProgress,
+      if (errorMessage != null) 'errorMessage': errorMessage,
     };
   }
 
@@ -121,23 +109,21 @@ class _VerificationAttemptImpl extends VerificationAttempt {
   _VerificationAttemptImpl({
     int? id,
     required int actionId,
-    _i2.Action? action,
     required String userId,
     required String status,
     required DateTime startedAt,
-    required DateTime updatedAt,
-    DateTime? completedAt,
-    String? progressData,
+    DateTime? lastUpdatedAt,
+    String? stepProgress,
+    String? errorMessage,
   }) : super._(
           id: id,
           actionId: actionId,
-          action: action,
           userId: userId,
           status: status,
           startedAt: startedAt,
-          updatedAt: updatedAt,
-          completedAt: completedAt,
-          progressData: progressData,
+          lastUpdatedAt: lastUpdatedAt,
+          stepProgress: stepProgress,
+          errorMessage: errorMessage,
         );
 
   /// Returns a shallow copy of this [VerificationAttempt]
@@ -147,24 +133,23 @@ class _VerificationAttemptImpl extends VerificationAttempt {
   VerificationAttempt copyWith({
     Object? id = _Undefined,
     int? actionId,
-    Object? action = _Undefined,
     String? userId,
     String? status,
     DateTime? startedAt,
-    DateTime? updatedAt,
-    Object? completedAt = _Undefined,
-    Object? progressData = _Undefined,
+    Object? lastUpdatedAt = _Undefined,
+    Object? stepProgress = _Undefined,
+    Object? errorMessage = _Undefined,
   }) {
     return VerificationAttempt(
       id: id is int? ? id : this.id,
       actionId: actionId ?? this.actionId,
-      action: action is _i2.Action? ? action : this.action?.copyWith(),
       userId: userId ?? this.userId,
       status: status ?? this.status,
       startedAt: startedAt ?? this.startedAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      completedAt: completedAt is DateTime? ? completedAt : this.completedAt,
-      progressData: progressData is String? ? progressData : this.progressData,
+      lastUpdatedAt:
+          lastUpdatedAt is DateTime? ? lastUpdatedAt : this.lastUpdatedAt,
+      stepProgress: stepProgress is String? ? stepProgress : this.stepProgress,
+      errorMessage: errorMessage is String? ? errorMessage : this.errorMessage,
     );
   }
 }

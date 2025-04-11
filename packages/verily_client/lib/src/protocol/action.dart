@@ -17,37 +17,44 @@ abstract class Action implements _i1.SerializableModel {
   Action._({
     this.id,
     required this.name,
-    required this.description,
+    this.description,
     required this.creatorId,
+    required this.createdAt,
+    required this.updatedAt,
+    bool? isDeleted,
     this.steps,
     this.webhooks,
-    required this.createdAt,
-  });
+  }) : isDeleted = isDeleted ?? false;
 
   factory Action({
     int? id,
     required String name,
-    required String description,
+    String? description,
     required int creatorId,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    bool? isDeleted,
     List<_i2.ActionStep>? steps,
     List<_i3.Webhook>? webhooks,
-    required DateTime createdAt,
   }) = _ActionImpl;
 
   factory Action.fromJson(Map<String, dynamic> jsonSerialization) {
     return Action(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
-      description: jsonSerialization['description'] as String,
+      description: jsonSerialization['description'] as String?,
       creatorId: jsonSerialization['creatorId'] as int,
+      createdAt:
+          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      updatedAt:
+          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      isDeleted: jsonSerialization['isDeleted'] as bool,
       steps: (jsonSerialization['steps'] as List?)
           ?.map((e) => _i2.ActionStep.fromJson((e as Map<String, dynamic>)))
           .toList(),
       webhooks: (jsonSerialization['webhooks'] as List?)
           ?.map((e) => _i3.Webhook.fromJson((e as Map<String, dynamic>)))
           .toList(),
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
     );
   }
 
@@ -58,15 +65,19 @@ abstract class Action implements _i1.SerializableModel {
 
   String name;
 
-  String description;
+  String? description;
 
   int creatorId;
+
+  DateTime createdAt;
+
+  DateTime updatedAt;
+
+  bool isDeleted;
 
   List<_i2.ActionStep>? steps;
 
   List<_i3.Webhook>? webhooks;
-
-  DateTime createdAt;
 
   /// Returns a shallow copy of this [Action]
   /// with some or all fields replaced by the given arguments.
@@ -76,21 +87,25 @@ abstract class Action implements _i1.SerializableModel {
     String? name,
     String? description,
     int? creatorId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isDeleted,
     List<_i2.ActionStep>? steps,
     List<_i3.Webhook>? webhooks,
-    DateTime? createdAt,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
       'name': name,
-      'description': description,
+      if (description != null) 'description': description,
       'creatorId': creatorId,
+      'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
+      'isDeleted': isDeleted,
       if (steps != null) 'steps': steps?.toJson(valueToJson: (v) => v.toJson()),
       if (webhooks != null)
         'webhooks': webhooks?.toJson(valueToJson: (v) => v.toJson()),
-      'createdAt': createdAt.toJson(),
     };
   }
 
@@ -106,19 +121,23 @@ class _ActionImpl extends Action {
   _ActionImpl({
     int? id,
     required String name,
-    required String description,
+    String? description,
     required int creatorId,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    bool? isDeleted,
     List<_i2.ActionStep>? steps,
     List<_i3.Webhook>? webhooks,
-    required DateTime createdAt,
   }) : super._(
           id: id,
           name: name,
           description: description,
           creatorId: creatorId,
+          createdAt: createdAt,
+          updatedAt: updatedAt,
+          isDeleted: isDeleted,
           steps: steps,
           webhooks: webhooks,
-          createdAt: createdAt,
         );
 
   /// Returns a shallow copy of this [Action]
@@ -128,24 +147,28 @@ class _ActionImpl extends Action {
   Action copyWith({
     Object? id = _Undefined,
     String? name,
-    String? description,
+    Object? description = _Undefined,
     int? creatorId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isDeleted,
     Object? steps = _Undefined,
     Object? webhooks = _Undefined,
-    DateTime? createdAt,
   }) {
     return Action(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      description: description ?? this.description,
+      description: description is String? ? description : this.description,
       creatorId: creatorId ?? this.creatorId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
       steps: steps is List<_i2.ActionStep>?
           ? steps
           : this.steps?.map((e0) => e0.copyWith()).toList(),
       webhooks: webhooks is List<_i3.Webhook>?
           ? webhooks
           : this.webhooks?.map((e0) => e0.copyWith()).toList(),
-      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

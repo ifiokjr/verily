@@ -1,0 +1,15 @@
+# Defines the Creator entity, linking to the built-in UserInfo.
+# We might add specific creator-related fields here later (e.g., organization).
+class: Creator
+table: creator # Explicitly defining table name
+fields:
+  # Link to the UserInfo table from the auth module by storing its ID.
+  # We don't define a Serverpod 'relation' here to avoid cross-module complexities.
+  # We'll fetch UserInfo manually in endpoints using this ID.
+  userInfoId: int
+
+# Indexes might still be useful if querying creators by userInfoId frequently.
+# indexes:
+#   creator_userInfoId_idx: # Map structure for indexes
+#     fields: userInfoId
+#     unique: true

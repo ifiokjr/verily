@@ -1,27 +1,30 @@
-# Represents a verifiable action composed of multiple steps.
+# Defines a verifiable action created by a Creator.
 class: Action
-table: action # Explicitly defining table name is good practice
-
+table: action
 fields:
-  # The user-friendly name of the action.
+  # Name of the action (e.g., "Office Check-in", "Morning Workout").
   name: String
-  # A detailed description of what the action entails.
-  description: String
-  # Link to the creator who defined this action. Assumes usage of serverpod_auth module.
-  # This establishes a one-to-many relationship: one creator can have many actions.
-  creatorId: int
-  # The sequence of steps required to complete this action.
-  # This establishes a one-to-many relationship: one action has many steps.
-  # Serverpod automatically handles the relation based on ActionStep's 'action' field.
-  steps: List<ActionStep>?, relation
-  # Webhooks associated with this action.
-  # This establishes a one-to-many relationship: one action can have many webhooks.
-  # Serverpod automatically handles the relation based on Webhook's 'action' field.
-  webhooks: List<Webhook>?, relation
+  # Detailed description of the action.
+  description: String?
+  # Link to the creator who owns this action.
+  # One creator can have many actions.
+  creatorId: int, relation(parent=creator) # Use parent relation for ownership
   # Timestamp when the action was created.
   createdAt: DateTime
+  # Timestamp when the action was last updated.
+  updatedAt: DateTime
+  # Flag to indicate if the action is active or deleted (soft delete).
+  isDeleted: bool, default=false
+  # List of steps associated with this action.
+  # Serverpod infers this relation from ActionStep's parent=action field.
+  steps: List<ActionStep>?, relation
+  # List of webhooks associated with this action.
+  # Serverpod infers this relation from Webhook's parent=action field.
+  webhooks: List<Webhook>?, relation
 
+# Define indexes using a map structure.
 indexes:
-  action_creatorId_idx:
+  action_creator_idx:
     fields: creatorId
-    unique: false
+  action_created_at_idx:
+    fields: createdAt

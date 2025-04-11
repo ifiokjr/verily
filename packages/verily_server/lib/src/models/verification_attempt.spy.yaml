@@ -1,29 +1,32 @@
-# Logs an attempt by a user to complete a verifiable action.
+# Logs an attempt by a user to complete a specific Action.
 class: VerificationAttempt
 table: verification_attempt
-
 fields:
-  # The action being attempted.
-  # Relation fields must be nullable.
-  action: Action?, relation
-  # An identifier for the user attempting the action. This could be a device ID, session ID, or linked UserInfo ID if using full user accounts.
-  userId: String # Consider linking to UserInfo if user accounts are implemented
-  # The current status of the attempt (e.g., 'pending', 'in_progress', 'completed', 'failed').
-  # Consider using an Enum for this.
-  status: String # TODO: Convert to Enum (e.g., VerificationStatus)
+  # Link to the Action being attempted.
+  # Need to decide if this is a direct relation or just stores the ID.
+  # Direct relation might be cleaner for lookups.
+  actionId: int, relation(parent=action)
+  # Identifier for the user attempting the action.
+  # This could be a device ID, anonymous user ID, or potentially linked to UserInfo if the user is signed in.
+  userId: String # Consider how to manage anonymous vs logged-in users
+  # Current status of the attempt (e.g., "started", "in_progress", "completed_success", "completed_failed", "timed_out").
+  # Consider using an Enum later.
+  status: String
   # Timestamp when the attempt started.
   startedAt: DateTime
-  # Timestamp when the attempt was last updated.
-  updatedAt: DateTime
-  # Timestamp when the attempt concluded (completed or failed).
-  completedAt: DateTime?
-  # JSON encoded string storing progress details, like completed step IDs or specific verification results.
-  progressData: String? # Consider a more structured type like Map<String, dynamic> or a dedicated class
+  # Timestamp when the attempt last had activity or was completed/failed.
+  lastUpdatedAt: DateTime?
+  # JSON encoded string storing the progress/state of individual steps.
+  # Example: {"step_1_order": "completed", "step_2_order": "pending", "step_data": {...}}
+  stepProgress: String? # JSON map storing step status and potentially collected data
+  # Optional: Store any error message if the attempt failed.
+  errorMessage: String?
 
+# Define indexes using a map structure.
 indexes:
-  verification_attempt_actionId_idx:
-    fields: actionId
-    unique: false
-  verification_attempt_userId_idx:
-    fields: userId
-    unique: false
+  verification_attempt_action_id_user_id_idx:
+    fields: actionId, userId
+  verification_attempt_status_idx:
+    fields: status
+  verification_attempt_started_at_idx:
+    fields: startedAt

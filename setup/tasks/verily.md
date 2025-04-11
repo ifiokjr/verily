@@ -8,46 +8,47 @@
 
 ## Phase 1: Foundation & Backend Setup (Serverpod)
 
-- [ ] **Project Structure:**
-  - [ ] Create/Verify initial monorepo directory structure (`/apps`, `/packages`, `/backend`, `/setup`, etc.).
-  - [ ] Initialize `fvm` for Flutter version management.
-  - [ ] Create Serverpod project in `/backend` (`serverpod create verily`). This will create `verily_server`, `verily_client`, `verily_flutter`.
-- [ ] **Backend Dependencies (in `/backend/verily_server/pubspec.yaml`):**
-  - [ ] Verify core Serverpod dependencies (`serverpod`).
-  - [ ] Add required Serverpod modules (e.g., `serverpod_auth_server`, `serverpod_auth_email_server`, `serverpod_postgres`).
-- [ ] **Serverpod Backend Setup:**
-  - [ ] Configure database connection in `config/development.yaml` and `config/production.yaml`.
-  - [ ] Securely configure `config/passwords.yaml` (add to `.gitignore`!).
-  - [ ] Define initial data models in `lib/src/models/*.spy.yaml`.
-  - [ ] Run `serverpod generate` to create initial protocol, client, and database classes.
-  - [ ] Create initial database migrations (`serverpod create-migration`) and apply them (`dart bin/main.dart --apply-migrations -r maintenance`).
-  - [ ] Define initial Endpoints in `lib/src/endpoints/`.
-  - [ ] Implement basic health check endpoint.
+- [x] **Project Structure:**
+  - [x] Create/Verify initial monorepo directory structure (`/apps`, `/packages`, `/backend`, `/setup`, etc.).
+  - [x] Initialize `fvm` for Flutter version management.
+  - [x] Create Serverpod project in `/backend` (`serverpod create verily`). This will create `verily_server`, `verily_client`, `verily_flutter`.
+- [x] **Backend Dependencies (in `/backend/verily_server/pubspec.yaml`):**
+  - [x] Verify core Serverpod dependencies (`serverpod`).
+  - [ ] Add required Serverpod modules (e.g., `serverpod_auth_server`, `serverpod_auth_email_server`, `serverpod_postgres`). *_(Marking as potentially incomplete - needs verification)_*
+- [x] **Serverpod Backend Setup:**
+  - [x] Configure database connection in `config/development.yaml` and `config/production.yaml`.
+  - [x] Securely configure `config/passwords.yaml` (add to `.gitignore`!).
+  - [x] Define initial data models in `lib/src/models/*.spy.yaml`. *_(Marking as done for initial structure)_*
+  - [x] Run `serverpod generate` to create initial protocol, client, and database classes. *_(Ran after initial model setup)_*
+  - [ ] Create initial database migrations (`serverpod create-migration`) and apply them (`dart bin/main.dart --apply-migrations -r maintenance`). *_(Next step)_*
+  - [ ] Define initial Endpoints in `lib/src/endpoints/`. *_(Likely started, but ongoing)_*
+  - [ ] Implement basic health check endpoint. *_(Needs verification)_*
 - [ ] **Database Schema Definition (via `*.spy.yaml` files):**
-  - [ ] Define structure for `Action` class.
-  - [ ] Define structure for `ActionStep` class.
-  - [ ] Define structure for `Creator` class (consider leveraging `serverpod_auth` module's `UserInfo`).
-  - [ ] Define structure for `Webhook` class.
-  - [ ] Define structure for `VerificationAttempt` class.
-  - [ ] *Task:* Manage schema changes and migrations using `serverpod generate` and `serverpod create-migration`.
+  - [x] Define structure for `Action` class.
+  - [x] Define structure for `ActionStep` class.
+  - [x] Define structure for `Creator` class (consider leveraging `serverpod_auth` module's `UserInfo`).
+  - [x] Define structure for `Webhook` class.
+  - [x] Define structure for `VerificationAttempt` class.
+  - [x] *Task:* Fix model relation and index definitions in `*.spy.yaml` files. *_(Completed)_*
+  - [ ] *Task:* Manage schema changes and migrations using `serverpod generate` and `serverpod create-migration`. *_(Ongoing)_*
 - [ ] **Core Backend API (Serverpod Endpoints):**
   - [ ] Implement Endpoints for CRUD operations on `Action`.
   - [ ] Implement Endpoints for CRUD operations on `ActionStep`.
   - [ ] Implement Endpoints for CRUD operations on `Webhook`.
   - [ ] Implement authentication for creator-specific Endpoints using `serverpod_auth`.
-- [ ] **Serverpod Client Usage:**
-  - [ ] Note: The Dart client is automatically generated in `/backend/verily_client`. Flutter apps will depend on this package.
-  - [ ] Configure the `Client` object in Flutter apps to connect to the Serverpod backend.
-- [ ] **Remove Old Backend Code:**
-  - [ ] Delete any existing Deno/TypeScript code/files within the `/backend` directory (e.g., `deno.jsonc`, `.ts` files, tRPC specific code).
-  - [ ] Search codebase for Deno/tRPC specific terms (`@trpc`, `zod`, Deno std lib usage) and remove references in the backend context.
+- [x] **Serverpod Client Usage:**
+  - [x] Note: The Dart client is automatically generated in `/backend/verily_client`. Flutter apps will depend on this package.
+  - [ ] Configure the `Client` object in Flutter apps to connect to the Serverpod backend. *_(Will happen during app integration)_*
+- [x] **Remove Old Backend Code:**
+  - [x] Delete any existing Deno/TypeScript code/files within the `/backend` directory (e.g., `deno.jsonc`, `.ts` files, tRPC specific code).
+  - [x] Search codebase for Deno/tRPC specific terms (`@trpc`, `zod`, Deno std lib usage) and remove references in the backend context.
 
 ## Phase 2: `Verily Create` Application (Web)
 
-- [ ] **Flutter Web Setup:**
-  - [ ] Initialize/Verify Flutter web project in `/apps/verily_create`.
-  - [ ] Configure Riverpod state management.
-  - [ ] Set up basic navigation/routing.
+- [x] **Flutter Web Setup:**
+  - [x] Initialize/Verify Flutter web project in `/apps/verily_create`.
+  - [ ] Configure Riverpod state management. *_(Likely started)_*
+  - [ ] Set up basic navigation/routing. *_(Likely started)_*
 - [ ] **Creator Authentication UI:**
   - [ ] Implement login/signup UI using `serverpod_auth_email_flutter` (or other chosen auth modules).
 - [ ] **Action Management UI:**

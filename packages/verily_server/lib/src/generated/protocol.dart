@@ -14,11 +14,13 @@ import 'package:serverpod/protocol.dart' as _i2;
 import 'package:serverpod_auth_server/serverpod_auth_server.dart' as _i3;
 import 'action.dart' as _i4;
 import 'action_step.dart' as _i5;
-import 'example.dart' as _i6;
-import 'verification_attempt.dart' as _i7;
-import 'webhook.dart' as _i8;
+import 'creator.dart' as _i6;
+import 'example.dart' as _i7;
+import 'verification_attempt.dart' as _i8;
+import 'webhook.dart' as _i9;
 export 'action.dart';
 export 'action_step.dart';
+export 'creator.dart';
 export 'example.dart';
 export 'verification_attempt.dart';
 export 'webhook.dart';
@@ -53,8 +55,8 @@ class Protocol extends _i1.SerializationManagerServer {
         _i2.ColumnDefinition(
           name: 'description',
           columnType: _i2.ColumnType.text,
-          isNullable: false,
-          dartType: 'String',
+          isNullable: true,
+          dartType: 'String?',
         ),
         _i2.ColumnDefinition(
           name: 'creatorId',
@@ -68,8 +70,32 @@ class Protocol extends _i1.SerializationManagerServer {
           isNullable: false,
           dartType: 'DateTime',
         ),
+        _i2.ColumnDefinition(
+          name: 'updatedAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _i2.ColumnDefinition(
+          name: 'isDeleted',
+          columnType: _i2.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'false',
+        ),
       ],
-      foreignKeys: [],
+      foreignKeys: [
+        _i2.ForeignKeyDefinition(
+          constraintName: 'action_fk_0',
+          columns: ['creatorId'],
+          referenceTable: 'creator',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _i2.ForeignKeyAction.noAction,
+          onDelete: _i2.ForeignKeyAction.noAction,
+          matchType: null,
+        )
+      ],
       indexes: [
         _i2.IndexDefinition(
           indexName: 'action_pkey',
@@ -85,12 +111,25 @@ class Protocol extends _i1.SerializationManagerServer {
           isPrimary: true,
         ),
         _i2.IndexDefinition(
-          indexName: 'action_creatorId_idx',
+          indexName: 'action_creator_idx',
           tableSpace: null,
           elements: [
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'creatorId',
+            )
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'action_created_at_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'createdAt',
             )
           ],
           type: 'btree',
@@ -120,13 +159,7 @@ class Protocol extends _i1.SerializationManagerServer {
           dartType: 'int',
         ),
         _i2.ColumnDefinition(
-          name: 'stepType',
-          columnType: _i2.ColumnType.text,
-          isNullable: false,
-          dartType: 'String',
-        ),
-        _i2.ColumnDefinition(
-          name: 'parameters',
+          name: 'type',
           columnType: _i2.ColumnType.text,
           isNullable: false,
           dartType: 'String',
@@ -138,7 +171,25 @@ class Protocol extends _i1.SerializationManagerServer {
           dartType: 'int',
         ),
         _i2.ColumnDefinition(
+          name: 'parameters',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'instruction',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _i2.ColumnDefinition(
           name: 'createdAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _i2.ColumnDefinition(
+          name: 'updatedAt',
           columnType: _i2.ColumnType.timestampWithoutTimeZone,
           isNullable: false,
           dartType: 'DateTime',
@@ -187,18 +238,60 @@ class Protocol extends _i1.SerializationManagerServer {
           isPrimary: true,
         ),
         _i2.IndexDefinition(
-          indexName: 'action_step_actionId_idx',
+          indexName: 'action_step_action_id_order_idx',
           tableSpace: null,
           elements: [
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'actionId',
-            )
+            ),
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'order',
+            ),
           ],
           type: 'btree',
           isUnique: false,
           isPrimary: false,
         ),
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
+      name: 'creator',
+      dartName: 'Creator',
+      schema: 'public',
+      module: 'verily',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'creator_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'userInfoId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'creator_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            )
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        )
       ],
       managed: true,
     ),
@@ -240,19 +333,19 @@ class Protocol extends _i1.SerializationManagerServer {
           dartType: 'DateTime',
         ),
         _i2.ColumnDefinition(
-          name: 'updatedAt',
-          columnType: _i2.ColumnType.timestampWithoutTimeZone,
-          isNullable: false,
-          dartType: 'DateTime',
-        ),
-        _i2.ColumnDefinition(
-          name: 'completedAt',
+          name: 'lastUpdatedAt',
           columnType: _i2.ColumnType.timestampWithoutTimeZone,
           isNullable: true,
           dartType: 'DateTime?',
         ),
         _i2.ColumnDefinition(
-          name: 'progressData',
+          name: 'stepProgress',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'errorMessage',
           columnType: _i2.ColumnType.text,
           isNullable: true,
           dartType: 'String?',
@@ -285,12 +378,29 @@ class Protocol extends _i1.SerializationManagerServer {
           isPrimary: true,
         ),
         _i2.IndexDefinition(
-          indexName: 'verification_attempt_actionId_idx',
+          indexName: 'verification_attempt_action_id_user_id_idx',
           tableSpace: null,
           elements: [
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'actionId',
+            ),
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'userId',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'verification_attempt_status_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'status',
             )
           ],
           type: 'btree',
@@ -298,12 +408,12 @@ class Protocol extends _i1.SerializationManagerServer {
           isPrimary: false,
         ),
         _i2.IndexDefinition(
-          indexName: 'verification_attempt_userId_idx',
+          indexName: 'verification_attempt_started_at_idx',
           tableSpace: null,
           elements: [
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
-              definition: 'userId',
+              definition: 'startedAt',
             )
           ],
           type: 'btree',
@@ -341,17 +451,30 @@ class Protocol extends _i1.SerializationManagerServer {
         _i2.ColumnDefinition(
           name: 'secret',
           columnType: _i2.ColumnType.text,
-          isNullable: false,
-          dartType: 'String',
+          isNullable: true,
+          dartType: 'String?',
         ),
         _i2.ColumnDefinition(
-          name: 'triggerEvents',
+          name: 'subscribedEvents',
           columnType: _i2.ColumnType.text,
           isNullable: false,
           dartType: 'String',
         ),
         _i2.ColumnDefinition(
+          name: 'isActive',
+          columnType: _i2.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'true',
+        ),
+        _i2.ColumnDefinition(
           name: 'createdAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _i2.ColumnDefinition(
+          name: 'updatedAt',
           columnType: _i2.ColumnType.timestampWithoutTimeZone,
           isNullable: false,
           dartType: 'DateTime',
@@ -400,7 +523,7 @@ class Protocol extends _i1.SerializationManagerServer {
           isPrimary: true,
         ),
         _i2.IndexDefinition(
-          indexName: 'webhook_actionId_idx',
+          indexName: 'webhook_action_id_idx',
           tableSpace: null,
           elements: [
             _i2.IndexElementDefinition(
@@ -431,14 +554,17 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i5.ActionStep) {
       return _i5.ActionStep.fromJson(data) as T;
     }
-    if (t == _i6.Example) {
-      return _i6.Example.fromJson(data) as T;
+    if (t == _i6.Creator) {
+      return _i6.Creator.fromJson(data) as T;
     }
-    if (t == _i7.VerificationAttempt) {
-      return _i7.VerificationAttempt.fromJson(data) as T;
+    if (t == _i7.Example) {
+      return _i7.Example.fromJson(data) as T;
     }
-    if (t == _i8.Webhook) {
-      return _i8.Webhook.fromJson(data) as T;
+    if (t == _i8.VerificationAttempt) {
+      return _i8.VerificationAttempt.fromJson(data) as T;
+    }
+    if (t == _i9.Webhook) {
+      return _i9.Webhook.fromJson(data) as T;
     }
     if (t == _i1.getType<_i4.Action?>()) {
       return (data != null ? _i4.Action.fromJson(data) : null) as T;
@@ -446,24 +572,27 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i1.getType<_i5.ActionStep?>()) {
       return (data != null ? _i5.ActionStep.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i6.Example?>()) {
-      return (data != null ? _i6.Example.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i6.Creator?>()) {
+      return (data != null ? _i6.Creator.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i7.VerificationAttempt?>()) {
-      return (data != null ? _i7.VerificationAttempt.fromJson(data) : null)
+    if (t == _i1.getType<_i7.Example?>()) {
+      return (data != null ? _i7.Example.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i8.VerificationAttempt?>()) {
+      return (data != null ? _i8.VerificationAttempt.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i8.Webhook?>()) {
-      return (data != null ? _i8.Webhook.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i9.Webhook?>()) {
+      return (data != null ? _i9.Webhook.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<List<_i5.ActionStep>?>()) {
       return (data != null
           ? (data as List).map((e) => deserialize<_i5.ActionStep>(e)).toList()
           : null) as T;
     }
-    if (t == _i1.getType<List<_i8.Webhook>?>()) {
+    if (t == _i1.getType<List<_i9.Webhook>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i8.Webhook>(e)).toList()
+          ? (data as List).map((e) => deserialize<_i9.Webhook>(e)).toList()
           : null) as T;
     }
     try {
@@ -485,13 +614,16 @@ class Protocol extends _i1.SerializationManagerServer {
     if (data is _i5.ActionStep) {
       return 'ActionStep';
     }
-    if (data is _i6.Example) {
+    if (data is _i6.Creator) {
+      return 'Creator';
+    }
+    if (data is _i7.Example) {
       return 'Example';
     }
-    if (data is _i7.VerificationAttempt) {
+    if (data is _i8.VerificationAttempt) {
       return 'VerificationAttempt';
     }
-    if (data is _i8.Webhook) {
+    if (data is _i9.Webhook) {
       return 'Webhook';
     }
     className = _i2.Protocol().getClassNameForObject(data);
@@ -517,14 +649,17 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'ActionStep') {
       return deserialize<_i5.ActionStep>(data['data']);
     }
+    if (dataClassName == 'Creator') {
+      return deserialize<_i6.Creator>(data['data']);
+    }
     if (dataClassName == 'Example') {
-      return deserialize<_i6.Example>(data['data']);
+      return deserialize<_i7.Example>(data['data']);
     }
     if (dataClassName == 'VerificationAttempt') {
-      return deserialize<_i7.VerificationAttempt>(data['data']);
+      return deserialize<_i8.VerificationAttempt>(data['data']);
     }
     if (dataClassName == 'Webhook') {
-      return deserialize<_i8.Webhook>(data['data']);
+      return deserialize<_i9.Webhook>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -556,10 +691,12 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i4.Action.t;
       case _i5.ActionStep:
         return _i5.ActionStep.t;
-      case _i7.VerificationAttempt:
-        return _i7.VerificationAttempt.t;
-      case _i8.Webhook:
-        return _i8.Webhook.t;
+      case _i6.Creator:
+        return _i6.Creator.t;
+      case _i8.VerificationAttempt:
+        return _i8.VerificationAttempt.t;
+      case _i9.Webhook:
+        return _i9.Webhook.t;
     }
     return null;
   }

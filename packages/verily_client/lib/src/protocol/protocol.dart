@@ -12,12 +12,14 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'action.dart' as _i2;
 import 'action_step.dart' as _i3;
-import 'example.dart' as _i4;
-import 'verification_attempt.dart' as _i5;
-import 'webhook.dart' as _i6;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i7;
+import 'creator.dart' as _i4;
+import 'example.dart' as _i5;
+import 'verification_attempt.dart' as _i6;
+import 'webhook.dart' as _i7;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i8;
 export 'action.dart';
 export 'action_step.dart';
+export 'creator.dart';
 export 'example.dart';
 export 'verification_attempt.dart';
 export 'webhook.dart';
@@ -42,14 +44,17 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i3.ActionStep) {
       return _i3.ActionStep.fromJson(data) as T;
     }
-    if (t == _i4.Example) {
-      return _i4.Example.fromJson(data) as T;
+    if (t == _i4.Creator) {
+      return _i4.Creator.fromJson(data) as T;
     }
-    if (t == _i5.VerificationAttempt) {
-      return _i5.VerificationAttempt.fromJson(data) as T;
+    if (t == _i5.Example) {
+      return _i5.Example.fromJson(data) as T;
     }
-    if (t == _i6.Webhook) {
-      return _i6.Webhook.fromJson(data) as T;
+    if (t == _i6.VerificationAttempt) {
+      return _i6.VerificationAttempt.fromJson(data) as T;
+    }
+    if (t == _i7.Webhook) {
+      return _i7.Webhook.fromJson(data) as T;
     }
     if (t == _i1.getType<_i2.Action?>()) {
       return (data != null ? _i2.Action.fromJson(data) : null) as T;
@@ -57,28 +62,31 @@ class Protocol extends _i1.SerializationManager {
     if (t == _i1.getType<_i3.ActionStep?>()) {
       return (data != null ? _i3.ActionStep.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i4.Example?>()) {
-      return (data != null ? _i4.Example.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i4.Creator?>()) {
+      return (data != null ? _i4.Creator.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i5.VerificationAttempt?>()) {
-      return (data != null ? _i5.VerificationAttempt.fromJson(data) : null)
+    if (t == _i1.getType<_i5.Example?>()) {
+      return (data != null ? _i5.Example.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i6.VerificationAttempt?>()) {
+      return (data != null ? _i6.VerificationAttempt.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i6.Webhook?>()) {
-      return (data != null ? _i6.Webhook.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i7.Webhook?>()) {
+      return (data != null ? _i7.Webhook.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<List<_i3.ActionStep>?>()) {
       return (data != null
           ? (data as List).map((e) => deserialize<_i3.ActionStep>(e)).toList()
           : null) as T;
     }
-    if (t == _i1.getType<List<_i6.Webhook>?>()) {
+    if (t == _i1.getType<List<_i7.Webhook>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i6.Webhook>(e)).toList()
+          ? (data as List).map((e) => deserialize<_i7.Webhook>(e)).toList()
           : null) as T;
     }
     try {
-      return _i7.Protocol().deserialize<T>(data, t);
+      return _i8.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -93,16 +101,19 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i3.ActionStep) {
       return 'ActionStep';
     }
-    if (data is _i4.Example) {
+    if (data is _i4.Creator) {
+      return 'Creator';
+    }
+    if (data is _i5.Example) {
       return 'Example';
     }
-    if (data is _i5.VerificationAttempt) {
+    if (data is _i6.VerificationAttempt) {
       return 'VerificationAttempt';
     }
-    if (data is _i6.Webhook) {
+    if (data is _i7.Webhook) {
       return 'Webhook';
     }
-    className = _i7.Protocol().getClassNameForObject(data);
+    className = _i8.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth.$className';
     }
@@ -121,18 +132,21 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName == 'ActionStep') {
       return deserialize<_i3.ActionStep>(data['data']);
     }
+    if (dataClassName == 'Creator') {
+      return deserialize<_i4.Creator>(data['data']);
+    }
     if (dataClassName == 'Example') {
-      return deserialize<_i4.Example>(data['data']);
+      return deserialize<_i5.Example>(data['data']);
     }
     if (dataClassName == 'VerificationAttempt') {
-      return deserialize<_i5.VerificationAttempt>(data['data']);
+      return deserialize<_i6.VerificationAttempt>(data['data']);
     }
     if (dataClassName == 'Webhook') {
-      return deserialize<_i6.Webhook>(data['data']);
+      return deserialize<_i7.Webhook>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth.')) {
       data['className'] = dataClassName.substring(15);
-      return _i7.Protocol().deserializeByClassName(data);
+      return _i8.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }

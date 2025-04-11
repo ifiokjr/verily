@@ -1,22 +1,27 @@
-# Represents a single step within a verifiable action.
+# Defines a single step within an Action.
 class: ActionStep
 table: action_step
-
 fields:
-  # The action this step belongs to. This is the parent relation.
-  action: Action?, relation
-  # The type of verification required for this step (e.g., 'location', 'face', 'motion').
-  # Consider using an Enum for this for type safety.
-  stepType: String # TODO: Convert to Enum (e.g., VerificationType)
-  # JSON encoded string containing specific parameters for this step type
-  # (e.g., required accuracy for location, specific pose for pose detection).
-  parameters: String # Consider using a Map<String, String> or a dedicated class/protocol if structure is complex
-  # The order of this step within the action sequence.
+  # Link to the parent Action.
+  # Many action steps belong to one action.
+  actionId: int, relation(parent=action)
+  # The type of verification required for this step (e.g., "location", "face_detection", "device_motion").
+  # Consider using an Enum later for strict type checking.
+  type: String
+  # Order of this step within the action sequence.
   order: int
+  # JSON encoded string containing parameters specific to the step type.
+  # Example for 'location': {"latitude": 12.34, "longitude": 56.78, "radius": 100}
+  # Example for 'face_detection': {"requiredLandmarks": ["leftEye", "rightEye"], "minConfidence": 0.8}
+  parameters: String # Storing as JSON string for flexibility
+  # Optional: A human-readable instruction for the user for this step.
+  instruction: String?
   # Timestamp when the step was created.
   createdAt: DateTime
+  # Timestamp when the step was last updated.
+  updatedAt: DateTime
 
+# Define indexes using a map structure.
 indexes:
-  action_step_actionId_idx:
-    fields: actionId # Serverpod automatically creates actionId based on the 'action' relation field
-    unique: false
+  action_step_action_id_order_idx:
+    fields: actionId, order

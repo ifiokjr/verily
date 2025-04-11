@@ -10,43 +10,43 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
-import 'action.dart' as _i2;
 
 abstract class ActionStep
     implements _i1.TableRow<int>, _i1.ProtocolSerialization {
   ActionStep._({
     this.id,
     required this.actionId,
-    this.action,
-    required this.stepType,
-    required this.parameters,
+    required this.type,
     required this.order,
+    required this.parameters,
+    this.instruction,
     required this.createdAt,
+    required this.updatedAt,
   }) : _actionStepsActionId = null;
 
   factory ActionStep({
     int? id,
     required int actionId,
-    _i2.Action? action,
-    required String stepType,
-    required String parameters,
+    required String type,
     required int order,
+    required String parameters,
+    String? instruction,
     required DateTime createdAt,
+    required DateTime updatedAt,
   }) = _ActionStepImpl;
 
   factory ActionStep.fromJson(Map<String, dynamic> jsonSerialization) {
     return ActionStepImplicit._(
       id: jsonSerialization['id'] as int?,
       actionId: jsonSerialization['actionId'] as int,
-      action: jsonSerialization['action'] == null
-          ? null
-          : _i2.Action.fromJson(
-              (jsonSerialization['action'] as Map<String, dynamic>)),
-      stepType: jsonSerialization['stepType'] as String,
-      parameters: jsonSerialization['parameters'] as String,
+      type: jsonSerialization['type'] as String,
       order: jsonSerialization['order'] as int,
+      parameters: jsonSerialization['parameters'] as String,
+      instruction: jsonSerialization['instruction'] as String?,
       createdAt:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      updatedAt:
+          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       $_actionStepsActionId: jsonSerialization['_actionStepsActionId'] as int?,
     );
   }
@@ -60,15 +60,17 @@ abstract class ActionStep
 
   int actionId;
 
-  _i2.Action? action;
-
-  String stepType;
-
-  String parameters;
+  String type;
 
   int order;
 
+  String parameters;
+
+  String? instruction;
+
   DateTime createdAt;
+
+  DateTime updatedAt;
 
   final int? _actionStepsActionId;
 
@@ -81,22 +83,24 @@ abstract class ActionStep
   ActionStep copyWith({
     int? id,
     int? actionId,
-    _i2.Action? action,
-    String? stepType,
-    String? parameters,
+    String? type,
     int? order,
+    String? parameters,
+    String? instruction,
     DateTime? createdAt,
+    DateTime? updatedAt,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
       'actionId': actionId,
-      if (action != null) 'action': action?.toJson(),
-      'stepType': stepType,
-      'parameters': parameters,
+      'type': type,
       'order': order,
+      'parameters': parameters,
+      if (instruction != null) 'instruction': instruction,
       'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
       if (_actionStepsActionId != null)
         '_actionStepsActionId': _actionStepsActionId,
     };
@@ -107,16 +111,17 @@ abstract class ActionStep
     return {
       if (id != null) 'id': id,
       'actionId': actionId,
-      if (action != null) 'action': action?.toJsonForProtocol(),
-      'stepType': stepType,
-      'parameters': parameters,
+      'type': type,
       'order': order,
+      'parameters': parameters,
+      if (instruction != null) 'instruction': instruction,
       'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
     };
   }
 
-  static ActionStepInclude include({_i2.ActionInclude? action}) {
-    return ActionStepInclude._(action: action);
+  static ActionStepInclude include() {
+    return ActionStepInclude._();
   }
 
   static ActionStepIncludeList includeList({
@@ -151,19 +156,21 @@ class _ActionStepImpl extends ActionStep {
   _ActionStepImpl({
     int? id,
     required int actionId,
-    _i2.Action? action,
-    required String stepType,
-    required String parameters,
+    required String type,
     required int order,
+    required String parameters,
+    String? instruction,
     required DateTime createdAt,
+    required DateTime updatedAt,
   }) : super._(
           id: id,
           actionId: actionId,
-          action: action,
-          stepType: stepType,
-          parameters: parameters,
+          type: type,
           order: order,
+          parameters: parameters,
+          instruction: instruction,
           createdAt: createdAt,
+          updatedAt: updatedAt,
         );
 
   /// Returns a shallow copy of this [ActionStep]
@@ -173,20 +180,22 @@ class _ActionStepImpl extends ActionStep {
   ActionStep copyWith({
     Object? id = _Undefined,
     int? actionId,
-    Object? action = _Undefined,
-    String? stepType,
-    String? parameters,
+    String? type,
     int? order,
+    String? parameters,
+    Object? instruction = _Undefined,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return ActionStepImplicit._(
       id: id is int? ? id : this.id,
       actionId: actionId ?? this.actionId,
-      action: action is _i2.Action? ? action : this.action?.copyWith(),
-      stepType: stepType ?? this.stepType,
-      parameters: parameters ?? this.parameters,
+      type: type ?? this.type,
       order: order ?? this.order,
+      parameters: parameters ?? this.parameters,
+      instruction: instruction is String? ? instruction : this.instruction,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       $_actionStepsActionId: this._actionStepsActionId,
     );
   }
@@ -196,21 +205,23 @@ class ActionStepImplicit extends _ActionStepImpl {
   ActionStepImplicit._({
     int? id,
     required int actionId,
-    _i2.Action? action,
-    required String stepType,
-    required String parameters,
+    required String type,
     required int order,
+    required String parameters,
+    String? instruction,
     required DateTime createdAt,
+    required DateTime updatedAt,
     int? $_actionStepsActionId,
   })  : _actionStepsActionId = $_actionStepsActionId,
         super(
           id: id,
           actionId: actionId,
-          action: action,
-          stepType: stepType,
-          parameters: parameters,
+          type: type,
           order: order,
+          parameters: parameters,
+          instruction: instruction,
           createdAt: createdAt,
+          updatedAt: updatedAt,
         );
 
   factory ActionStepImplicit(
@@ -220,11 +231,12 @@ class ActionStepImplicit extends _ActionStepImpl {
     return ActionStepImplicit._(
       id: actionStep.id,
       actionId: actionStep.actionId,
-      action: actionStep.action,
-      stepType: actionStep.stepType,
-      parameters: actionStep.parameters,
+      type: actionStep.type,
       order: actionStep.order,
+      parameters: actionStep.parameters,
+      instruction: actionStep.instruction,
       createdAt: actionStep.createdAt,
+      updatedAt: actionStep.updatedAt,
       $_actionStepsActionId: $_actionStepsActionId,
     );
   }
@@ -239,20 +251,28 @@ class ActionStepTable extends _i1.Table<int> {
       'actionId',
       this,
     );
-    stepType = _i1.ColumnString(
-      'stepType',
-      this,
-    );
-    parameters = _i1.ColumnString(
-      'parameters',
+    type = _i1.ColumnString(
+      'type',
       this,
     );
     order = _i1.ColumnInt(
       'order',
       this,
     );
+    parameters = _i1.ColumnString(
+      'parameters',
+      this,
+    );
+    instruction = _i1.ColumnString(
+      'instruction',
+      this,
+    );
     createdAt = _i1.ColumnDateTime(
       'createdAt',
+      this,
+    );
+    updatedAt = _i1.ColumnDateTime(
+      'updatedAt',
       this,
     );
     $_actionStepsActionId = _i1.ColumnInt(
@@ -263,39 +283,30 @@ class ActionStepTable extends _i1.Table<int> {
 
   late final _i1.ColumnInt actionId;
 
-  _i2.ActionTable? _action;
-
-  late final _i1.ColumnString stepType;
-
-  late final _i1.ColumnString parameters;
+  late final _i1.ColumnString type;
 
   late final _i1.ColumnInt order;
 
+  late final _i1.ColumnString parameters;
+
+  late final _i1.ColumnString instruction;
+
   late final _i1.ColumnDateTime createdAt;
 
-  late final _i1.ColumnInt $_actionStepsActionId;
+  late final _i1.ColumnDateTime updatedAt;
 
-  _i2.ActionTable get action {
-    if (_action != null) return _action!;
-    _action = _i1.createRelationTable(
-      relationFieldName: 'action',
-      field: ActionStep.t.actionId,
-      foreignField: _i2.Action.t.id,
-      tableRelation: tableRelation,
-      createTable: (foreignTableRelation) =>
-          _i2.ActionTable(tableRelation: foreignTableRelation),
-    );
-    return _action!;
-  }
+  late final _i1.ColumnInt $_actionStepsActionId;
 
   @override
   List<_i1.Column> get columns => [
         id,
         actionId,
-        stepType,
-        parameters,
+        type,
         order,
+        parameters,
+        instruction,
         createdAt,
+        updatedAt,
         $_actionStepsActionId,
       ];
 
@@ -303,30 +314,20 @@ class ActionStepTable extends _i1.Table<int> {
   List<_i1.Column> get managedColumns => [
         id,
         actionId,
-        stepType,
-        parameters,
+        type,
         order,
+        parameters,
+        instruction,
         createdAt,
+        updatedAt,
       ];
-
-  @override
-  _i1.Table? getRelationTable(String relationField) {
-    if (relationField == 'action') {
-      return action;
-    }
-    return null;
-  }
 }
 
 class ActionStepInclude extends _i1.IncludeObject {
-  ActionStepInclude._({_i2.ActionInclude? action}) {
-    _action = action;
-  }
-
-  _i2.ActionInclude? _action;
+  ActionStepInclude._();
 
   @override
-  Map<String, _i1.Include?> get includes => {'action': _action};
+  Map<String, _i1.Include?> get includes => {};
 
   @override
   _i1.Table<int> get table => ActionStep.t;
@@ -354,8 +355,6 @@ class ActionStepIncludeList extends _i1.IncludeList {
 
 class ActionStepRepository {
   const ActionStepRepository._();
-
-  final attachRow = const ActionStepAttachRowRepository._();
 
   /// Returns a list of [ActionStep]s matching the given query parameters.
   ///
@@ -388,7 +387,6 @@ class ActionStepRepository {
     bool orderDescending = false,
     _i1.OrderByListBuilder<ActionStepTable>? orderByList,
     _i1.Transaction? transaction,
-    ActionStepInclude? include,
   }) async {
     return session.db.find<ActionStep>(
       where: where?.call(ActionStep.t),
@@ -398,7 +396,6 @@ class ActionStepRepository {
       limit: limit,
       offset: offset,
       transaction: transaction,
-      include: include,
     );
   }
 
@@ -427,7 +424,6 @@ class ActionStepRepository {
     bool orderDescending = false,
     _i1.OrderByListBuilder<ActionStepTable>? orderByList,
     _i1.Transaction? transaction,
-    ActionStepInclude? include,
   }) async {
     return session.db.findFirstRow<ActionStep>(
       where: where?.call(ActionStep.t),
@@ -436,7 +432,6 @@ class ActionStepRepository {
       orderDescending: orderDescending,
       offset: offset,
       transaction: transaction,
-      include: include,
     );
   }
 
@@ -445,12 +440,10 @@ class ActionStepRepository {
     _i1.Session session,
     int id, {
     _i1.Transaction? transaction,
-    ActionStepInclude? include,
   }) async {
     return session.db.findById<ActionStep>(
       id,
       transaction: transaction,
-      include: include,
     );
   }
 
@@ -568,33 +561,6 @@ class ActionStepRepository {
     return session.db.count<ActionStep>(
       where: where?.call(ActionStep.t),
       limit: limit,
-      transaction: transaction,
-    );
-  }
-}
-
-class ActionStepAttachRowRepository {
-  const ActionStepAttachRowRepository._();
-
-  /// Creates a relation between the given [ActionStep] and [Action]
-  /// by setting the [ActionStep]'s foreign key `actionId` to refer to the [Action].
-  Future<void> action(
-    _i1.Session session,
-    ActionStep actionStep,
-    _i2.Action action, {
-    _i1.Transaction? transaction,
-  }) async {
-    if (actionStep.id == null) {
-      throw ArgumentError.notNull('actionStep.id');
-    }
-    if (action.id == null) {
-      throw ArgumentError.notNull('action.id');
-    }
-
-    var $actionStep = actionStep.copyWith(actionId: action.id);
-    await session.db.updateRow<ActionStep>(
-      $actionStep,
-      columns: [ActionStep.t.actionId],
       transaction: transaction,
     );
   }

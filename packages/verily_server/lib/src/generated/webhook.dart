@@ -10,42 +10,43 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
-import 'action.dart' as _i2;
 
 abstract class Webhook implements _i1.TableRow<int>, _i1.ProtocolSerialization {
   Webhook._({
     this.id,
     required this.actionId,
-    this.action,
     required this.url,
-    required this.secret,
-    required this.triggerEvents,
+    this.secret,
+    required this.subscribedEvents,
+    bool? isActive,
     required this.createdAt,
-  }) : _actionWebhooksActionId = null;
+    required this.updatedAt,
+  })  : isActive = isActive ?? true,
+        _actionWebhooksActionId = null;
 
   factory Webhook({
     int? id,
     required int actionId,
-    _i2.Action? action,
     required String url,
-    required String secret,
-    required String triggerEvents,
+    String? secret,
+    required String subscribedEvents,
+    bool? isActive,
     required DateTime createdAt,
+    required DateTime updatedAt,
   }) = _WebhookImpl;
 
   factory Webhook.fromJson(Map<String, dynamic> jsonSerialization) {
     return WebhookImplicit._(
       id: jsonSerialization['id'] as int?,
       actionId: jsonSerialization['actionId'] as int,
-      action: jsonSerialization['action'] == null
-          ? null
-          : _i2.Action.fromJson(
-              (jsonSerialization['action'] as Map<String, dynamic>)),
       url: jsonSerialization['url'] as String,
-      secret: jsonSerialization['secret'] as String,
-      triggerEvents: jsonSerialization['triggerEvents'] as String,
+      secret: jsonSerialization['secret'] as String?,
+      subscribedEvents: jsonSerialization['subscribedEvents'] as String,
+      isActive: jsonSerialization['isActive'] as bool,
       createdAt:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      updatedAt:
+          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
       $_actionWebhooksActionId:
           jsonSerialization['_actionWebhooksActionId'] as int?,
     );
@@ -60,15 +61,17 @@ abstract class Webhook implements _i1.TableRow<int>, _i1.ProtocolSerialization {
 
   int actionId;
 
-  _i2.Action? action;
-
   String url;
 
-  String secret;
+  String? secret;
 
-  String triggerEvents;
+  String subscribedEvents;
+
+  bool isActive;
 
   DateTime createdAt;
+
+  DateTime updatedAt;
 
   final int? _actionWebhooksActionId;
 
@@ -81,22 +84,24 @@ abstract class Webhook implements _i1.TableRow<int>, _i1.ProtocolSerialization {
   Webhook copyWith({
     int? id,
     int? actionId,
-    _i2.Action? action,
     String? url,
     String? secret,
-    String? triggerEvents,
+    String? subscribedEvents,
+    bool? isActive,
     DateTime? createdAt,
+    DateTime? updatedAt,
   });
   @override
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
       'actionId': actionId,
-      if (action != null) 'action': action?.toJson(),
       'url': url,
-      'secret': secret,
-      'triggerEvents': triggerEvents,
+      if (secret != null) 'secret': secret,
+      'subscribedEvents': subscribedEvents,
+      'isActive': isActive,
       'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
       if (_actionWebhooksActionId != null)
         '_actionWebhooksActionId': _actionWebhooksActionId,
     };
@@ -107,16 +112,17 @@ abstract class Webhook implements _i1.TableRow<int>, _i1.ProtocolSerialization {
     return {
       if (id != null) 'id': id,
       'actionId': actionId,
-      if (action != null) 'action': action?.toJsonForProtocol(),
       'url': url,
-      'secret': secret,
-      'triggerEvents': triggerEvents,
+      if (secret != null) 'secret': secret,
+      'subscribedEvents': subscribedEvents,
+      'isActive': isActive,
       'createdAt': createdAt.toJson(),
+      'updatedAt': updatedAt.toJson(),
     };
   }
 
-  static WebhookInclude include({_i2.ActionInclude? action}) {
-    return WebhookInclude._(action: action);
+  static WebhookInclude include() {
+    return WebhookInclude._();
   }
 
   static WebhookIncludeList includeList({
@@ -151,19 +157,21 @@ class _WebhookImpl extends Webhook {
   _WebhookImpl({
     int? id,
     required int actionId,
-    _i2.Action? action,
     required String url,
-    required String secret,
-    required String triggerEvents,
+    String? secret,
+    required String subscribedEvents,
+    bool? isActive,
     required DateTime createdAt,
+    required DateTime updatedAt,
   }) : super._(
           id: id,
           actionId: actionId,
-          action: action,
           url: url,
           secret: secret,
-          triggerEvents: triggerEvents,
+          subscribedEvents: subscribedEvents,
+          isActive: isActive,
           createdAt: createdAt,
+          updatedAt: updatedAt,
         );
 
   /// Returns a shallow copy of this [Webhook]
@@ -173,20 +181,22 @@ class _WebhookImpl extends Webhook {
   Webhook copyWith({
     Object? id = _Undefined,
     int? actionId,
-    Object? action = _Undefined,
     String? url,
-    String? secret,
-    String? triggerEvents,
+    Object? secret = _Undefined,
+    String? subscribedEvents,
+    bool? isActive,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return WebhookImplicit._(
       id: id is int? ? id : this.id,
       actionId: actionId ?? this.actionId,
-      action: action is _i2.Action? ? action : this.action?.copyWith(),
       url: url ?? this.url,
-      secret: secret ?? this.secret,
-      triggerEvents: triggerEvents ?? this.triggerEvents,
+      secret: secret is String? ? secret : this.secret,
+      subscribedEvents: subscribedEvents ?? this.subscribedEvents,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       $_actionWebhooksActionId: this._actionWebhooksActionId,
     );
   }
@@ -196,21 +206,23 @@ class WebhookImplicit extends _WebhookImpl {
   WebhookImplicit._({
     int? id,
     required int actionId,
-    _i2.Action? action,
     required String url,
-    required String secret,
-    required String triggerEvents,
+    String? secret,
+    required String subscribedEvents,
+    bool? isActive,
     required DateTime createdAt,
+    required DateTime updatedAt,
     int? $_actionWebhooksActionId,
   })  : _actionWebhooksActionId = $_actionWebhooksActionId,
         super(
           id: id,
           actionId: actionId,
-          action: action,
           url: url,
           secret: secret,
-          triggerEvents: triggerEvents,
+          subscribedEvents: subscribedEvents,
+          isActive: isActive,
           createdAt: createdAt,
+          updatedAt: updatedAt,
         );
 
   factory WebhookImplicit(
@@ -220,11 +232,12 @@ class WebhookImplicit extends _WebhookImpl {
     return WebhookImplicit._(
       id: webhook.id,
       actionId: webhook.actionId,
-      action: webhook.action,
       url: webhook.url,
       secret: webhook.secret,
-      triggerEvents: webhook.triggerEvents,
+      subscribedEvents: webhook.subscribedEvents,
+      isActive: webhook.isActive,
       createdAt: webhook.createdAt,
+      updatedAt: webhook.updatedAt,
       $_actionWebhooksActionId: $_actionWebhooksActionId,
     );
   }
@@ -247,12 +260,21 @@ class WebhookTable extends _i1.Table<int> {
       'secret',
       this,
     );
-    triggerEvents = _i1.ColumnString(
-      'triggerEvents',
+    subscribedEvents = _i1.ColumnString(
+      'subscribedEvents',
       this,
+    );
+    isActive = _i1.ColumnBool(
+      'isActive',
+      this,
+      hasDefault: true,
     );
     createdAt = _i1.ColumnDateTime(
       'createdAt',
+      this,
+    );
+    updatedAt = _i1.ColumnDateTime(
+      'updatedAt',
       this,
     );
     $_actionWebhooksActionId = _i1.ColumnInt(
@@ -263,30 +285,19 @@ class WebhookTable extends _i1.Table<int> {
 
   late final _i1.ColumnInt actionId;
 
-  _i2.ActionTable? _action;
-
   late final _i1.ColumnString url;
 
   late final _i1.ColumnString secret;
 
-  late final _i1.ColumnString triggerEvents;
+  late final _i1.ColumnString subscribedEvents;
+
+  late final _i1.ColumnBool isActive;
 
   late final _i1.ColumnDateTime createdAt;
 
-  late final _i1.ColumnInt $_actionWebhooksActionId;
+  late final _i1.ColumnDateTime updatedAt;
 
-  _i2.ActionTable get action {
-    if (_action != null) return _action!;
-    _action = _i1.createRelationTable(
-      relationFieldName: 'action',
-      field: Webhook.t.actionId,
-      foreignField: _i2.Action.t.id,
-      tableRelation: tableRelation,
-      createTable: (foreignTableRelation) =>
-          _i2.ActionTable(tableRelation: foreignTableRelation),
-    );
-    return _action!;
-  }
+  late final _i1.ColumnInt $_actionWebhooksActionId;
 
   @override
   List<_i1.Column> get columns => [
@@ -294,8 +305,10 @@ class WebhookTable extends _i1.Table<int> {
         actionId,
         url,
         secret,
-        triggerEvents,
+        subscribedEvents,
+        isActive,
         createdAt,
+        updatedAt,
         $_actionWebhooksActionId,
       ];
 
@@ -305,28 +318,18 @@ class WebhookTable extends _i1.Table<int> {
         actionId,
         url,
         secret,
-        triggerEvents,
+        subscribedEvents,
+        isActive,
         createdAt,
+        updatedAt,
       ];
-
-  @override
-  _i1.Table? getRelationTable(String relationField) {
-    if (relationField == 'action') {
-      return action;
-    }
-    return null;
-  }
 }
 
 class WebhookInclude extends _i1.IncludeObject {
-  WebhookInclude._({_i2.ActionInclude? action}) {
-    _action = action;
-  }
-
-  _i2.ActionInclude? _action;
+  WebhookInclude._();
 
   @override
-  Map<String, _i1.Include?> get includes => {'action': _action};
+  Map<String, _i1.Include?> get includes => {};
 
   @override
   _i1.Table<int> get table => Webhook.t;
@@ -354,8 +357,6 @@ class WebhookIncludeList extends _i1.IncludeList {
 
 class WebhookRepository {
   const WebhookRepository._();
-
-  final attachRow = const WebhookAttachRowRepository._();
 
   /// Returns a list of [Webhook]s matching the given query parameters.
   ///
@@ -388,7 +389,6 @@ class WebhookRepository {
     bool orderDescending = false,
     _i1.OrderByListBuilder<WebhookTable>? orderByList,
     _i1.Transaction? transaction,
-    WebhookInclude? include,
   }) async {
     return session.db.find<Webhook>(
       where: where?.call(Webhook.t),
@@ -398,7 +398,6 @@ class WebhookRepository {
       limit: limit,
       offset: offset,
       transaction: transaction,
-      include: include,
     );
   }
 
@@ -427,7 +426,6 @@ class WebhookRepository {
     bool orderDescending = false,
     _i1.OrderByListBuilder<WebhookTable>? orderByList,
     _i1.Transaction? transaction,
-    WebhookInclude? include,
   }) async {
     return session.db.findFirstRow<Webhook>(
       where: where?.call(Webhook.t),
@@ -436,7 +434,6 @@ class WebhookRepository {
       orderDescending: orderDescending,
       offset: offset,
       transaction: transaction,
-      include: include,
     );
   }
 
@@ -445,12 +442,10 @@ class WebhookRepository {
     _i1.Session session,
     int id, {
     _i1.Transaction? transaction,
-    WebhookInclude? include,
   }) async {
     return session.db.findById<Webhook>(
       id,
       transaction: transaction,
-      include: include,
     );
   }
 
@@ -568,33 +563,6 @@ class WebhookRepository {
     return session.db.count<Webhook>(
       where: where?.call(Webhook.t),
       limit: limit,
-      transaction: transaction,
-    );
-  }
-}
-
-class WebhookAttachRowRepository {
-  const WebhookAttachRowRepository._();
-
-  /// Creates a relation between the given [Webhook] and [Action]
-  /// by setting the [Webhook]'s foreign key `actionId` to refer to the [Action].
-  Future<void> action(
-    _i1.Session session,
-    Webhook webhook,
-    _i2.Action action, {
-    _i1.Transaction? transaction,
-  }) async {
-    if (webhook.id == null) {
-      throw ArgumentError.notNull('webhook.id');
-    }
-    if (action.id == null) {
-      throw ArgumentError.notNull('action.id');
-    }
-
-    var $webhook = webhook.copyWith(actionId: action.id);
-    await session.db.updateRow<Webhook>(
-      $webhook,
-      columns: [Webhook.t.actionId],
       transaction: transaction,
     );
   }

@@ -1,21 +1,24 @@
-# Represents a webhook URL to be called upon action verification events.
+# Defines a webhook endpoint to be notified about action events.
 class: Webhook
 table: webhook
-
 fields:
-  # The action this webhook is associated with.
-  action: Action?, relation
-  # The URL to which the webhook notification should be sent.
+  # Link to the parent Action this webhook is associated with.
+  actionId: int, relation(parent=action)
+  # The URL to send the notification to.
   url: String
-  # A secret used for signing webhook requests to verify authenticity.
-  secret: String
-  # Comma-separated list of events that trigger this webhook (e.g., 'completed', 'failed', 'started').
-  # Consider using an Enum or separate boolean fields if the list of events is fixed and small.
-  triggerEvents: String # TODO: Potentially use an Enum or multiple booleans
+  # A secret key used to sign the webhook payload for verification.
+  secret: String? # Store securely, maybe hashed or reference a vault
+  # List of event types that trigger this webhook (e.g., "action_started", "step_completed", "action_verified", "action_failed").
+  # Storing as a JSON encoded list for now.
+  subscribedEvents: String # JSON list: ["action_started", "action_verified"]
+  # Is this webhook currently active?
+  isActive: bool, default=true
   # Timestamp when the webhook was created.
   createdAt: DateTime
+  # Timestamp when the webhook was last updated.
+  updatedAt: DateTime
 
+# Define indexes using a map structure.
 indexes:
-  webhook_actionId_idx:
+  webhook_action_id_idx:
     fields: actionId
-    unique: false
