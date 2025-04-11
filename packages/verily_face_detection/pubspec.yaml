@@ -2,7 +2,7 @@ name: verily_face_detection
 description: A Flutter package for detecting faces using Google ML Kit, optimized
   for Verily applications. Provides real-time face detection, landmark identification,
   and classification features like smile and eye-open probabilities.
-version: 0.0.1
+version: 0.1.0
 publish_to: none
 repository: https://github.com/ifiokjr/verily/tree/main/packages/verily_face_detection
 
@@ -26,10 +26,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
   build_runner: ^2.4.15
   freezed: ^3.0.6
-  riverpod_generator: ^2.4.0
+  riverpod_generator: ^2.6.1
   mockito: ^5.4.4
   json_serializable: ^6.8.0
 
@@ -69,3 +68,5 @@ flutter:
 #
 # For details regarding fonts in packages, see
 # https://flutter.dev/to/font-from-package
+
+resolution: workspace

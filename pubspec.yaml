@@ -7,6 +7,7 @@ workspace:
   - apps/verily
   - apps/verily_create
   - packages/verily_device_motion
+  - packages/verily_face_detection
   - packages/verily_client
   - packages/verily_server
   - packages/verily_ui
