@@ -1,34 +1,55 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:verily_client/verily_client.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:verily_client/verily_client.dart' as vc;
 
-import 'package:verily/main.dart'; // Assuming client is accessible here
+// Define dummy actions
+final _now = DateTime.now();
+final _dummyAction1 = vc.Action(
+  id: 1,
+  userInfoId: 1, // Dummy user ID
+  name: 'Morning Check-in',
+  description: 'Verify your location and smile.',
+  createdAt: _now,
+  updatedAt: _now,
+);
+final _dummyAction2 = vc.Action(
+  id: 2,
+  userInfoId: 1,
+  name: 'Local Coffee Shop',
+  description: 'Visit the nearby coffee shop.',
+  createdAt: _now,
+  updatedAt: _now,
+);
+final _dummyAction3 = vc.Action(
+  id: 3,
+  userInfoId: 1,
+  name: 'Daily Affirmation',
+  description: 'Say \'Solana is amazing!\'',
+  createdAt: _now,
+  updatedAt: _now,
+);
+final _dummyAction4 = vc.Action(
+  id: 4,
+  userInfoId: 1,
+  name: 'Evening Wind Down',
+  description: 'Confirm you are home.',
+  createdAt: _now,
+  updatedAt: _now,
+);
 
-// Required for code generation
-part 'action_providers.g.dart';
+/// Provider for available actions (dummy data).
+final availableActionsProvider = Provider<List<vc.Action>>((ref) {
+  // Simulate fetching available actions
+  return [_dummyAction1, _dummyAction3];
+});
 
-/// Provider to fetch available actions.
-@riverpod
-Future<List<Action>> availableActions(AvailableActionsRef ref) async {
-  // Access the Serverpod client
-  final client = ref.watch(serverpodClientProvider);
-  // Call the hypothetical endpoint
-  // TODO: Replace with actual endpoint call if different
-  return client.action.getAvailableActions();
-}
+/// Provider for accepted actions (dummy data).
+final acceptedActionsProvider = Provider<List<vc.Action>>((ref) {
+  // Simulate fetching accepted actions
+  return [_dummyAction4];
+});
 
-/// Provider to fetch actions the user has accepted.
-@riverpod
-Future<List<Action>> acceptedActions(AcceptedActionsRef ref) async {
-  final client = ref.watch(serverpodClientProvider);
-  // TODO: Replace with actual endpoint call if different
-  return client.action.getAcceptedActions();
-}
-
-/// Provider to fetch local actions (e.g., based on location).
-@riverpod
-Future<List<Action>> localActions(LocalActionsRef ref) async {
-  final client = ref.watch(serverpodClientProvider);
-  // TODO: Replace with actual endpoint call if different
-  // This might require location data to be passed
-  return client.action.getLocalActions();
-}
+/// Provider for local actions (dummy data).
+final localActionsProvider = Provider<List<vc.Action>>((ref) {
+  // Simulate fetching local actions
+  return [_dummyAction2];
+});

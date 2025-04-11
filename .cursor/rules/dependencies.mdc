@@ -5,6 +5,10 @@ alwaysApply: false
 ---
 This is a flutter monorepo.
 
+### Packages
+
+- Put shareable UI code that doesn't rely on any of the sensor data or state in the `packages/verily_ui` package first so it can be reused in any of the apps.
+
 ### Monorepo
 
 - This repo uses melos@7 for managing the api docs: https://github.com/invertase/melos/tree/main/docs/

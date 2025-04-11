@@ -28,7 +28,7 @@ class ActionsScreen extends ConsumerWidget {
           bottom: const TabBar(tabs: _tabs),
         ),
         // TabBarView contains the content for each tab.
-        body: const TabBarView(
+        body: TabBarView(
           children: [
             // Each child corresponds to a tab in the TabBar.
             // Use the ActionListView widget, passing the appropriate provider.
