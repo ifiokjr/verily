@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:verily_client/verily_client.dart' as vc;
 
 import 'providers/action_providers.dart';
+// Import the verification flow provider
+import '../verification/providers/verification_flow_provider.dart';
 
 /// Screen to display the details and steps of a specific action.
 class ActionDetailScreen extends ConsumerWidget {
