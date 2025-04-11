@@ -37,6 +37,8 @@ dependencies:
   build_runner: ^2.4.15
   flutter_hooks: ^0.21.2
   cupertino_icons: ^1.0.8
+  verily_device_motion: ^0.1.0
+  verily_face_detection: ^0.1.0
 
 dev_dependencies:
   flutter_test:
