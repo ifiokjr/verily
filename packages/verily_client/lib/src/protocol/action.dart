@@ -18,19 +18,30 @@ abstract class Action implements _i1.SerializableModel {
     this.id,
     required this.name,
     this.description,
-    required this.creatorId,
+    required this.userInfoId,
+    this.locationId,
+    this.validFrom,
+    this.validUntil,
+    this.maxCompletionTimeSeconds,
+    bool? strictOrder,
     required this.createdAt,
     required this.updatedAt,
     bool? isDeleted,
     this.steps,
     this.webhooks,
-  }) : isDeleted = isDeleted ?? false;
+  })  : strictOrder = strictOrder ?? true,
+        isDeleted = isDeleted ?? false;
 
   factory Action({
     int? id,
     required String name,
     String? description,
-    required int creatorId,
+    required int userInfoId,
+    int? locationId,
+    DateTime? validFrom,
+    DateTime? validUntil,
+    int? maxCompletionTimeSeconds,
+    bool? strictOrder,
     required DateTime createdAt,
     required DateTime updatedAt,
     bool? isDeleted,
@@ -43,7 +54,17 @@ abstract class Action implements _i1.SerializableModel {
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       description: jsonSerialization['description'] as String?,
-      creatorId: jsonSerialization['creatorId'] as int,
+      userInfoId: jsonSerialization['userInfoId'] as int,
+      locationId: jsonSerialization['locationId'] as int?,
+      validFrom: jsonSerialization['validFrom'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['validFrom']),
+      validUntil: jsonSerialization['validUntil'] == null
+          ? null
+          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['validUntil']),
+      maxCompletionTimeSeconds:
+          jsonSerialization['maxCompletionTimeSeconds'] as int?,
+      strictOrder: jsonSerialization['strictOrder'] as bool,
       createdAt:
           _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
       updatedAt:
@@ -67,7 +88,17 @@ abstract class Action implements _i1.SerializableModel {
 
   String? description;
 
-  int creatorId;
+  int userInfoId;
+
+  int? locationId;
+
+  DateTime? validFrom;
+
+  DateTime? validUntil;
+
+  int? maxCompletionTimeSeconds;
+
+  bool strictOrder;
 
   DateTime createdAt;
 
@@ -86,7 +117,12 @@ abstract class Action implements _i1.SerializableModel {
     int? id,
     String? name,
     String? description,
-    int? creatorId,
+    int? userInfoId,
+    int? locationId,
+    DateTime? validFrom,
+    DateTime? validUntil,
+    int? maxCompletionTimeSeconds,
+    bool? strictOrder,
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isDeleted,
@@ -99,7 +135,13 @@ abstract class Action implements _i1.SerializableModel {
       if (id != null) 'id': id,
       'name': name,
       if (description != null) 'description': description,
-      'creatorId': creatorId,
+      'userInfoId': userInfoId,
+      if (locationId != null) 'locationId': locationId,
+      if (validFrom != null) 'validFrom': validFrom?.toJson(),
+      if (validUntil != null) 'validUntil': validUntil?.toJson(),
+      if (maxCompletionTimeSeconds != null)
+        'maxCompletionTimeSeconds': maxCompletionTimeSeconds,
+      'strictOrder': strictOrder,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
       'isDeleted': isDeleted,
@@ -122,7 +164,12 @@ class _ActionImpl extends Action {
     int? id,
     required String name,
     String? description,
-    required int creatorId,
+    required int userInfoId,
+    int? locationId,
+    DateTime? validFrom,
+    DateTime? validUntil,
+    int? maxCompletionTimeSeconds,
+    bool? strictOrder,
     required DateTime createdAt,
     required DateTime updatedAt,
     bool? isDeleted,
@@ -132,7 +179,12 @@ class _ActionImpl extends Action {
           id: id,
           name: name,
           description: description,
-          creatorId: creatorId,
+          userInfoId: userInfoId,
+          locationId: locationId,
+          validFrom: validFrom,
+          validUntil: validUntil,
+          maxCompletionTimeSeconds: maxCompletionTimeSeconds,
+          strictOrder: strictOrder,
           createdAt: createdAt,
           updatedAt: updatedAt,
           isDeleted: isDeleted,
@@ -148,7 +200,12 @@ class _ActionImpl extends Action {
     Object? id = _Undefined,
     String? name,
     Object? description = _Undefined,
-    int? creatorId,
+    int? userInfoId,
+    Object? locationId = _Undefined,
+    Object? validFrom = _Undefined,
+    Object? validUntil = _Undefined,
+    Object? maxCompletionTimeSeconds = _Undefined,
+    bool? strictOrder,
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isDeleted,
@@ -159,7 +216,14 @@ class _ActionImpl extends Action {
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       description: description is String? ? description : this.description,
-      creatorId: creatorId ?? this.creatorId,
+      userInfoId: userInfoId ?? this.userInfoId,
+      locationId: locationId is int? ? locationId : this.locationId,
+      validFrom: validFrom is DateTime? ? validFrom : this.validFrom,
+      validUntil: validUntil is DateTime? ? validUntil : this.validUntil,
+      maxCompletionTimeSeconds: maxCompletionTimeSeconds is int?
+          ? maxCompletionTimeSeconds
+          : this.maxCompletionTimeSeconds,
+      strictOrder: strictOrder ?? this.strictOrder,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isDeleted: isDeleted ?? this.isDeleted,

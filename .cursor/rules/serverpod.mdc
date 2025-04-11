@@ -1,0 +1,27 @@
+---
+description: 
+globs: packages/verily_server/**/*.dart
+alwaysApply: false
+---
+### Auth
+
+When accessing auth use this to get the userId.
+
+```dart
+final authenticationInfo = await session.authenticated;
+final userId = authenticationInfo?.userId;
+```
+
+The following IS **BROKEN** and should not be used. 
+
+```dart
+/// ⛔️⛔️⛔️⛔️⛔️ BROKEN DON'T USE THIS
+int userId = session.auth.authenticatedUserId!;
+```
+
+See https://docs.serverpod.dev/concepts/authentication/basics for more information on authentication from the backend. 
+
+
+### Generating code
+
+If a failure happens after running `serverpod generate` and this is part of the error `invalid Dart syntax. Please review and correct the syntax errors.` the reason is that you've introduced a bug in the code. It has **NOTHING** to do with versions of project setup. Please fix the bug you've introduced first. 

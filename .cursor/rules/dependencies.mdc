@@ -17,6 +17,7 @@ This is a flutter monorepo.
 - NEVER add dev dependencies to the individual package `pubspec.yaml` files. Only add them to the root `pubspec.yaml`.  
 - NEVER add the `flutter_lints` dependency back to the file. 
 - If a dependency is to be added always check that it is the latest version of the application and make sure it exactly matches the versions used throughout the codebase.
+- CHANGING VERSIONS rarely solves the bug. STOP suggesting this please. 
 
 
 ### Package / App `pubspec.yaml`

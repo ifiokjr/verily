@@ -16,12 +16,15 @@ import 'action.dart' as _i4;
 import 'action_step.dart' as _i5;
 import 'creator.dart' as _i6;
 import 'example.dart' as _i7;
-import 'verification_attempt.dart' as _i8;
-import 'webhook.dart' as _i9;
+import 'location.dart' as _i8;
+import 'verification_attempt.dart' as _i9;
+import 'webhook.dart' as _i10;
+import 'package:verily_server/src/generated/action.dart' as _i11;
 export 'action.dart';
 export 'action_step.dart';
 export 'creator.dart';
 export 'example.dart';
+export 'location.dart';
 export 'verification_attempt.dart';
 export 'webhook.dart';
 
@@ -59,10 +62,41 @@ class Protocol extends _i1.SerializationManagerServer {
           dartType: 'String?',
         ),
         _i2.ColumnDefinition(
-          name: 'creatorId',
+          name: 'userInfoId',
           columnType: _i2.ColumnType.bigint,
           isNullable: false,
           dartType: 'int',
+        ),
+        _i2.ColumnDefinition(
+          name: 'locationId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'validFrom',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'validUntil',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: true,
+          dartType: 'DateTime?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'maxCompletionTimeSeconds',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'strictOrder',
+          columnType: _i2.ColumnType.boolean,
+          isNullable: false,
+          dartType: 'bool',
+          columnDefault: 'true',
         ),
         _i2.ColumnDefinition(
           name: 'createdAt',
@@ -84,18 +118,7 @@ class Protocol extends _i1.SerializationManagerServer {
           columnDefault: 'false',
         ),
       ],
-      foreignKeys: [
-        _i2.ForeignKeyDefinition(
-          constraintName: 'action_fk_0',
-          columns: ['creatorId'],
-          referenceTable: 'creator',
-          referenceTableSchema: 'public',
-          referenceColumns: ['id'],
-          onUpdate: _i2.ForeignKeyAction.noAction,
-          onDelete: _i2.ForeignKeyAction.noAction,
-          matchType: null,
-        )
-      ],
+      foreignKeys: [],
       indexes: [
         _i2.IndexDefinition(
           indexName: 'action_pkey',
@@ -111,13 +134,43 @@ class Protocol extends _i1.SerializationManagerServer {
           isPrimary: true,
         ),
         _i2.IndexDefinition(
-          indexName: 'action_creator_idx',
+          indexName: 'action_userInfoId_idx',
           tableSpace: null,
           elements: [
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
-              definition: 'creatorId',
+              definition: 'userInfoId',
             )
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'action_locationId_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'locationId',
+            )
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'action_valid_times_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'validFrom',
+            ),
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'validUntil',
+            ),
           ],
           type: 'btree',
           isUnique: false,
@@ -292,6 +345,104 @@ class Protocol extends _i1.SerializationManagerServer {
           isUnique: true,
           isPrimary: true,
         )
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
+      name: 'location',
+      dartName: 'Location',
+      schema: 'public',
+      module: 'verily',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'nextval(\'location_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'latitude',
+          columnType: _i2.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _i2.ColumnDefinition(
+          name: 'longitude',
+          columnType: _i2.ColumnType.doublePrecision,
+          isNullable: false,
+          dartType: 'double',
+        ),
+        _i2.ColumnDefinition(
+          name: 'radiusMeters',
+          columnType: _i2.ColumnType.doublePrecision,
+          isNullable: true,
+          dartType: 'double?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'googlePlacesId',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'address',
+          columnType: _i2.ColumnType.text,
+          isNullable: true,
+          dartType: 'String?',
+        ),
+        _i2.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'location_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            )
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'location_lat_lon_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'latitude',
+            ),
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'longitude',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'location_google_places_id_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'googlePlacesId',
+            )
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
       ],
       managed: true,
     ),
@@ -560,11 +711,14 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i7.Example) {
       return _i7.Example.fromJson(data) as T;
     }
-    if (t == _i8.VerificationAttempt) {
-      return _i8.VerificationAttempt.fromJson(data) as T;
+    if (t == _i8.Location) {
+      return _i8.Location.fromJson(data) as T;
     }
-    if (t == _i9.Webhook) {
-      return _i9.Webhook.fromJson(data) as T;
+    if (t == _i9.VerificationAttempt) {
+      return _i9.VerificationAttempt.fromJson(data) as T;
+    }
+    if (t == _i10.Webhook) {
+      return _i10.Webhook.fromJson(data) as T;
     }
     if (t == _i1.getType<_i4.Action?>()) {
       return (data != null ? _i4.Action.fromJson(data) : null) as T;
@@ -578,22 +732,29 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i1.getType<_i7.Example?>()) {
       return (data != null ? _i7.Example.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i8.VerificationAttempt?>()) {
-      return (data != null ? _i8.VerificationAttempt.fromJson(data) : null)
+    if (t == _i1.getType<_i8.Location?>()) {
+      return (data != null ? _i8.Location.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i9.VerificationAttempt?>()) {
+      return (data != null ? _i9.VerificationAttempt.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i9.Webhook?>()) {
-      return (data != null ? _i9.Webhook.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i10.Webhook?>()) {
+      return (data != null ? _i10.Webhook.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<List<_i5.ActionStep>?>()) {
       return (data != null
           ? (data as List).map((e) => deserialize<_i5.ActionStep>(e)).toList()
           : null) as T;
     }
-    if (t == _i1.getType<List<_i9.Webhook>?>()) {
+    if (t == _i1.getType<List<_i10.Webhook>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i9.Webhook>(e)).toList()
+          ? (data as List).map((e) => deserialize<_i10.Webhook>(e)).toList()
           : null) as T;
+    }
+    if (t == List<_i11.Action>) {
+      return (data as List).map((e) => deserialize<_i11.Action>(e)).toList()
+          as T;
     }
     try {
       return _i3.Protocol().deserialize<T>(data, t);
@@ -620,10 +781,13 @@ class Protocol extends _i1.SerializationManagerServer {
     if (data is _i7.Example) {
       return 'Example';
     }
-    if (data is _i8.VerificationAttempt) {
+    if (data is _i8.Location) {
+      return 'Location';
+    }
+    if (data is _i9.VerificationAttempt) {
       return 'VerificationAttempt';
     }
-    if (data is _i9.Webhook) {
+    if (data is _i10.Webhook) {
       return 'Webhook';
     }
     className = _i2.Protocol().getClassNameForObject(data);
@@ -655,11 +819,14 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'Example') {
       return deserialize<_i7.Example>(data['data']);
     }
+    if (dataClassName == 'Location') {
+      return deserialize<_i8.Location>(data['data']);
+    }
     if (dataClassName == 'VerificationAttempt') {
-      return deserialize<_i8.VerificationAttempt>(data['data']);
+      return deserialize<_i9.VerificationAttempt>(data['data']);
     }
     if (dataClassName == 'Webhook') {
-      return deserialize<_i9.Webhook>(data['data']);
+      return deserialize<_i10.Webhook>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -693,10 +860,12 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i5.ActionStep.t;
       case _i6.Creator:
         return _i6.Creator.t;
-      case _i8.VerificationAttempt:
-        return _i8.VerificationAttempt.t;
-      case _i9.Webhook:
-        return _i9.Webhook.t;
+      case _i8.Location:
+        return _i8.Location.t;
+      case _i9.VerificationAttempt:
+        return _i9.VerificationAttempt.t;
+      case _i10.Webhook:
+        return _i10.Webhook.t;
     }
     return null;
   }

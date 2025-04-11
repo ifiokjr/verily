@@ -6,6 +6,6 @@ environment:
   sdk: ^3.7.2
 
 dependencies:
-  serverpod_client: 2.5.0
+  serverpod_client: 2.5.1
 
 resolution: workspace

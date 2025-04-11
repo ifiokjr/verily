@@ -1,0 +1,646 @@
+{
+  "actions": [
+    {
+      "type": "deleteTable",
+      "deleteTable": "action"
+    },
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "action",
+        "dartName": "Action",
+        "module": "verily",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('action_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "name",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "String"
+          },
+          {
+            "name": "description",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "name": "userInfoId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "createdAt",
+            "columnType": 4,
+            "isNullable": false,
+            "dartType": "DateTime"
+          },
+          {
+            "name": "updatedAt",
+            "columnType": 4,
+            "isNullable": false,
+            "dartType": "DateTime"
+          },
+          {
+            "name": "isDeleted",
+            "columnType": 1,
+            "isNullable": false,
+            "columnDefault": "false",
+            "dartType": "bool"
+          }
+        ],
+        "foreignKeys": [],
+        "indexes": [
+          {
+            "indexName": "action_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "action_userInfoId_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "userInfoId"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          },
+          {
+            "indexName": "action_created_at_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "createdAt"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    },
+    {
+      "type": "deleteTable",
+      "deleteTable": "action_step"
+    },
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "action_step",
+        "dartName": "ActionStep",
+        "module": "verily",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('action_step_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "actionId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "type",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "String"
+          },
+          {
+            "name": "order",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "parameters",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "String"
+          },
+          {
+            "name": "instruction",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "name": "createdAt",
+            "columnType": 4,
+            "isNullable": false,
+            "dartType": "DateTime"
+          },
+          {
+            "name": "updatedAt",
+            "columnType": 4,
+            "isNullable": false,
+            "dartType": "DateTime"
+          },
+          {
+            "name": "_actionStepsActionId",
+            "columnType": 6,
+            "isNullable": true,
+            "dartType": "int?"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "constraintName": "action_step_fk_0",
+            "columns": [
+              "actionId"
+            ],
+            "referenceTable": "action",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          },
+          {
+            "constraintName": "action_step_fk_1",
+            "columns": [
+              "_actionStepsActionId"
+            ],
+            "referenceTable": "action",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          }
+        ],
+        "indexes": [
+          {
+            "indexName": "action_step_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "action_step_action_id_order_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "actionId"
+              },
+              {
+                "type": 0,
+                "definition": "order"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    },
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "creator",
+        "dartName": "Creator",
+        "module": "verily",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('creator_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "userInfoId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          }
+        ],
+        "foreignKeys": [],
+        "indexes": [
+          {
+            "indexName": "creator_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          }
+        ],
+        "managed": true
+      }
+    },
+    {
+      "type": "alterTable",
+      "alterTable": {
+        "name": "verification_attempt",
+        "schema": "public",
+        "addColumns": [
+          {
+            "name": "lastUpdatedAt",
+            "columnType": 4,
+            "isNullable": true,
+            "dartType": "DateTime?"
+          },
+          {
+            "name": "stepProgress",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "name": "errorMessage",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          }
+        ],
+        "deleteColumns": [
+          "updatedAt",
+          "completedAt",
+          "progressData"
+        ],
+        "modifyColumns": [],
+        "addIndexes": [
+          {
+            "indexName": "verification_attempt_action_id_user_id_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "actionId"
+              },
+              {
+                "type": 0,
+                "definition": "userId"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          },
+          {
+            "indexName": "verification_attempt_status_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "status"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          },
+          {
+            "indexName": "verification_attempt_started_at_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "startedAt"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          }
+        ],
+        "deleteIndexes": [
+          "verification_attempt_actionId_idx",
+          "verification_attempt_userId_idx"
+        ],
+        "addForeignKeys": [],
+        "deleteForeignKeys": [],
+        "warnings": [
+          {
+            "type": "columnDropped",
+            "message": "Column \"creatorId\" of table \"action\" will be dropped.",
+            "table": "action",
+            "columns": [
+              "creatorId"
+            ],
+            "destrucive": true
+          },
+          {
+            "type": "tableDropped",
+            "message": "One or more columns are added to table \"action\" which cannot be added in a table migration. The complete table will be deleted and recreated.",
+            "table": "action",
+            "columns": [
+              "userInfoId"
+            ],
+            "destrucive": true
+          },
+          {
+            "type": "columnDropped",
+            "message": "Column \"stepType\" of table \"action_step\" will be dropped.",
+            "table": "action_step",
+            "columns": [
+              "stepType"
+            ],
+            "destrucive": true
+          },
+          {
+            "type": "tableDropped",
+            "message": "One or more columns are added to table \"action_step\" which cannot be added in a table migration. The complete table will be deleted and recreated.",
+            "table": "action_step",
+            "columns": [
+              "type"
+            ],
+            "destrucive": true
+          },
+          {
+            "type": "columnDropped",
+            "message": "Column \"updatedAt\" of table \"verification_attempt\" will be dropped.",
+            "table": "verification_attempt",
+            "columns": [
+              "updatedAt"
+            ],
+            "destrucive": true
+          },
+          {
+            "type": "columnDropped",
+            "message": "Column \"completedAt\" of table \"verification_attempt\" will be dropped.",
+            "table": "verification_attempt",
+            "columns": [
+              "completedAt"
+            ],
+            "destrucive": true
+          },
+          {
+            "type": "columnDropped",
+            "message": "Column \"progressData\" of table \"verification_attempt\" will be dropped.",
+            "table": "verification_attempt",
+            "columns": [
+              "progressData"
+            ],
+            "destrucive": true
+          },
+          {
+            "type": "columnDropped",
+            "message": "Column \"triggerEvents\" of table \"webhook\" will be dropped.",
+            "table": "webhook",
+            "columns": [
+              "triggerEvents"
+            ],
+            "destrucive": true
+          },
+          {
+            "type": "tableDropped",
+            "message": "One or more columns are added to table \"webhook\" which cannot be added in a table migration. The complete table will be deleted and recreated.",
+            "table": "webhook",
+            "columns": [
+              "subscribedEvents"
+            ],
+            "destrucive": true
+          }
+        ]
+      }
+    },
+    {
+      "type": "deleteTable",
+      "deleteTable": "webhook"
+    },
+    {
+      "type": "createTable",
+      "createTable": {
+        "name": "webhook",
+        "dartName": "Webhook",
+        "module": "verily",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "columnType": 6,
+            "isNullable": false,
+            "columnDefault": "nextval('webhook_id_seq'::regclass)",
+            "dartType": "int?"
+          },
+          {
+            "name": "actionId",
+            "columnType": 6,
+            "isNullable": false,
+            "dartType": "int"
+          },
+          {
+            "name": "url",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "String"
+          },
+          {
+            "name": "secret",
+            "columnType": 0,
+            "isNullable": true,
+            "dartType": "String?"
+          },
+          {
+            "name": "subscribedEvents",
+            "columnType": 0,
+            "isNullable": false,
+            "dartType": "String"
+          },
+          {
+            "name": "isActive",
+            "columnType": 1,
+            "isNullable": false,
+            "columnDefault": "true",
+            "dartType": "bool"
+          },
+          {
+            "name": "createdAt",
+            "columnType": 4,
+            "isNullable": false,
+            "dartType": "DateTime"
+          },
+          {
+            "name": "updatedAt",
+            "columnType": 4,
+            "isNullable": false,
+            "dartType": "DateTime"
+          },
+          {
+            "name": "_actionWebhooksActionId",
+            "columnType": 6,
+            "isNullable": true,
+            "dartType": "int?"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "constraintName": "webhook_fk_0",
+            "columns": [
+              "actionId"
+            ],
+            "referenceTable": "action",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          },
+          {
+            "constraintName": "webhook_fk_1",
+            "columns": [
+              "_actionWebhooksActionId"
+            ],
+            "referenceTable": "action",
+            "referenceTableSchema": "public",
+            "referenceColumns": [
+              "id"
+            ],
+            "onUpdate": 3,
+            "onDelete": 3
+          }
+        ],
+        "indexes": [
+          {
+            "indexName": "webhook_pkey",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "id"
+              }
+            ],
+            "type": "btree",
+            "isUnique": true,
+            "isPrimary": true
+          },
+          {
+            "indexName": "webhook_action_id_idx",
+            "elements": [
+              {
+                "type": 0,
+                "definition": "actionId"
+              }
+            ],
+            "type": "btree",
+            "isUnique": false,
+            "isPrimary": false
+          }
+        ],
+        "managed": true
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "type": "columnDropped",
+      "message": "Column \"creatorId\" of table \"action\" will be dropped.",
+      "table": "action",
+      "columns": [
+        "creatorId"
+      ],
+      "destrucive": true
+    },
+    {
+      "type": "tableDropped",
+      "message": "One or more columns are added to table \"action\" which cannot be added in a table migration. The complete table will be deleted and recreated.",
+      "table": "action",
+      "columns": [
+        "userInfoId"
+      ],
+      "destrucive": true
+    },
+    {
+      "type": "columnDropped",
+      "message": "Column \"stepType\" of table \"action_step\" will be dropped.",
+      "table": "action_step",
+      "columns": [
+        "stepType"
+      ],
+      "destrucive": true
+    },
+    {
+      "type": "tableDropped",
+      "message": "One or more columns are added to table \"action_step\" which cannot be added in a table migration. The complete table will be deleted and recreated.",
+      "table": "action_step",
+      "columns": [
+        "type"
+      ],
+      "destrucive": true
+    },
+    {
+      "type": "columnDropped",
+      "message": "Column \"updatedAt\" of table \"verification_attempt\" will be dropped.",
+      "table": "verification_attempt",
+      "columns": [
+        "updatedAt"
+      ],
+      "destrucive": true
+    },
+    {
+      "type": "columnDropped",
+      "message": "Column \"completedAt\" of table \"verification_attempt\" will be dropped.",
+      "table": "verification_attempt",
+      "columns": [
+        "completedAt"
+      ],
+      "destrucive": true
+    },
+    {
+      "type": "columnDropped",
+      "message": "Column \"progressData\" of table \"verification_attempt\" will be dropped.",
+      "table": "verification_attempt",
+      "columns": [
+        "progressData"
+      ],
+      "destrucive": true
+    },
+    {
+      "type": "columnDropped",
+      "message": "Column \"triggerEvents\" of table \"webhook\" will be dropped.",
+      "table": "webhook",
+      "columns": [
+        "triggerEvents"
+      ],
+      "destrucive": true
+    },
+    {
+      "type": "tableDropped",
+      "message": "One or more columns are added to table \"webhook\" which cannot be added in a table migration. The complete table will be deleted and recreated.",
+      "table": "webhook",
+      "columns": [
+        "subscribedEvents"
+      ],
+      "destrucive": true
+    }
+  ],
+  "migrationApiVersion": 1
+}

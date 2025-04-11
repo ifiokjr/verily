@@ -1,2 +1,13 @@
+action:
+  - createAction:
+  - getMyActions:
+  - updateAction:
+  - deleteAction:
+  - addActionStep:
+  - updateActionStep:
+  - deleteActionStep:
+  - addWebhook:
+  - updateWebhook:
+  - deleteWebhook:
 example:
   - hello:

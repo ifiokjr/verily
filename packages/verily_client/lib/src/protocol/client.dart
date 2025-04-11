@@ -11,8 +11,125 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'dart:async' as _i2;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i3;
-import 'protocol.dart' as _i4;
+import 'package:verily_client/src/protocol/action.dart' as _i3;
+import 'package:verily_client/src/protocol/action_step.dart' as _i4;
+import 'package:verily_client/src/protocol/webhook.dart' as _i5;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i6;
+import 'protocol.dart' as _i7;
+
+/// {@category Endpoint}
+class EndpointAction extends _i1.EndpointRef {
+  EndpointAction(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'action';
+
+  /// Creates a new Action.
+  /// The action is associated with the currently authenticated user.
+  _i2.Future<_i3.Action> createAction({
+    required String name,
+    required String description,
+    int? locationId,
+    DateTime? validFrom,
+    DateTime? validUntil,
+    int? maxCompletionTimeSeconds,
+    bool? strictOrder,
+  }) =>
+      caller.callServerEndpoint<_i3.Action>(
+        'action',
+        'createAction',
+        {
+          'name': name,
+          'description': description,
+          'locationId': locationId,
+          'validFrom': validFrom,
+          'validUntil': validUntil,
+          'maxCompletionTimeSeconds': maxCompletionTimeSeconds,
+          'strictOrder': strictOrder,
+        },
+      );
+
+  /// Retrieves a list of Actions created by the authenticated user.
+  _i2.Future<List<_i3.Action>> getMyActions() =>
+      caller.callServerEndpoint<List<_i3.Action>>(
+        'action',
+        'getMyActions',
+        {},
+      );
+
+  /// Updates an existing Action.
+  /// Requires the action object with updated fields.
+  /// Verifies ownership before updating.
+  _i2.Future<_i3.Action?> updateAction(_i3.Action action) =>
+      caller.callServerEndpoint<_i3.Action?>(
+        'action',
+        'updateAction',
+        {'action': action},
+      );
+
+  /// Soft deletes an Action by its ID.
+  /// Verifies ownership before deleting.
+  _i2.Future<bool> deleteAction(int actionId) =>
+      caller.callServerEndpoint<bool>(
+        'action',
+        'deleteAction',
+        {'actionId': actionId},
+      );
+
+  /// Adds a new ActionStep to an existing Action.
+  /// Verifies ownership of the parent Action.
+  _i2.Future<_i4.ActionStep?> addActionStep(_i4.ActionStep actionStep) =>
+      caller.callServerEndpoint<_i4.ActionStep?>(
+        'action',
+        'addActionStep',
+        {'actionStep': actionStep},
+      );
+
+  /// Updates an existing ActionStep.
+  /// Verifies ownership of the parent Action.
+  _i2.Future<_i4.ActionStep?> updateActionStep(_i4.ActionStep actionStep) =>
+      caller.callServerEndpoint<_i4.ActionStep?>(
+        'action',
+        'updateActionStep',
+        {'actionStep': actionStep},
+      );
+
+  /// Deletes an ActionStep by its ID.
+  /// Verifies ownership of the parent Action.
+  _i2.Future<bool> deleteActionStep(int actionStepId) =>
+      caller.callServerEndpoint<bool>(
+        'action',
+        'deleteActionStep',
+        {'actionStepId': actionStepId},
+      );
+
+  /// Adds a new Webhook to an existing Action.
+  /// Verifies ownership of the parent Action.
+  _i2.Future<_i5.Webhook?> addWebhook(_i5.Webhook webhook) =>
+      caller.callServerEndpoint<_i5.Webhook?>(
+        'action',
+        'addWebhook',
+        {'webhook': webhook},
+      );
+
+  /// Updates an existing Webhook.
+  /// Verifies ownership of the parent Action.
+  _i2.Future<_i5.Webhook?> updateWebhook(_i5.Webhook webhook) =>
+      caller.callServerEndpoint<_i5.Webhook?>(
+        'action',
+        'updateWebhook',
+        {'webhook': webhook},
+      );
+
+  /// Deletes a Webhook by its ID.
+  /// Verifies ownership of the parent Action.
+  _i2.Future<bool> deleteWebhook(int webhookId) =>
+      caller.callServerEndpoint<bool>(
+        'action',
+        'deleteWebhook',
+        {'webhookId': webhookId},
+      );
+}
 
 /// {@category Endpoint}
 class EndpointExample extends _i1.EndpointRef {
@@ -30,10 +147,10 @@ class EndpointExample extends _i1.EndpointRef {
 
 class Modules {
   Modules(Client client) {
-    auth = _i3.Caller(client);
+    auth = _i6.Caller(client);
   }
 
-  late final _i3.Caller auth;
+  late final _i6.Caller auth;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -52,7 +169,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i4.Protocol(),
+          _i7.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
@@ -62,16 +179,22 @@ class Client extends _i1.ServerpodClientShared {
           disconnectStreamsOnLostInternetConnection:
               disconnectStreamsOnLostInternetConnection,
         ) {
+    action = EndpointAction(this);
     example = EndpointExample(this);
     modules = Modules(this);
   }
+
+  late final EndpointAction action;
 
   late final EndpointExample example;
 
   late final Modules modules;
 
   @override
-  Map<String, _i1.EndpointRef> get endpointRefLookup => {'example': example};
+  Map<String, _i1.EndpointRef> get endpointRefLookup => {
+        'action': action,
+        'example': example,
+      };
 
   @override
   Map<String, _i1.ModuleEndpointCaller> get moduleLookup =>

@@ -6,9 +6,19 @@ fields:
   name: String
   # Detailed description of the action.
   description: String?
-  # Link to the creator who owns this action.
-  # One creator can have many actions.
-  creatorId: int, relation(parent=creator) # Use parent relation for ownership
+  # Link directly to the UserInfo ID of the creator.
+  userInfoId: int
+  # Optional link to a specific location required for the action.
+  # Store the ID, fetch the Location object manually when needed.
+  locationId: int?
+  # Optional start time when the action becomes available.
+  validFrom: DateTime?
+  # Optional end time after which the action is no longer available.
+  validUntil: DateTime?
+  # Optional maximum time in seconds allowed to complete the action after starting.
+  maxCompletionTimeSeconds: int?
+  # If true, steps must be completed in the specified order.
+  strictOrder: bool, default=true
   # Timestamp when the action was created.
   createdAt: DateTime
   # Timestamp when the action was last updated.
@@ -24,7 +34,11 @@ fields:
 
 # Define indexes using a map structure.
 indexes:
-  action_creator_idx:
-    fields: creatorId
+  action_userInfoId_idx: # Index based on the user who created it
+    fields: userInfoId
+  action_locationId_idx: # Index on the location ID
+    fields: locationId
+  action_valid_times_idx:
+    fields: validFrom, validUntil
   action_created_at_idx:
     fields: createdAt

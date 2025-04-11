@@ -1,0 +1,23 @@
+# Defines geographic location details, potentially linked to Google Places.
+class: Location
+table: location
+fields:
+  # Latitude of the location.
+  latitude: double
+  # Longitude of the location.
+  longitude: double
+  # Radius in meters for geofencing, if applicable.
+  radiusMeters: double?
+  # Optional Google Places ID for this location.
+  googlePlacesId: String?
+  # Optional human-readable address or name.
+  address: String?
+  # Timestamp of creation.
+  createdAt: DateTime
+
+indexes:
+  location_lat_lon_idx:
+    fields: latitude, longitude
+  location_google_places_id_idx:
+    fields: googlePlacesId
+    unique: false # Places ID might not be unique if not always provided

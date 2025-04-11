@@ -20,8 +20,9 @@
   - [x] Securely configure `config/passwords.yaml` (add to `.gitignore`!).
   - [x] Define initial data models in `lib/src/models/*.spy.yaml`. *_(Marking as done for initial structure)_*
   - [x] Run `serverpod generate` to create initial protocol, client, and database classes. *_(Ran after initial model setup)_*
-  - [ ] Create initial database migrations (`serverpod create-migration`) and apply them (`dart bin/main.dart --apply-migrations -r maintenance`). *_(Next step)_*
-  - [ ] Define initial Endpoints in `lib/src/endpoints/`. *_(Likely started, but ongoing)_*
+  - [x] Create initial database migrations (`serverpod create-migration`). *_(Checked, no new migration needed)_*
+  - [x] Apply migrations (`dart bin/main.dart --apply-migrations -r maintenance`). *_(Applied 20250411181227186)_*
+  - [x] Define initial Endpoints in `lib/src/endpoints/`. *_(Action, Step, Webhook CRUD added)_*
   - [ ] Implement basic health check endpoint. *_(Needs verification)_*
 - [ ] **Database Schema Definition (via `*.spy.yaml` files):**
   - [x] Define structure for `Action` class.
@@ -30,7 +31,11 @@
   - [x] Define structure for `Webhook` class.
   - [x] Define structure for `VerificationAttempt` class.
   - [x] *Task:* Fix model relation and index definitions in `*.spy.yaml` files. *_(Completed)_*
-  - [ ] *Task:* Manage schema changes and migrations using `serverpod generate` and `serverpod create-migration`. *_(Ongoing)_*
+  - [x] *Task:* Create `location.spy.yaml` model. *_(Completed)_*
+  - [x] *Task:* Update `action.spy.yaml` model with location, time constraints, and ordering fields. *_(Completed)_*
+  - [x] *Task:* Manage schema changes and migrations using `serverpod generate`. *_(Generate successful)_*
+  - [x] *Task:* Manage schema changes and migrations using `serverpod create-migration`. *_(Created 20250411181227186)_*
+  - [x] *Task:* Manage schema changes and migrations using apply migrations. *_(Applied 20250411181227186)_*
 - [ ] **Core Backend API (Serverpod Endpoints):**
   - [ ] Implement Endpoints for CRUD operations on `Action`.
   - [ ] Implement Endpoints for CRUD operations on `ActionStep`.
@@ -49,6 +54,7 @@
   - [x] Initialize/Verify Flutter web project in `/apps/verily_create`.
   - [ ] Configure Riverpod state management. *_(Likely started)_*
   - [ ] Set up basic navigation/routing. *_(Likely started)_*
+  - [x] Verify/Add frontend dependencies for Serverpod & Auth.
 - [ ] **Creator Authentication UI:**
   - [ ] Implement login/signup UI using `serverpod_auth_email_flutter` (or other chosen auth modules).
 - [ ] **Action Management UI:**
@@ -57,9 +63,9 @@
   - [ ] Interface to add/edit/reorder action steps (selecting type, configuring parameters).
   - [ ] Interface to manage webhooks for actions.
   - [ ] Display generated Action URL/QR code.
-- [ ] **Serverpod Integration:**
-  - [ ] Add dependency on the generated `verily_client` package.
-  - [ ] Initialize the Serverpod `Client`.
+- [x] **Serverpod Integration:**
+  - [x] Add dependency on the generated `verily_client` package.
+  - [x] Initialize the Serverpod `Client`. *_(Completed)_*
   - [ ] Connect UI components to backend Serverpod Endpoints.
 
 ## Phase 3: `Verily` Application (Mobile)
