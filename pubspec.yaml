@@ -19,6 +19,13 @@ dev_dependencies:
 
 melos:
   repository: https://github.com/ifiokjr/verily
+  scripts:
+    "server:run":
+      steps:
+        - cd packages/verily_server
+        - docker compose up --build --detach
+        - dart bin/main.dart --apply-migrations
+
 
 # All of the content of your previous melos.yaml file
 # (Except for the packages and name)
