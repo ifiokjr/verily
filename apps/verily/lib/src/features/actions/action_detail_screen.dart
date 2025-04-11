@@ -54,16 +54,24 @@ class ActionDetailScreen extends ConsumerWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Implement logic to start the action verification
+                  // Call the startFlow method on the provider
+                  ref
+                      .read(verificationFlowProvider.notifier)
+                      .startFlow(actionId);
+
+                  // Optionally, show immediate feedback (or navigate later based on state)
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        'Starting verification for Action: ${action.name}',
+                        'Initializing verification for Action: ${action.name}',
                       ),
                     ),
                   );
-                  // Example: Navigate to a verification flow screen
-                  // context.push('/verify/${action.id}');
+
+                  // TODO: Navigate to the verification flow screen.
+                  // Navigation should likely happen based on state changes in
+                  // verificationFlowProvider (e.g., when flowStatus becomes inProgress).
+                  // context.push('/verify/$actionId');
                 },
                 child: const Text('Start Verification'),
               ),
