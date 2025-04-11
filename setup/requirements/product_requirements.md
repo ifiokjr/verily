@@ -56,12 +56,6 @@ The Verily ecosystem consists of two main applications and a supporting backend:
   - Phone number verification
   - Email verification
 
-### 2.3. `Reflexy` (Demo Application)
-
-- **Purpose:** A mobile game built using the Verily packages/SDK to demonstrate the capabilities of the verification framework and serve as a testbed during development.
-- **Functionality:** Presents users with challenges requiring sensor interaction (e.g., tilt device, make a face, hold a pose) verified by the underlying Verily packages. It showcases how a third-party developer might integrate Verily's verification capabilities.
-- **Technology:** Built with Flutter, using the official `verily_*` packages/SDK.
-
 ## 3. Backend Infrastructure
 
 - **Technology Stack:**

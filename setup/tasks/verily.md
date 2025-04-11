@@ -4,6 +4,8 @@
 
 **AI Assistant Note:** Remember to check off tasks here as they are completed. Update this list frequently to reflect the current project state.
 
+**Current Focus (as of 2025-04-11):** Development is primarily focused on implementing core frontend features and specific action types within the `Verily` mobile application (Phase 3). Backend and `Verily Create` tasks are secondary priorities for now.
+
 ## Phase 1: Foundation & Backend Setup (Serverpod)
 
 - [ ] **Project Structure:**
@@ -65,14 +67,42 @@
   - [ ] Initialize/Verify Flutter mobile project in `/apps/verily`.
   - [ ] Configure Riverpod state management.
   - [ ] Set up basic navigation.
+- [ ] **Permissions Handling (using `permission_handler`):**
+    - [ ] Implement clear, contextual requests for Fine Location (Always/Foreground).
+    - [ ] Implement clear, contextual requests for Camera (Front/Back).
+    - [ ] Implement clear, contextual requests for Bluetooth (Scan, Connect).
+    - [ ] Implement clear, contextual requests for Microphone.
+    - [ ] Implement UI to handle permission denial gracefully (guide user to settings).
+    - [ ] Add tests for permission request flows.
+- [ ] **Core Sensor/Input Implementation:**
+    - [ ] Implement continuous fine location tracking service (foreground/background).
+    - [ ] Implement camera service/widget with front/back camera switching.
+    - [ ] Implement Bluetooth scanning for nearby devices (using `flutter_blue_plus` or similar).
+    - [ ] Implement microphone access and basic audio capture for speech recognition (using `speech_to_text` or similar).
+    - [ ] Add tests for core sensor interactions.
+- [ ] **ML Implementation:**
+    - [ ] Integrate `google_mlkit_face_detection` for smile detection.
+    - [ ] Add tests for smile detection logic.
 - [ ] **Action Initiation:**
   - [ ] Implement QR code scanner.
   - [ ] Implement deep link handling.
-  - [ ] Fetch action details via Serverpod Endpoint using URL/ID.
-- [ ] **Action Execution Flow:**
-  - [ ] Display action instructions/steps.
-  - [ ] Implement UI for guiding user through each step.
-  - [ ] Provide real-time feedback.
+  - [ ] Fetch action details via Serverpod Endpoint using URL/ID (or use dummy data initially).
+- [ ] **UI Development (Adhering to `ui_requirements.md`):**
+    - [ ] Create UI screen to display available (dummy) action lists.
+    - [ ] Create UI screen(s) for step-by-step action execution flow.
+    - [ ] Implement reusable progress bar component for action lists.
+    - [ ] Integrate camera preview into the action execution UI.
+    - [ ] Design and implement feedback mechanisms for location, smile, and speech actions.
+    - [ ] Add widget tests for new UI components.
+- [ ] **Action Logic Implementation:**
+    - [ ] Implement "Be at location" action logic (compare current location to target).
+    - [ ] Implement "Smile at camera" action logic (using smile detection).
+    - [ ] Implement "Say 'Solana is amazing!'" action logic (using speech recognition).
+    - [ ] Add tests for action logic handlers.
+- [ ] **Dummy Data Setup:**
+    - [ ] Define data structures for mock Action Lists and Steps.
+    - [ ] Create several dummy action lists including the specified actions ("Be at location", "Smile at camera", "Say Solana is amazing!").
+    - [ ] Implement loading/display of dummy data in the UI.
 - [ ] **Core Verification Packages Implementation:**
   - [ ] Create/refine/verify `verily_location` package.
   - [ ] Create/refine/verify `verily_face_detection` package.
@@ -80,8 +110,6 @@
   - [ ] Integrate packages into the Verily app's step execution logic.
 - [ ] **Verification Reporting (via Serverpod Endpoints):**
   - [ ] Call Serverpod Endpoints to send step completion/final status updates to the backend.
-- [ ] **Permissions Handling:**
-  - [ ] Implement robust permission requests using `permission_handler`.
 
 ## Phase 4: Webhooks & Final Integration
 
