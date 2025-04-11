@@ -53,13 +53,13 @@
 - [x] **Flutter Web Setup:**
   - [x] Initialize/Verify Flutter web project in `/apps/verily_create`.
   - [ ] Configure Riverpod state management. *_(Likely started)_*
-  - [ ] Set up basic navigation/routing. *_(Likely started)_*
+  - [ ] Set up basic navigation/routing. *_(Implicitly done in main.dart)_*
   - [x] Verify/Add frontend dependencies for Serverpod & Auth.
-- [ ] **Creator Authentication UI:**
-  - [ ] Implement login/signup UI using `serverpod_auth_email_flutter` (or other chosen auth modules).
-- [ ] **Action Management UI:**
-  - [ ] List existing actions.
-  - [ ] Form to create/edit actions (name, description).
+- [x] **Creator Authentication UI:**
+  - [x] Implement login/signup UI using `serverpod_auth_email_flutter` (or other chosen auth modules). *_(Completed)_*
+- [x] **Action Management UI:**
+  - [x] List existing actions. *_(Completed)_*
+  - [x] Form to create/edit actions (name, description). *_(Create logic implemented)_*
   - [ ] Interface to add/edit/reorder action steps (selecting type, configuring parameters).
   - [ ] Interface to manage webhooks for actions.
   - [ ] Display generated Action URL/QR code.

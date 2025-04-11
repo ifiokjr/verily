@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:verily_create/features/action_creation/presentation/pages/action_list_page.dart'; // Import provider
+import 'package:verily_create/main.dart'; // Import client
 
 /// A page for creating a new Verily Action.
 class CreateActionPage extends ConsumerStatefulWidget {
@@ -13,31 +15,79 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
+  bool _isLoading = false; // State to handle loading during submission
+
+  // TODO: Add controllers/state for location, time constraints, strictOrder
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    // TODO: Dispose other controllers
     super.dispose();
   }
 
-  void _submitAction() {
+  Future<void> _submitAction() async {
+    if (_isLoading) return; // Prevent double submission
     if (_formKey.currentState!.validate()) {
-      // Form is valid, proceed with action creation
+      setState(() => _isLoading = true);
+
+      // Form is valid, collect data
       final name = _nameController.text;
       final description = _descriptionController.text;
+      // TODO: Get values from other form fields (locationId, etc.)
+      final int? locationId = null;
+      final DateTime? validFrom = null;
+      final DateTime? validUntil = null;
+      final int? maxCompletionTimeSeconds = null;
+      final bool strictOrder = true; // Default for now
 
-      // TODO: Call Riverpod provider/repository to save the action
-      // e.g., ref.read(actionRepositoryProvider).createAction(name: name, description: description);
+      try {
+        // Call Serverpod endpoint via client
+        final newAction = await client.action.createAction(
+          name: name,
+          description: description,
+          locationId: locationId,
+          validFrom: validFrom,
+          validUntil: validUntil,
+          maxCompletionTimeSeconds: maxCompletionTimeSeconds,
+          strictOrder: strictOrder,
+        );
 
-      print('Action Name: $name');
-      print('Action Description: $description');
-
-      // Navigate back or show success message
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
+        if (newAction != null) {
+          // Success!
+          ref.invalidate(myActionsProvider); // Refresh the action list
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Action "${newAction.name}" created!')),
+          );
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context); // Go back to the list
+          }
+        } else {
+          // Handle unexpected null response from createAction
+          _showErrorSnackbar(
+            'Failed to create action. Server returned unexpected response.',
+          );
+        }
+      } catch (e) {
+        // Handle errors (e.g., network, server-side validation)
+        print('Error creating action: $e');
+        _showErrorSnackbar('Error creating action: ${e.toString()}');
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
     }
+  }
+
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
   }
 
   @override
@@ -51,9 +101,16 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: TextButton(
-              onPressed: _submitAction,
-              child: const Text('Save'),
-              // Applying Apple HIG: Text button for confirmation actions in nav bar.
+              // Disable button while loading
+              onPressed: _isLoading ? null : _submitAction,
+              child:
+                  _isLoading
+                      ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                      : const Text('Save'),
             ),
           ),
         ],
@@ -127,7 +184,8 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
                 const SizedBox(height: 32),
                 Center(
                   child: ElevatedButton(
-                    onPressed: _submitAction,
+                    // Disable button while loading
+                    onPressed: _isLoading ? null : _submitAction,
                     // Applying Apple HIG: Primary button for main form submission.
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
@@ -135,7 +193,17 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
                         vertical: 12,
                       ),
                     ),
-                    child: const Text('Save Action'),
+                    child:
+                        _isLoading
+                            ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 3,
+                              ),
+                            )
+                            : const Text('Save Action'),
                   ),
                 ),
               ],
