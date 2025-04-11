@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
 
 import 'src/screens/home_screen.dart'; // Import HomeScreen
+import 'src/routing/app_router.dart'; // Import the router config
 
 void main() {
   // Wrap the entire app in a ProviderScope to enable Riverpod state management.
@@ -14,7 +15,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    // Use MaterialApp.router to integrate GoRouter
+    return MaterialApp.router(
+      routerConfig: goRouter, // Provide the router configuration
       title: 'Verily', // Changed title
       theme: ThemeData(
         // Using a more modern theme approach with colorScheme
@@ -35,8 +38,8 @@ class MyApp extends StatelessWidget {
           ).colorScheme.onSurface.withOpacity(0.6),
         ),
       ),
-      // Set HomeScreen as the main entry point
-      home: const HomeScreen(),
+      // 'home' is not used with MaterialApp.router
+      // home: const HomeScreen(),
     );
   }
 }

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart'; // Import GoRouter
 import 'package:verily_client/verily_client.dart' as vc; // Use prefix
+
+// Corrected import path for router
+import '../../../routing/app_router.dart';
 
 /// A placeholder widget to display a single action item in a list.
 class ActionListItem extends StatelessWidget {
@@ -27,11 +31,19 @@ class ActionListItem extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right),
         // Define the action to take when the item is tapped.
         onTap: () {
-          // TODO: Implement navigation to action details screen.
-          // Example: context.go('/actions/${action.id}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Tapped on action: ${action.name}')),
-          );
+          // Navigate to the ActionDetailScreen using GoRouter
+          // Ensure action.id is not null before navigating
+          if (action.id != null) {
+            context.goNamed(
+              AppRouteNames.actionDetail, // Use the route name
+              pathParameters: {'actionId': action.id.toString()}, // Pass ID
+            );
+          } else {
+            // Handle cases where action.id might be null (optional)
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Error: Action ID is missing.')),
+            );
+          }
         },
       ),
     );
