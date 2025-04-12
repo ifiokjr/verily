@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:verily_create/features/action_creation/presentation/pages/create_action_page.dart'; // Placeholder for navigation
+import 'package:go_router/go_router.dart';
 // Import generated client with a prefix to avoid name collision
 import 'package:verily_client/verily_client.dart' as protocol;
 import 'package:verily_create/main.dart'; // Import main to access client instance
@@ -36,14 +36,7 @@ class ActionListPage extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             tooltip: 'Create New Action',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CreateActionPage(),
-                ), // Navigate to creation page
-              );
-            },
+            onPressed: () => context.go('/actions/new'), // Use GoRouter
           ),
         ],
       ),
@@ -56,7 +49,7 @@ class ActionListPage extends ConsumerWidget {
                 (actions) =>
                     actions.isEmpty
                         ? _buildEmptyState(context)
-                        : _buildActionList(actions),
+                        : _buildActionList(context, actions),
             loading: () => const CircularProgressIndicator(),
             error:
                 (error, stackTrace) => Center(
@@ -99,20 +92,13 @@ class ActionListPage extends ConsumerWidget {
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const CreateActionPage(),
-              ), // Navigate to creation page
-            );
-          },
+          onPressed: () => context.go('/actions/new'), // Use GoRouter
         ),
       ],
     );
   }
 
-  Widget _buildActionList(List<protocol.Action> actions) {
+  Widget _buildActionList(BuildContext context, List<protocol.Action> actions) {
     // Applying Apple HIG: Use ListView for scrollable content.
     // Use ListTile for structured row items.
     return ListView.builder(
@@ -139,10 +125,8 @@ class ActionListPage extends ConsumerWidget {
             ),
             trailing: const Icon(Icons.chevron_right), // Indicate tappable
             onTap: () {
-              // TODO: Implement navigation to Action Detail/Edit page
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Tapped on Action: ${action.name}')),
-              );
+              // Navigate to the action edit page
+              context.go('/actions/${action.id}/edit');
             },
           ),
         );

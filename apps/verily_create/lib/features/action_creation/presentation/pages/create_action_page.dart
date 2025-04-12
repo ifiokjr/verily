@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:verily_create/features/action_creation/presentation/pages/action_list_page.dart'; // Import provider
 import 'package:verily_create/main.dart'; // Import client
-import 'package:verily_create/features/action_creation/presentation/pages/edit_action_page.dart'; // Import new edit page
 
 /// A page for creating a new Verily Action.
 class CreateActionPage extends ConsumerStatefulWidget {
@@ -88,15 +88,13 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
 
         if (newAction != null && newAction.id != null) {
           ref.invalidate(myActionsProvider);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Action "${newAction.name}" created!')),
-          );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EditActionPage(actionId: newAction.id!),
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Action "${newAction.name}" created!')),
+            );
+            // Navigate to edit page using GoRouter
+            context.go('/actions/${newAction.id}/edit');
+          }
         } else {
           _showErrorSnackbar(
             'Failed to create action. Server returned unexpected response or null ID.',

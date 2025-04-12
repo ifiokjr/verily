@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:verily_client/verily_client.dart' as protocol; // Use prefix
 import 'package:verily_create/main.dart'; // Import client
 import 'package:verily_create/features/action_creation/presentation/widgets/add_edit_step_dialog.dart'; // Import the dialog
@@ -46,6 +47,10 @@ class _EditActionPageState extends ConsumerState<EditActionPage> {
           error: (_, __) => const Text('Error Loading Action'),
         ),
         centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/actions'),
+        ),
         // TODO: Add Save/Update action button?
       ),
       body: SingleChildScrollView(
@@ -54,8 +59,18 @@ class _EditActionPageState extends ConsumerState<EditActionPage> {
           child: actionDetailsAsync.when(
             data: (action) {
               if (action == null) {
-                return const Center(
-                  child: Text('Action not found or access denied.'),
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Action not found or access denied.'),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => context.go('/actions'),
+                        child: const Text('Return to Action List'),
+                      ),
+                    ],
+                  ),
                 );
               }
               // Pass action to the build method
@@ -64,12 +79,22 @@ class _EditActionPageState extends ConsumerState<EditActionPage> {
             loading: () => const Center(child: CircularProgressIndicator()),
             error:
                 (error, stackTrace) => Center(
-                  child: Text(
-                    'Error fetching action details: $error\n\nTry going back and selecting the action again.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Error fetching action details: $error',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => context.go('/actions'),
+                        child: const Text('Return to Action List'),
+                      ),
+                    ],
                   ),
                 ),
           ),

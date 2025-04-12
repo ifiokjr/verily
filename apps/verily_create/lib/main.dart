@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:verily_create/features/action_creation/presentation/pages/action_list_page.dart';
 import 'package:verily_client/verily_client.dart'; // Import generated client
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 // Import for SessionManager
 import 'package:serverpod_auth_shared_flutter/serverpod_auth_shared_flutter.dart'; // Import for FlutterAuthenticationKeyManager
-import 'package:verily_create/features/auth/presentation/pages/sign_in_page.dart';
+import 'package:verily_create/app/router/app_router.dart'; // Import router configuration
 import 'package:verily_ui/verily_ui.dart'; // Import the UI package
 
 // TODO: Initialize Serverpod client
@@ -26,6 +25,11 @@ var client = Client(
 // The session manager keeps track of the signed-in state of the user.
 late SessionManager sessionManager;
 
+/// Provider to expose authentication state
+final authStateProvider = StateProvider<bool>((ref) {
+  return sessionManager.isSignedIn;
+});
+
 Future<void> main() async {
   // Need to call this as we are using Flutter bindings before runApp is called.
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,25 +48,25 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Listen to the session manager
-    // Note: You might want a dedicated provider for this later
-    final isSignedIn = sessionManager.isSignedIn;
+    // Get the router from the provider
+    final router = ref.watch(appRouterProvider);
 
-    // Add listener to rebuild when auth state changes
-    // This is a basic way; consider using a StreamProvider or StateNotifierProvider
-    // listening to sessionManager for better state management.
+    // Track auth state changes
+    final isSignedIn = sessionManager.isSignedIn;
+    ref.read(authStateProvider.notifier).state = isSignedIn;
+
+    // Listen for auth changes
     sessionManager.addListener(() {
-      // This forces a rebuild, but isn't the most efficient Riverpod way.
-      // Consider using a provider that watches sessionManager.
-      (context as Element).markNeedsBuild();
+      // Update auth state provider when session changes
+      ref.read(authStateProvider.notifier).state = sessionManager.isSignedIn;
     });
 
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Verily Creator',
-      theme: AppTheme.lightTheme, // Use light theme
-      darkTheme: AppTheme.darkTheme, // Use dark theme
-      themeMode: ThemeMode.system, // Follow system preference
-      home: isSignedIn ? const ActionListPage() : const SignInPage(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      routerConfig: router,
       debugShowCheckedModeBanner: false,
     );
   }
