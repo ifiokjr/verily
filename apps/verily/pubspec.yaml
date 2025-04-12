@@ -51,6 +51,8 @@ dependencies:
   flutter_native_splash: ^2.4.6
   permission_handler: ^12.0.0
 
+  # Add geolocator for location services
+  geolocator: ^13.0.4 # Check pub.dev for the latest version
 
 dev_dependencies:
   flutter_test:
