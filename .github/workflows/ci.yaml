@@ -1,0 +1,50 @@
+# Workflow name
+name: Flutter CI
+
+# Triggers: run on push to main and pull requests targeting main
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Define jobs
+jobs:
+  # Job for linting and formatting checks
+  lint_and_format:
+    name: Lint & Format Check
+    # Runner environment
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Flutter environment
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # You can specify a Flutter version like '3.19.0' if needed, otherwise it uses the latest stable
+          # flutter-version: '3.x.x'
+          channel: 'stable' # Using stable channel
+          cache: true       # Enable caching for faster builds
+
+      # Dart SDK comes with Flutter, no separate setup needed.
+
+      # Step 3: Activate the specific Melos version
+      - name: Activate Melos
+        run: dart pub global activate melos 7.0.0-dev.8
+
+      # Step 4: Bootstrap Melos workspace (link local packages)
+      - name: Bootstrap Melos packages
+        # The --no-select flag automatically bootstraps all packages without prompting
+        run: melos bootstrap --no-select
+
+      # Step 5: Run the analysis script defined in pubspec.yaml
+      - name: Run Melos Analyze Script
+        run: melos run analyze
+
+      # Step 6: Run the format check script defined in pubspec.yaml
+      - name: Run Melos Format Check Script
+        run: melos run format
