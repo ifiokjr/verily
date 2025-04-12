@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/verily.svg" alt="Verily Logo" width="200"/>
+</p>
+
 # verily
 
 [![Flutter CI](https://github.com/ifiokjr/verily/actions/workflows/ci.yaml/badge.svg)](https://github.com/ifiokjr/verily/actions/workflows/ci.yaml)
