@@ -1,5 +1,7 @@
 # verily
 
+[![Flutter CI](https://github.com/ifiokjr/verily/actions/workflows/ci.yaml/badge.svg)](https://github.com/ifiokjr/verily/actions/workflows/ci.yaml)
+
 I would like to create an app which runs on mobile that can track and verify that a user has performed a certain action.
 
 User's can create a verification flow that requires the user takes a certain number of actions.
