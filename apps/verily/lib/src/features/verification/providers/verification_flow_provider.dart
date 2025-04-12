@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:verily_client/verily_client.dart' as vc;
+import 'package:permission_handler/permission_handler.dart';
 
 import '../state/verification_flow_state.dart';
 import '../../actions/providers/action_providers.dart'; // To get action details
@@ -21,8 +22,9 @@ class VerificationFlow extends _$VerificationFlow {
     // Prevent starting if already in progress
     if (state.flowStatus == FlowStatus.inProgress) return;
 
-    // Reset state and set status to inProgress
-    state = const VerificationFlowState(flowStatus: FlowStatus.inProgress);
+    // Reset state and set status to inProgress temporarily
+    // We'll confirm this status after permission checks.
+    state = const VerificationFlowState(flowStatus: FlowStatus.idle);
 
     // Fetch the action details (using the existing provider)
     final action = ref.read(actionDetailProvider(actionId));
@@ -34,6 +36,40 @@ class VerificationFlow extends _$VerificationFlow {
       );
       return;
     }
+
+    // --- Permission Check ---
+    final requiredPermissions = _getRequiredPermissions(action.steps!);
+    if (requiredPermissions.isNotEmpty) {
+      // Convert Set to List before requesting
+      final statuses = await requiredPermissions.toList().request();
+      final deniedPermissions =
+          statuses.entries
+              .where(
+                (entry) => !entry.value.isGranted && !entry.value.isLimited,
+              ) // isLimited applies to photos/location
+              .map((entry) => entry.key)
+              .toList();
+
+      if (deniedPermissions.isNotEmpty) {
+        final permissionNames = deniedPermissions
+            .map((p) => p.toString().split('.').last)
+            .join(', ');
+        state = state.copyWith(
+          flowStatus: FlowStatus.failed,
+          errorMessage:
+              'Required permissions denied: $permissionNames. Please grant permissions in settings.',
+        );
+        // Optionally: Guide user to settings using openAppSettings()
+        // await openAppSettings();
+        return; // Stop the flow if permissions are denied
+      }
+    }
+    // --- End Permission Check ---
+
+    // If permissions are granted, proceed with setting up the flow
+    state = state.copyWith(
+      flowStatus: FlowStatus.inProgress,
+    ); // Now set to inProgress
 
     // Sort steps by order just in case
     final sortedSteps = List<vc.ActionStep>.from(action.steps!)
@@ -55,10 +91,35 @@ class VerificationFlow extends _$VerificationFlow {
     print('First step: ${state.currentStep?.type}');
   }
 
+  /// Determines the set of required permissions based on the action steps.
+  Set<Permission> _getRequiredPermissions(List<vc.ActionStep> steps) {
+    final permissions = <Permission>{};
+    for (final step in steps) {
+      switch (step.type) {
+        case 'location':
+          permissions.add(
+            Permission.locationWhenInUse,
+          ); // Or locationAlways if needed later
+          break;
+        case 'smile':
+          permissions.add(Permission.camera);
+          break;
+        case 'speech':
+          permissions.add(Permission.microphone);
+          break;
+        // Add cases for other step types requiring permissions
+      }
+    }
+    return permissions;
+  }
+
   /// Reports the success of the current step and advances to the next.
   void reportStepSuccess(dynamic result) {
-    if (state.flowStatus != FlowStatus.inProgress || state.currentStep == null)
+    if (state.flowStatus != FlowStatus.inProgress ||
+        state.currentStep == null) {
+      // Added curly braces for consistency and Dart best practices
       return;
+    }
 
     final currentIdx = state.currentStepIndex;
     final updatedStatuses = Map<int, StepStatus>.from(state.stepStatuses)
@@ -91,8 +152,11 @@ class VerificationFlow extends _$VerificationFlow {
 
   /// Reports the failure of the current step.
   void reportStepFailure(String errorMessage) {
-    if (state.flowStatus != FlowStatus.inProgress || state.currentStep == null)
+    if (state.flowStatus != FlowStatus.inProgress ||
+        state.currentStep == null) {
+      // Added curly braces for consistency and Dart best practices
       return;
+    }
 
     final currentIdx = state.currentStepIndex;
     final updatedStatuses = Map<int, StepStatus>.from(state.stepStatuses)

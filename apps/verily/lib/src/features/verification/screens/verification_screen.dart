@@ -7,10 +7,10 @@ import '../providers/verification_flow_provider.dart';
 import '../state/verification_flow_state.dart';
 import 'package:verily_client/verily_client.dart' as vc;
 
-// TODO: Import widgets for specific step types (Camera, Location, Speech)
-// import 'widgets/location_step_widget.dart';
-// import 'widgets/smile_step_widget.dart';
-// import 'widgets/speech_step_widget.dart';
+// Corrected import paths for the specific step widgets
+import '../widgets/location_step_widget.dart';
+import '../widgets/smile_step_widget.dart';
+import '../widgets/speech_step_widget.dart';
 
 /// Screen that guides the user through the action verification steps.
 class VerificationScreen extends ConsumerWidget {
@@ -136,7 +136,6 @@ class VerificationScreen extends ConsumerWidget {
     vc.ActionStep step,
     VerificationFlow flowNotifier,
   ) {
-    // Decode parameters
     Map<String, dynamic> params = {};
     try {
       if (step.parameters.isNotEmpty) {
@@ -144,91 +143,24 @@ class VerificationScreen extends ConsumerWidget {
       }
     } catch (e) {
       print('Error decoding step parameters: $e');
-      // Immediately report failure if parameters are essential and invalid
       flowNotifier.reportStepFailure('Invalid step parameters.');
       return const Center(
         child: Text('Error: Could not read step parameters.'),
       );
     }
 
-    // TODO: Implement actual step widgets
+    // Use actual step widgets based on step type
     switch (step.type) {
       case 'location':
-        // return LocationStepWidget(parameters: params, notifier: flowNotifier);
-        return _PlaceholderStepWidget(
-          type: 'Location',
-          params: params,
-          notifier: flowNotifier,
-        );
+        return LocationStepWidget(parameters: params, notifier: flowNotifier);
       case 'smile':
-        // return SmileStepWidget(notifier: flowNotifier);
-        return _PlaceholderStepWidget(
-          type: 'Smile',
-          params: params,
-          notifier: flowNotifier,
-        );
+        // Smile step might not use parameters, but pass them for consistency for now
+        return SmileStepWidget(parameters: params, notifier: flowNotifier);
       case 'speech':
-        // return SpeechStepWidget(parameters: params, notifier: flowNotifier);
-        return _PlaceholderStepWidget(
-          type: 'Speech',
-          params: params,
-          notifier: flowNotifier,
-        );
+        return SpeechStepWidget(parameters: params, notifier: flowNotifier);
       default:
-        // Handle unknown step type
         flowNotifier.reportStepFailure('Unsupported step type: ${step.type}');
         return Center(child: Text('Error: Unknown step type \'${step.type}\''));
     }
-  }
-}
-
-// Temporary placeholder for actual step widgets
-class _PlaceholderStepWidget extends StatelessWidget {
-  final String type;
-  final Map<String, dynamic> params;
-  final VerificationFlow notifier;
-
-  const _PlaceholderStepWidget({
-    required this.type,
-    required this.params,
-    required this.notifier,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Current Step: $type',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 16),
-          Text('Parameters: ${params.isEmpty ? "None" : params}'),
-          const SizedBox(height: 32),
-          Text('Imagine the $type verification UI here...'),
-          const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed:
-                    () => notifier.reportStepSuccess('Success from $type'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                child: const Text('Simulate Success'),
-              ),
-              ElevatedButton(
-                onPressed:
-                    () => notifier.reportStepFailure('Simulated failure'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('Simulate Failure'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 }

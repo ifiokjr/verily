@@ -18,7 +18,7 @@ dependencies:
   google_mlkit_commons: ^0.11.0 # Match the main package's dependency implicitly or explicitly
   flutter_hooks: ^0.21.2 # Flutter hooks for stateful logic
   hooks_riverpod: ^2.6.1 # Added for hooks + riverpod
-  permission_handler: ^11.3.1 # Added permission_handler
+  permission_handler: ^12.0.0 # Added permission_handler
 
 dev_dependencies:
   flutter_test:
