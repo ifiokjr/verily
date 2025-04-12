@@ -11,6 +11,7 @@ workspace:
   - packages/verily_client
   - packages/verily_server
   - packages/verily_ui
+
 dev_dependencies:
   melos: ^7.0.0-dev.7
   flutter_lints: ^5.0.0
@@ -26,6 +27,13 @@ melos:
         - cd packages/verily_server
         - docker compose up --build --detach
         - dart bin/main.dart --apply-migrations
+    "generate:icons":
+      exec: dart run flutter_launcher_icons
+      packageFilters:
+        scope:
+          - verily
+          # - verily_create
+
 
 # Override analyzer version to resolve conflicts
 dependency_overrides:

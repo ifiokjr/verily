@@ -48,11 +48,14 @@ dependencies:
   firebase_app_installations: ^0.3.2+5
   firebase_vertexai: ^1.5.0
   firebase_performance: ^0.10.1+5
+  flutter_native_splash: ^2.4.6
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   # Revert pinning, use constraint again
+  flutter_launcher_icons: ^0.14.3
   riverpod_generator: ^2.6.4
   # Keep build_runner ONLY here
   build_runner: ^2.4.15
@@ -101,3 +104,14 @@ flutter:
   # see https://flutter.dev/to/font-from-package
 
 resolution: workspace
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/verily.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/verily.png"
+    background_color: "#ffffff"
+    theme_color: "#ffffff"
