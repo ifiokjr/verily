@@ -1,4 +1,4 @@
-package fun.verily.verily.verily
+package fun.verily.app.verily
 
 import io.flutter.embedding.android.FlutterActivity
 
