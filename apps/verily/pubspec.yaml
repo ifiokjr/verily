@@ -54,6 +54,10 @@ dependencies:
   # Add geolocator for location services
   geolocator: ^13.0.4 # Check pub.dev for the latest version
 
+  # Add camera and ML Kit dependencies
+  camera: ^0.11.0 # Use common stable version constraint
+  google_mlkit_face_detection: ^0.13.1 # Match verily_face_detection version
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
