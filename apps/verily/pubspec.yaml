@@ -58,6 +58,9 @@ dependencies:
   camera: ^0.11.0 # Use common stable version constraint
   google_mlkit_face_detection: ^0.13.1 # Match verily_face_detection version
 
+  # Add speech_to_text
+  speech_to_text: ^6.6.2 # Check pub.dev for latest version
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
