@@ -1,39 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart'; // Import flutter_hooks
+import 'package:hooks_riverpod/hooks_riverpod.dart'; // Import hooks_riverpod
 // import 'package:flutter_riverpod/flutter_riverpod.dart'; // Unused import
 
 // Correct import path assuming standard features structure
 import '../features/actions/actions_screen.dart';
 
 /// The main screen of the app, managing navigation between features.
-class HomeScreen extends StatefulWidget {
+/// Refactored to use Hooks for managing the selected tab index.
+class HomeScreen extends HookConsumerWidget {
   const HomeScreen({super.key});
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-
   // List of widgets to display based on the selected index.
-  // Removed 'const' because ActionsScreen() is not a constant.
+  // Keep static if ActionsScreen can be const, otherwise make non-static.
   static final List<Widget> _widgetOptions = <Widget>[
-    const ActionsScreen(), // Can be const if ActionsScreen is const
+    const ActionsScreen(), // Assumes ActionsScreen is const
     const Text('Profile (Placeholder)'), // Placeholder for the second tab
     const Text('Settings (Placeholder)'), // Placeholder for the third tab
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Use the useState hook to manage the selected index.
+    // Initial value is 0.
+    final selectedIndex = useState(0);
+
+    // Callback function to update the index when a tab is tapped.
+    void onItemTapped(int index) {
+      selectedIndex.value = index;
+    }
+
     return Scaffold(
       // The body displays the widget corresponding to the selected tab.
-      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      body: Center(
+        // Access the current index via selectedIndex.value
+        child: _widgetOptions.elementAt(selectedIndex.value),
+      ),
       // Define the BottomNavigationBar.
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -47,12 +49,14 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Settings',
           ),
         ],
-        currentIndex: _selectedIndex,
+        // Use selectedIndex.value for the current index.
+        currentIndex: selectedIndex.value,
         selectedItemColor:
             Theme.of(context).colorScheme.primary, // Use theme color
         // Ensure type is set for better animation/layout on more than 3 items
         type: BottomNavigationBarType.fixed,
-        onTap: _onItemTapped,
+        // Pass the callback function.
+        onTap: onItemTapped,
       ),
     );
   }
