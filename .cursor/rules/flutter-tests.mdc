@@ -1,7 +1,7 @@
 ---
 description: 
-globs: **/test/**/*.*
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
 Testing guidelines for Flutter projects, covering unit, widget, and integration tests.
 

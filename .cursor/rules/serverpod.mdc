@@ -1,7 +1,7 @@
 ---
 description: 
-globs: packages/verily_server/**/*.dart
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
 ### Auth
 

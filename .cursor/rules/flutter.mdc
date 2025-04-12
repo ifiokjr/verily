@@ -1,7 +1,7 @@
 ---
-description: Flutter + Riverpod & Fireabase AI Rules
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 You are an expert in Flutter, Dart, Riverpod, Freezed and Flutter Hooks.
 

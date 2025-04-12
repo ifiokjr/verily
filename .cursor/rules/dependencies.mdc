@@ -1,7 +1,7 @@
 ---
 description: 
-globs: **/*.yaml,**/pubspec.yaml,**/*.dart
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
 This is a flutter monorepo.
 

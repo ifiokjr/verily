@@ -1,6 +1,6 @@
 ---
-description: Flutter Package Creation Guide
-globs: packages/*
+description: Create flutter package
+globs: 
 alwaysApply: false
 ---
 <rule>
