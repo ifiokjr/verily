@@ -1,0 +1,155 @@
+workflows:
+  verily-android-build:
+    name: Verily Android Build
+    max_build_duration: 60
+    instance_type: linux # Or linux_x2 if needed
+    environment:
+      flutter: stable
+      groups:
+        # Define environment variable groups in Codemagic UI
+        - android_credentials # e.g., CM_KEYSTORE_PATH, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_ALIAS_PASSWORD
+        - google_play_credentials # e.g., GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+      vars:
+        PACKAGE_NAME: "fun.verily.app" # Replace with your actual package name
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+        - $CM_BUILD_DIR/.dart_tool/build # Cache build_runner output
+    scripts:
+      - name: Bootstrap Melos
+        script: |
+          melos bootstrap
+      - name: Run build_runner for verily app
+        script: |
+          # Ensure generated files are up-to-date
+          melos run build --scope=verily --no-select
+      - name: Set up Android keystore
+        script: |
+          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.keystore
+      - name: Build Android App Bundle
+        working_directory: apps/verily
+        script: |
+          # Ensure working directory exists
+          if [ ! -d "apps/verily" ]; then
+            echo "Directory apps/verily not found!"
+            exit 1
+          fi
+
+          flutter analyze
+          flutter test
+
+          # Example build number using Git commit count
+          BUILD_NUMBER=$(git rev-list --count HEAD)
+          # Example version name (adjust as needed)
+          VERSION_NAME="1.0.0"
+
+          flutter build appbundle --release \
+            --build-name=$VERSION_NAME \
+            --build-number=$BUILD_NUMBER
+    artifacts:
+      - apps/verily/build/app/outputs/bundle/release/*.aab
+      - apps/verily/build/app/outputs/flutter-apk/*.apk # If you build APKs too
+      - flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - your_email@example.com # Add your email
+        notify:
+          success: true
+          failure: true # Notify on failure too
+      # Example: Publish to Google Play Internal Track
+      # google_play:
+      #   credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+      #   track: internal
+      #   # in_app_update_priority: 0 # Optional: 0-5
+
+  verily-ios-build:
+    name: Verily iOS Build
+    max_build_duration: 120
+    instance_type: mac_mini_m2 # Or another macOS instance
+    environment:
+      flutter: stable
+      xcode: latest # Or specific version e.g., 15.3
+      cocoapods: default
+      groups:
+        # Define environment variable groups in Codemagic UI
+        - ios_credentials # e.g., APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_PRIVATE_KEY, CERTIFICATE_PRIVATE_KEY
+        - appstore_credentials # Contains bundle id (BUNDLE_ID), app store id (APP_STORE_ID) if needed
+      vars:
+         XCODE_WORKSPACE: "Runner.xcworkspace" # Default name
+         XCODE_SCHEME: "Runner" # Default name
+         BUNDLE_ID: "fun.verily.app" # Replace with your actual bundle ID
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+        - $HOME/Library/Caches/CocoaPods
+        - $CM_BUILD_DIR/apps/verily/ios/Pods
+        - $CM_BUILD_DIR/.dart_tool/build # Cache build_runner output
+    scripts:
+      - name: Bootstrap Melos
+        script: |
+          melos bootstrap
+      - name: Run build_runner for verily app
+        script: |
+          # Ensure generated files are up-to-date
+          melos run build --scope=verily --no-select
+      - name: Set up keychain
+        script: |
+          keychain initialize
+      - name: Fetch signing files
+        script: |
+          # Uses App Store Connect API credentials from 'ios_credentials' group
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles --workspace "apps/verily/ios/$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME"
+      - name: Install CocoaPods dependencies
+        working_directory: apps/verily/ios
+        script: |
+          # Ensure Podfile exists
+          if [ ! -f "Podfile" ]; then
+            echo "Podfile not found in apps/verily/ios!"
+            exit 1
+          fi
+          pod install --repo-update
+      - name: Build iOS IPA
+        working_directory: apps/verily
+        script: |
+          # Ensure working directory exists
+          if [ ! -d "apps/verily" ]; then
+            echo "Directory apps/verily not found!"
+            exit 1
+          fi
+
+          flutter analyze
+          flutter test
+
+          # Increment build number based on App Store Connect
+          # Ensure APP_STORE_ID is set in environment variables (e.g., in appstore_credentials group)
+          BUILD_NUMBER=$(($(app-store-connect get-latest-app-store-build-number "$APP_STORE_ID") + 1))
+          # Example version name (adjust as needed)
+          VERSION_NAME="1.0.0"
+
+          flutter build ipa --release \
+            --build-name=$VERSION_NAME \
+            --build-number=$BUILD_NUMBER \
+            --export-options-plist=/Users/builder/export_options.plist # Codemagic generates this based on signing files
+    artifacts:
+      - apps/verily/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - your_email@example.com # Add your email
+        notify:
+          success: true
+          failure: true
+      # Example: Publish to TestFlight Beta Group
+      app_store_connect:
+        auth: integration # Use credentials from 'ios_credentials' group
+
+        submit_to_testflight: true # Set to true to upload to TestFlight
+        # beta_groups: # Optional: Specify beta groups
+        #   - "Your Beta Group Name"
+        # submit_to_app_store: false # Set to true to submit to App Store review (usually after TestFlight)
