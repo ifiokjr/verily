@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'src/screens/home_screen.dart'; // Import HomeScreen
 import 'src/routing/app_router.dart'; // Import the router config
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: binding);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  FlutterNativeSplash.remove();
 
   // Wrap the entire app in a ProviderScope to enable Riverpod state management.
   runApp(const ProviderScope(child: MyApp()));

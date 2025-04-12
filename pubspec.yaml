@@ -33,6 +33,12 @@ melos:
         scope:
           - verily
           # - verily_create
+    "generate:splash":
+      exec: dart run flutter_native_splash:create
+      packageFilters:
+        scope:
+          - verily
+          # - verily_create
 
 
 # Override analyzer version to resolve conflicts
