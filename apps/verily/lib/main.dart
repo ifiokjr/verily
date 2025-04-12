@@ -16,15 +16,20 @@ Future<void> main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+// Use ConsumerWidget to access the GoRouter provider
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Get the router configuration from the provider
+    final router = ref.watch(goRouterProvider);
+
     // Use MaterialApp.router to integrate GoRouter
     return MaterialApp.router(
-      routerConfig: goRouter, // Provide the router configuration
+      routerConfig:
+          router, // Provide the router configuration from the provider
       title: 'Verily', // Changed title
       theme: ThemeData(
         // Using a more modern theme approach with colorScheme
@@ -40,9 +45,8 @@ class MyApp extends StatelessWidget {
         bottomNavigationBarTheme: BottomNavigationBarThemeData(
           backgroundColor: Theme.of(context).colorScheme.surface,
           selectedItemColor: Theme.of(context).colorScheme.primary,
-          unselectedItemColor: Theme.of(
-            context,
-          ).colorScheme.onSurface.withOpacity(0.6),
+          unselectedItemColor: Theme.of(context).colorScheme.onSurface
+              .withAlpha(153), // Equivalent to opacity 0.6 (0.6 * 255 = 153)
         ),
       ),
       // 'home' is not used with MaterialApp.router

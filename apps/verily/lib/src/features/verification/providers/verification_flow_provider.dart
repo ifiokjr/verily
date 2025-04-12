@@ -1,7 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart'; // Unnecessary
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:verily_client/verily_client.dart' as vc;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/foundation.dart';
 
 import '../state/verification_flow_state.dart';
 import '../../actions/providers/action_providers.dart'; // To get action details
@@ -87,8 +88,8 @@ class VerificationFlow extends _$VerificationFlow {
     );
 
     // Potentially trigger the first step execution here or wait for UI interaction
-    print('Verification flow started for action: ${action.name}');
-    print('First step: ${state.currentStep?.type}');
+    debugPrint('Verification flow started for action: ${action.name}');
+    debugPrint('First step: ${state.currentStep?.type}');
   }
 
   /// Determines the set of required permissions based on the action steps.
@@ -134,7 +135,7 @@ class VerificationFlow extends _$VerificationFlow {
         stepStatuses: updatedStatuses,
         stepResults: updatedResults,
       );
-      print('Verification flow completed successfully!');
+      debugPrint('Verification flow completed successfully!');
       // TODO: Report completion to backend
     } else {
       // Advance to the next step
@@ -143,10 +144,10 @@ class VerificationFlow extends _$VerificationFlow {
         stepStatuses: updatedStatuses,
         stepResults: updatedResults,
       );
-      print(
+      debugPrint(
         'Step $currentIdx successful. Advancing to step ${state.currentStepIndex}.',
       );
-      print('Next step: ${state.currentStep?.type}');
+      debugPrint('Next step: ${state.currentStep?.type}');
     }
   }
 
@@ -168,13 +169,13 @@ class VerificationFlow extends _$VerificationFlow {
       errorMessage:
           'Step ${currentIdx + 1} (${state.currentStep!.type}) failed: $errorMessage',
     );
-    print('Step $currentIdx failed: $errorMessage');
+    debugPrint('Step $currentIdx failed: $errorMessage');
     // TODO: Report failure to backend
   }
 
   /// Resets the flow state back to idle.
   void resetFlow() {
     state = const VerificationFlowState();
-    print('Verification flow reset.');
+    debugPrint('Verification flow reset.');
   }
 }

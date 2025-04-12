@@ -1,74 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:verily/src/features/actions/action_detail_screen.dart';
+import 'package:verily/src/features/actions/actions_screen.dart'; // Assuming you have this screen
+import 'package:verily/src/features/verification/screens/verification_screen.dart';
+import 'package:verily/src/screens/home_screen.dart'; // Assuming the main screen is HomeScreen
 
-import '../features/actions/actions_screen.dart';
-import '../features/actions/action_detail_screen.dart'; // Will create this next
-import '../features/verification/screens/verification_screen.dart'; // Import VerificationScreen
-import '../screens/home_screen.dart';
-
-// Define route paths
-class AppRoutePaths {
-  static const String home = '/';
-  static const String actions = '/actions';
-  static const String actionDetail = 'action/:actionId'; // Parameterized route
-  static const String verifyAction =
-      '/verify/:actionId'; // New route for verification
+// --- Route Names ---
+// Using a class for route names helps with organization and avoids typos.
+class AppRoute {
+  static const home = 'home'; // Corresponds to '/' path
+  static const actions = 'actions'; // Corresponds to '/actions'
+  static const actionDetail =
+      'actionDetail'; // Corresponds to '/actions/:actionId'
+  static const verify = 'verify'; // Corresponds to '/verify/:actionId'
 }
 
-// Define route names (optional but good practice)
-class AppRouteNames {
-  static const String home = 'home';
-  static const String actions = 'actions';
-  static const String actionDetail = 'actionDetail';
-  static const String verifyAction = 'verifyAction'; // New route name
-}
-
-/// GoRouter configuration
-final goRouter = GoRouter(
-  initialLocation: AppRoutePaths.home,
-  debugLogDiagnostics: true, // Log navigation events in debug mode
-  routes: [
-    // Main application shell (BottomNavigationBar)
-    GoRoute(
-      path: AppRoutePaths.home,
-      name: AppRouteNames.home,
-      builder: (context, state) => const HomeScreen(),
-      routes: [
-        // Nested route for actions, displayed within HomeScreen's structure
-        // Note: ActionsScreen itself has the TabBar, so we just need the base route.
-        // For detail screen, we navigate away from the main shell temporarily.
-      ],
-    ),
-    // Separate route for Action Detail screen (pushes on top of HomeScreen)
-    GoRoute(
-      path: '${AppRoutePaths.actions}/${AppRoutePaths.actionDetail}',
-      name: AppRouteNames.actionDetail,
-      builder: (context, state) {
-        // Extract actionId from the path parameters
-        final actionIdString = state.pathParameters['actionId'];
-        // TODO: Add robust error handling if actionId is null or not an int
-        final actionId = int.tryParse(actionIdString ?? '') ?? -1;
-        return ActionDetailScreen(actionId: actionId);
-      },
-    ),
-    // Verification Flow screen
-    GoRoute(
-      path: AppRoutePaths.verifyAction, // Use the new path
-      name: AppRouteNames.verifyAction, // Use the new name
-      builder: (context, state) {
-        final actionIdString = state.pathParameters['actionId'];
-        final actionId = int.tryParse(actionIdString ?? '') ?? -1;
-        // Note: VerificationScreen doesn't strictly need the ID if it relies
-        // solely on the provider state, which is initiated by startFlow.
-        // However, passing it might be useful for context or direct fetching if needed.
-        return const VerificationScreen();
-      },
-    ),
-    // TODO: Add routes for Profile, Settings etc. if needed as separate screens
-  ],
-  errorBuilder:
-      (context, state) => Scaffold(
-        appBar: AppBar(title: const Text('Page Not Found')),
-        body: Center(child: Text('Error: ${state.error?.message}')),
+// --- Riverpod Provider for GoRouter ---
+// Provides the GoRouter instance throughout the app.
+final goRouterProvider = Provider<GoRouter>((ref) {
+  return GoRouter(
+    initialLocation: '/', // Start at the root/home path
+    debugLogDiagnostics: true, // Log navigation events in debug mode
+    routes: [
+      // --- Home Route and Nested Action Routes ---
+      // The main entry point of the app, potentially containing nested navigation.
+      GoRoute(
+        path: '/',
+        name: AppRoute.home,
+        builder: (context, state) => const HomeScreen(),
+        routes: [
+          // Actions list (e.g., if shown within a tab or section of HomeScreen)
+          GoRoute(
+            path: 'actions', // Relative path: '/actions'
+            name: AppRoute.actions,
+            builder: (context, state) => const ActionsScreen(),
+            routes: [
+              // Action Detail
+              GoRoute(
+                path: ':actionId', // Relative path: '/actions/:actionId'
+                name: AppRoute.actionDetail,
+                builder: (context, state) {
+                  final actionIdString = state.pathParameters['actionId'];
+                  final actionId = int.tryParse(actionIdString ?? '');
+                  if (actionId == null) {
+                    return const Scaffold(
+                      body: Center(child: Text('Invalid Action ID')),
+                    );
+                  }
+                  return ActionDetailScreen(actionId: actionId);
+                },
+              ),
+            ],
+          ),
+        ],
       ),
-);
+      // --- Verification Route (Top-Level for Deep Linking) ---
+      // Handles verily://verify/:actionId deep links.
+      GoRoute(
+        path: '/verify/:actionId',
+        name: AppRoute.verify,
+        builder: (context, state) {
+          final actionIdString = state.pathParameters['actionId'];
+          final actionId = int.tryParse(actionIdString ?? '');
+          if (actionId == null) {
+            return const Scaffold(
+              body: Center(child: Text('Invalid Action ID for Verification')),
+            );
+          }
+          // VerificationScreen needs to be updated to accept actionId
+          return VerificationScreen(actionId: actionId);
+        },
+      ),
+    ],
+    // --- Error Handling ---
+    errorBuilder:
+        (context, state) => Scaffold(
+          appBar: AppBar(title: const Text('Page Not Found')),
+          body: Center(child: Text('Error: ${state.error?.message}')),
+        ),
+  );
+});

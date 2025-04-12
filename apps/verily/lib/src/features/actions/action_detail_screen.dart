@@ -7,7 +7,7 @@ import 'package:verily_client/verily_client.dart' as vc;
 
 import 'providers/action_providers.dart';
 // Import the verification flow provider
-import '../verification/providers/verification_flow_provider.dart';
+// import '../verification/providers/verification_flow_provider.dart'; // No longer needed here
 import '../../routing/app_router.dart'; // Correct import for routing
 
 /// Screen to display the details and steps of a specific action.
@@ -58,14 +58,15 @@ class ActionDetailScreen extends ConsumerWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Call the startFlow method on the provider
-                  ref
-                      .read(verificationFlowProvider.notifier)
-                      .startFlow(actionId);
+                  // No need to call startFlow here anymore,
+                  // VerificationScreen's initState will handle it.
+                  // ref
+                  //     .read(verificationFlowProvider.notifier)
+                  //     .startFlow(actionId);
 
-                  // Navigate to the verification screen
-                  context.goNamed(
-                    AppRouteNames.verifyAction,
+                  // Navigate to the verification screen using pushNamed
+                  context.pushNamed(
+                    AppRoute.verify, // Use the correct route name
                     pathParameters: {'actionId': actionId.toString()},
                   );
                 },
@@ -98,7 +99,8 @@ class ActionDetailScreen extends ConsumerWidget {
             params = jsonDecode(step.parameters);
           }
         } catch (e) {
-          print('Error decoding parameters for step ${step.id}: $e');
+          // Use debugPrint for development/debugging output
+          debugPrint('Error decoding parameters for step ${step.id}: $e');
           // Handle error, maybe show default text or an error indicator
         }
 

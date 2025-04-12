@@ -34,8 +34,10 @@ class ActionListItem extends StatelessWidget {
           // Navigate to the ActionDetailScreen using GoRouter
           // Ensure action.id is not null before navigating
           if (action.id != null) {
-            context.goNamed(
-              AppRouteNames.actionDetail, // Use the route name
+            // Use pushNamed for detail screens to add to stack
+            context.pushNamed(
+              AppRoute
+                  .actionDetail, // Use the corrected route name from AppRoute
               pathParameters: {'actionId': action.id.toString()}, // Pass ID
             );
           } else {
