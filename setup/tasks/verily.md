@@ -18,11 +18,11 @@
 - [x] **Serverpod Backend Setup:**
   - [x] Configure database connection in `config/development.yaml` and `config/production.yaml`.
   - [x] Securely configure `config/passwords.yaml` (add to `.gitignore`!).
-  - [x] Define initial data models in `lib/src/models/*.spy.yaml`. *_(Marking as done for initial structure)_*
-  - [x] Run `serverpod generate` to create initial protocol, client, and database classes. *_(Ran after initial model setup)_*
-  - [x] Create initial database migrations (`serverpod create-migration`). *_(Checked, no new migration needed)_*
+  - [x] Define initial data models in `lib/src/models/*.spy.yaml`. *_(Action, Step, Webhook, Location, Creator models defined)_*
+  - [x] Run `serverpod generate` to create initial protocol, client, and database classes. *_(Ran multiple times, including after adding LocationEndpoint)_*
+  - [x] Create initial database migrations (`serverpod create-migration`). *_(Created 20250411181227186)_*
   - [x] Apply migrations (`dart bin/main.dart --apply-migrations -r maintenance`). *_(Applied 20250411181227186)_*
-  - [x] Define initial Endpoints in `lib/src/endpoints/`. *_(Action, Step, Webhook CRUD added)_*
+  - [x] Define initial Endpoints in `lib/src/endpoints/`. *_(Action, Location endpoints created. Webhook endpoint pending)_*
   - [ ] Implement basic health check endpoint. *_(Needs verification)_*
 - [ ] **Database Schema Definition (via `*.spy.yaml` files):**
   - [x] Define structure for `Action` class.
@@ -37,36 +37,37 @@
   - [x] *Task:* Manage schema changes and migrations using `serverpod create-migration`. *_(Created 20250411181227186)_*
   - [x] *Task:* Manage schema changes and migrations using apply migrations. *_(Applied 20250411181227186)_*
 - [ ] **Core Backend API (Serverpod Endpoints):**
-  - [ ] Implement Endpoints for CRUD operations on `Action`.
-  - [ ] Implement Endpoints for CRUD operations on `ActionStep`.
-  - [ ] Implement Endpoints for CRUD operations on `Webhook`.
+  - [x] Implement Endpoints for CRUD operations on `Action`. *_(Create, GetMy, GetDetails implemented)_*
+  - [ ] Implement Endpoints for CRUD operations on `ActionStep`. *_(Add implemented)_*
+  - [ ] Implement Endpoints for CRUD operations on `Webhook`. *_(Not started)_*
+  - [x] Implement Endpoint to get available `Location`s. *_(getAvailableLocations implemented)_*
   - [ ] Implement authentication for creator-specific Endpoints using `serverpod_auth`.
 - [x] **Serverpod Client Usage:**
   - [x] Note: The Dart client is automatically generated in `/backend/verily_client`. Flutter apps will depend on this package.
-  - [ ] Configure the `Client` object in Flutter apps to connect to the Serverpod backend. *_(Will happen during app integration)_*
+  - [x] Configure the `Client` object in Flutter apps to connect to the Serverpod backend. *_(Done in verily_create/main.dart)_*
 - [x] **Remove Old Backend Code:**
-  - [x] Delete any existing Deno/TypeScript code/files within the `/backend` directory (e.g., `deno.jsonc`, `.ts` files, tRPC specific code).
-  - [x] Search codebase for Deno/tRPC specific terms (`@trpc`, `zod`, Deno std lib usage) and remove references in the backend context.
+  - [x] Delete any existing Deno/TypeScript code/files within the `/backend` directory.
+  - [x] Search codebase for Deno/tRPC specific terms and remove references.
 
 ## Phase 2: `Verily Create` Application (Web)
 
 - [x] **Flutter Web Setup:**
   - [x] Initialize/Verify Flutter web project in `/apps/verily_create`.
-  - [ ] Configure Riverpod state management. *_(Likely started)_*
-  - [ ] Set up basic navigation/routing. *_(Implicitly done in main.dart)_*
+  - [x] Configure Riverpod state management. *_(Setup complete)_*
+  - [x] Set up basic navigation/routing. *_(Replaced Navigator with GoRouter for URL-based routing)_*
   - [x] Verify/Add frontend dependencies for Serverpod & Auth.
 - [x] **Creator Authentication UI:**
-  - [x] Implement login/signup UI using `serverpod_auth_email_flutter` (or other chosen auth modules). *_(Completed)_*
+  - [x] Implement login/signup UI using `serverpod_auth_email_flutter`. *_(SignInPage exists, integrated with GoRouter redirect)_*
 - [x] **Action Management UI:**
-  - [x] List existing actions. *_(Completed)_*
-  - [x] Form to create/edit actions (name, description). *_(Create logic implemented)_*
-  - [ ] Interface to add/edit/reorder action steps (selecting type, configuring parameters). *_(Display steps implemented)_*
+  - [x] List existing actions. *_(Completed via ActionListPage)_*
+  - [x] Form to create/edit actions (name, description, location, time, order). *_(Create implemented with location dropdown. Edit page exists but form fields not yet editable)_*
+  - [x] Interface to add/edit/reorder action steps (selecting type, configuring parameters). *_(Add step dialog created and integrated. Edit/delete/reorder steps needed)_*
   - [ ] Interface to manage webhooks for actions.
   - [ ] Display generated Action URL/QR code.
 - [x] **Serverpod Integration:**
   - [x] Add dependency on the generated `verily_client` package.
-  - [x] Initialize the Serverpod `Client`. *_(Completed)_*
-  - [ ] Connect UI components to backend Serverpod Endpoints.
+  - [x] Initialize the Serverpod `Client`.
+  - [x] Connect UI components to backend Serverpod Endpoints. *_(Action list, create action, action details, location list, add step connected)_*
 
 ## Phase 3: `Verily` Application (Mobile)
 
@@ -107,9 +108,9 @@
     - [ ] Implement "Say 'Solana is amazing!'" action logic (using speech recognition).
     - [ ] Add tests for action logic handlers.
 - [ ] **Dummy Data Setup:**
-    - [ ] Define data structures for mock Action Lists and Steps.
-    - [ ] Create several dummy action lists including the specified actions ("Be at location", "Smile at camera", "Say Solana is amazing!").
-    - [ ] Implement loading/display of dummy data in the UI.
+    - [x] Define data structures for mock Action Lists and Steps.
+    - [x] Create several dummy action lists including the specified actions ("Be at location", "Smile at camera", "Say Solana is amazing!").
+    - [ ] Implement loading/display of dummy data in the UI. *_(Need to ensure dummy data uses locations added to backend)_*
 - [ ] **Core Verification Packages Implementation:**
   - [ ] Create/refine/verify `verily_location` package.
   - [ ] Create/refine/verify `verily_face_detection` package.
