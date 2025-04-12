@@ -42,6 +42,12 @@ dependencies:
   verily_client: 0.1.0
   freezed_annotation: ^3.0.0
   firebase_core: ^3.13.0
+  firebase_crashlytics: ^4.3.5
+  firebase_messaging: ^15.2.5
+  firebase_analytics: ^11.4.5
+  firebase_app_installations: ^0.3.2+5
+  firebase_vertexai: ^1.5.0
+  firebase_performance: ^0.10.1+5
 
 dev_dependencies:
   flutter_test:

@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'src/screens/home_screen.dart'; // Import HomeScreen
 import 'src/routing/app_router.dart'; // Import the router config
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   // Wrap the entire app in a ProviderScope to enable Riverpod state management.
   runApp(const ProviderScope(child: MyApp()));
 }
