@@ -25,3 +25,17 @@ See https://docs.serverpod.dev/concepts/authentication/basics for more informati
 ### Generating code
 
 If a failure happens after running `serverpod generate` and this is part of the error `invalid Dart syntax. Please review and correct the syntax errors.` the reason is that you've introduced a bug in the code. It has **NOTHING** to do with versions of project setup. Please fix the bug you've introduced first. 
+
+### Schema Changes
+
+After every change to the schema navigate to the `packages/verily_server` directory and run.
+
+```bash
+serverpod generate # generate the new code
+serverpod create-migration # run the migration 
+dart run bin/main.dart --role maintenance --apply-migrations
+```
+
+Then run a migration:
+
+
