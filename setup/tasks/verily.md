@@ -19,7 +19,7 @@
   - [x] Configure database connection in `config/development.yaml` and `config/production.yaml`.
   - [x] Securely configure `config/passwords.yaml` (add to `.gitignore`!).
   - [x] Define initial data models in `lib/src/models/*.spy.yaml`. *_(Action, Step, Webhook, Location, Creator models defined)_*
-  - [x] Run `serverpod generate` to create initial protocol, client, and database classes. *_(Ran multiple times, including after adding LocationEndpoint)_*
+  - [x] Run `serverpod generate` to create initial protocol, client, and database classes. *_(Ran multiple times, including after adding LocationEndpoint and step methods)_*
   - [x] Create initial database migrations (`serverpod create-migration`). *_(Created 20250411181227186)_*
   - [x] Apply migrations (`dart bin/main.dart --apply-migrations -r maintenance`). *_(Applied 20250411181227186)_*
   - [x] Define initial Endpoints in `lib/src/endpoints/`. *_(Action, Location endpoints created. Webhook endpoint pending)_*
@@ -36,9 +36,9 @@
   - [x] *Task:* Manage schema changes and migrations using `serverpod generate`. *_(Generate successful)_*
   - [x] *Task:* Manage schema changes and migrations using `serverpod create-migration`. *_(Created 20250411181227186)_*
   - [x] *Task:* Manage schema changes and migrations using apply migrations. *_(Applied 20250411181227186)_*
-- [ ] **Core Backend API (Serverpod Endpoints):**
-  - [x] Implement Endpoints for CRUD operations on `Action`. *_(Create, GetMy, GetDetails implemented)_*
-  - [ ] Implement Endpoints for CRUD operations on `ActionStep`. *_(Add implemented)_*
+- [x] **Core Backend API (Serverpod Endpoints):**
+  - [x] Implement Endpoints for CRUD operations on `Action`. *_(Create, GetMy, GetDetails, Update, Delete implemented)_*
+  - [x] Implement Endpoints for CRUD operations on `ActionStep`. *_(Add, Update, Delete implemented)_*
   - [ ] Implement Endpoints for CRUD operations on `Webhook`. *_(Not started)_*
   - [x] Implement Endpoint to get available `Location`s. *_(getAvailableLocations implemented)_*
   - [ ] Implement authentication for creator-specific Endpoints using `serverpod_auth`.
@@ -61,13 +61,13 @@
 - [x] **Action Management UI:**
   - [x] List existing actions. *_(Completed via ActionListPage)_*
   - [x] Form to create/edit actions (name, description, location, time, order). *_(Create implemented with location dropdown. Edit page exists but form fields not yet editable)_*
-  - [x] Interface to add/edit/reorder action steps (selecting type, configuring parameters). *_(Add step dialog created and integrated. Edit/delete/reorder steps needed)_*
+  - [x] Interface to add/edit/reorder action steps (selecting type, configuring parameters). *_(Add/Edit/Delete steps implemented. Reorder needed)_*
   - [ ] Interface to manage webhooks for actions.
   - [ ] Display generated Action URL/QR code.
 - [x] **Serverpod Integration:**
   - [x] Add dependency on the generated `verily_client` package.
   - [x] Initialize the Serverpod `Client`.
-  - [x] Connect UI components to backend Serverpod Endpoints. *_(Action list, create action, action details, location list, add step connected)_*
+  - [x] Connect UI components to backend Serverpod Endpoints. *_(Action list, create/edit action details (partially), add/edit/delete step, location list connected)_*
 
 ## Phase 3: `Verily` Application (Mobile)
 

@@ -33,6 +33,95 @@ class _EditActionPageState extends ConsumerState<EditActionPage> {
   // TODO: Add form controllers and state for editing action details
   // TODO: Add state management for action steps list
 
+  // Method to show the Add/Edit Step Dialog
+  Future<void> _showAddEditStepDialog({protocol.ActionStep? step}) async {
+    // Show the dialog and wait for it to potentially return a boolean (true if saved)
+    final bool? didSave = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AddEditStepDialog(
+            actionId: widget.actionId,
+            existingStep: step, // Pass existing step for editing
+          ),
+    );
+
+    // If the dialog indicated a save occurred, refresh the action details
+    if (didSave == true) {
+      ref.invalidate(actionDetailsProvider(widget.actionId));
+      // Optionally show a success message (though dialog might handle it)
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text(step == null ? 'Step added!' : 'Step updated!')),
+      // );
+    }
+  }
+
+  // Method to handle deleting a step
+  Future<void> _deleteStep(protocol.ActionStep step) async {
+    // Confirm deletion
+    final bool? confirmDelete = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Step?'),
+            content: Text(
+              'Are you sure you want to delete Step ${step.order} (${step.type})? This cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false), // Cancel
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true), // Confirm
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmDelete == true && step.id != null) {
+      try {
+        // TODO: Add loading indicator during deletion
+        final success = await client.action.deleteActionStep(step.id!);
+        if (success) {
+          ref.invalidate(actionDetailsProvider(widget.actionId));
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Step ${step.order} deleted.'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text(
+                  'Failed to delete step. Action not found or not owner?',
+                ),
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        print('Error deleting step ${step.id}: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error deleting step: ${e.toString()}'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final actionDetailsAsync = ref.watch(
@@ -107,14 +196,6 @@ class _EditActionPageState extends ConsumerState<EditActionPage> {
     // Get the steps list from the fetched action
     final steps = action.steps ?? [];
 
-    // Method to show the Add/Edit Step Dialog
-    Future<void> _showAddEditStepDialog({protocol.ActionStep? step}) async {
-      await showDialog<bool>(
-        context: context,
-        builder: (context) => AddEditStepDialog(actionId: widget.actionId),
-      );
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -150,7 +231,9 @@ class _EditActionPageState extends ConsumerState<EditActionPage> {
             IconButton(
               icon: const Icon(Icons.add_circle_outline),
               tooltip: 'Add Step',
-              onPressed: () => _showAddEditStepDialog(),
+              onPressed:
+                  () =>
+                      _showAddEditStepDialog(), // Call without step for adding
             ),
           ],
         ),
@@ -172,9 +255,8 @@ class _EditActionPageState extends ConsumerState<EditActionPage> {
               ),
             )
             : ListView.builder(
-              shrinkWrap: true, // Important for ListView inside Column
-              physics:
-                  const NeverScrollableScrollPhysics(), // Disable scrolling for inner list
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: steps.length,
               itemBuilder: (context, index) {
                 final step = steps[index];
@@ -189,15 +271,11 @@ class _EditActionPageState extends ConsumerState<EditActionPage> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.edit_outlined, size: 20),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Edit Step ${step.order} clicked!',
-                                ),
-                              ),
-                            );
-                          },
+                          tooltip: 'Edit Step ${step.order}',
+                          onPressed:
+                              () => _showAddEditStepDialog(
+                                step: step,
+                              ), // Call WITH step for editing
                         ),
                         IconButton(
                           icon: const Icon(
@@ -205,17 +283,10 @@ class _EditActionPageState extends ConsumerState<EditActionPage> {
                             size: 20,
                             color: Colors.redAccent,
                           ),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Delete Step ${step.order} clicked!',
-                                ),
-                              ),
-                            );
-                          },
+                          tooltip: 'Delete Step ${step.order}',
+                          onPressed:
+                              () => _deleteStep(step), // Call delete method
                         ),
-                        // TODO: Add Reorder handle if using ReorderableListView
                       ],
                     ),
                   ),

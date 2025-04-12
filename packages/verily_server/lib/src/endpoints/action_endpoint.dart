@@ -210,8 +210,15 @@ class ActionEndpoint extends Endpoint {
       actionId,
       // Include related steps and webhooks in the query
       include: Action.include(
-        steps: ActionStep.includeList(),
-        webhooks: Webhook.includeList(),
+        steps: ActionStep.includeList(
+          // Also filter out soft-deleted steps if a flag exists
+          // where: (step) => step.isDeleted.equals(false),
+          orderBy: (step) => step.order,
+        ),
+        webhooks: Webhook.includeList(
+          // where: (hook) => hook.isDeleted.equals(false),
+          // orderBy: (hook) => hook.createdAt,
+        ),
       ),
     );
 
@@ -223,8 +230,8 @@ class ActionEndpoint extends Endpoint {
       return null;
     }
 
-    // Sort steps by order before returning (optional, but good for UI)
-    action.steps?.sort((a, b) => a.order.compareTo(b.order));
+    // Steps are already ordered by the include query
+    // action.steps?.sort((a, b) => a.order.compareTo(b.order));
 
     session.log(
       'Fetched details for Action id: $actionId',
@@ -239,7 +246,7 @@ class ActionEndpoint extends Endpoint {
   /// Verifies ownership of the parent Action.
   Future<ActionStep?> addActionStep(
     Session session,
-    ActionStep actionStep,
+    ActionStep actionStep, // Expects actionStep.actionId to be set
   ) async {
     final authenticationInfo = await session.authenticated;
     final userId = authenticationInfo?.userId;
@@ -248,43 +255,33 @@ class ActionEndpoint extends Endpoint {
     }
 
     // Verify ownership of the parent Action
-    Action? parentAction = await Action.db.findById(
-      session,
-      actionStep.actionId,
-    );
-    if (parentAction == null ||
-        parentAction.userInfoId != userId ||
-        parentAction.isDeleted) {
+    final actionId = actionStep.actionId;
+    Action? parentAction = await Action.db.findById(session, actionId);
+    if (parentAction == null || parentAction.userInfoId != userId) {
       session.log(
-        'Add Step failed: Parent Action ${actionStep.actionId} not found, user $userId not owner, or action deleted.',
+        'Add Step failed: Action $actionId not found or user $userId not owner.',
         level: LogLevel.warning,
       );
       return null;
     }
 
-    // TODO: Potentially validate step order uniqueness within the action
+    // TODO: Add validation for actionStep.type and actionStep.parameters
 
-    // Prepare the new ActionStep object
-    ActionStep stepToAdd = actionStep.copyWith(
-      // Ensure parent actionId is set correctly
-      actionId: parentAction.id!,
-      // Set timestamps
+    // Set creation time and ensure isDeleted is false
+    ActionStep stepToInsert = actionStep.copyWith(
       createdAt: DateTime.now().toUtc(),
       updatedAt: DateTime.now().toUtc(),
+      // isDeleted: false, // Assuming ActionStep model has isDeleted field
     );
 
-    ActionStep? createdStep = await ActionStep.db.insertRow(session, stepToAdd);
-    if (createdStep != null) {
-      // Update parent action's updatedAt timestamp
-      await Action.db.updateRow(
-        session,
-        parentAction.copyWith(updatedAt: DateTime.now().toUtc()),
-      );
-      session.log(
-        'Added ActionStep id: ${createdStep.id} to Action id: ${parentAction.id}',
-        level: LogLevel.info,
-      );
-    }
+    ActionStep? createdStep = await ActionStep.db.insertRow(
+      session,
+      stepToInsert,
+    );
+    session.log(
+      'Added ActionStep id: ${createdStep?.id} to Action id: $actionId',
+      level: LogLevel.info,
+    );
     return createdStep;
   }
 
@@ -292,7 +289,8 @@ class ActionEndpoint extends Endpoint {
   /// Verifies ownership of the parent Action.
   Future<ActionStep?> updateActionStep(
     Session session,
-    ActionStep actionStep,
+    ActionStep
+    actionStep, // Expects actionStep.id and actionStep.actionId to be set
   ) async {
     final authenticationInfo = await session.authenticated;
     final userId = authenticationInfo?.userId;
@@ -300,40 +298,41 @@ class ActionEndpoint extends Endpoint {
       throw Exception('User authentication failed unexpectedly.');
     }
 
-    // Find the existing step to get parent action ID and verify existence
+    // Find the existing step
     ActionStep? existingStep = await ActionStep.db.findById(
       session,
       actionStep.id!,
     );
     if (existingStep == null) {
       session.log(
-        'Update Step failed: ActionStep ${actionStep.id} not found.',
+        'Update Step failed: Step ${actionStep.id} not found.',
         level: LogLevel.warning,
       );
       return null;
     }
 
-    // Verify ownership of the parent Action
-    Action? parentAction = await Action.db.findById(
-      session,
-      existingStep.actionId,
-    );
-    if (parentAction == null ||
-        parentAction.userInfoId != userId ||
-        parentAction.isDeleted) {
+    // Verify ownership of the parent Action using the *existing* step's actionId
+    final actionId = existingStep.actionId;
+    Action? parentAction = await Action.db.findById(session, actionId);
+    if (parentAction == null || parentAction.userInfoId != userId) {
       session.log(
-        'Update Step failed: Parent Action ${existingStep.actionId} not found, user $userId not owner, or action deleted.',
+        'Update Step failed: Parent Action $actionId not found or user $userId not owner.',
         level: LogLevel.warning,
       );
       return null;
     }
 
-    // TODO: Potentially validate step order uniqueness within the action if order changed
+    // TODO: Add validation for updated actionStep.type and actionStep.parameters
 
-    // Prepare updated step, preserving original createdAt and actionId
-    ActionStep stepToUpdate = actionStep.copyWith(
-      actionId: existingStep.actionId, // Preserve parent action
-      createdAt: existingStep.createdAt, // Preserve original creation time
+    // Prepare the step for update
+    // IMPORTANT: Use the INCOMING actionStep to get the updated fields
+    ActionStep stepToUpdate = existingStep.copyWith(
+      // Fields being updated from input:
+      type: actionStep.type,
+      parameters: actionStep.parameters,
+      instruction: actionStep.instruction,
+      order: actionStep.order,
+      // Update timestamp
       updatedAt: DateTime.now().toUtc(),
     );
 
@@ -341,17 +340,10 @@ class ActionEndpoint extends Endpoint {
       session,
       stepToUpdate,
     );
-    if (updatedStep != null) {
-      // Update parent action's updatedAt timestamp
-      await Action.db.updateRow(
-        session,
-        parentAction.copyWith(updatedAt: DateTime.now().toUtc()),
-      );
-      session.log(
-        'Updated ActionStep id: ${updatedStep.id}',
-        level: LogLevel.info,
-      );
-    }
+    session.log(
+      'Updated ActionStep id: ${updatedStep?.id}',
+      level: LogLevel.info,
+    );
     return updatedStep;
   }
 
@@ -364,213 +356,75 @@ class ActionEndpoint extends Endpoint {
       throw Exception('User authentication failed unexpectedly.');
     }
 
-    // Find the existing step to get parent action ID
+    // Find the step to be deleted
     ActionStep? stepToDelete = await ActionStep.db.findById(
       session,
       actionStepId,
     );
     if (stepToDelete == null) {
       session.log(
-        'Delete Step failed: ActionStep $actionStepId not found.',
+        'Delete Step failed: Step $actionStepId not found.',
         level: LogLevel.warning,
       );
       return false;
     }
 
     // Verify ownership of the parent Action
-    Action? parentAction = await Action.db.findById(
-      session,
-      stepToDelete.actionId,
-    );
-    if (parentAction == null ||
-        parentAction.userInfoId != userId ||
-        parentAction.isDeleted) {
+    final actionId = stepToDelete.actionId;
+    Action? parentAction = await Action.db.findById(session, actionId);
+    if (parentAction == null || parentAction.userInfoId != userId) {
       session.log(
-        'Delete Step failed: Parent Action ${stepToDelete.actionId} not found, user $userId not owner, or action deleted.',
+        'Delete Step failed: Parent Action $actionId not found or user $userId not owner.',
         level: LogLevel.warning,
       );
       return false;
     }
 
-    // Perform the delete
-    try {
-      await ActionStep.db.deleteRow(session, stepToDelete);
-      // Update parent action's updatedAt timestamp
-      await Action.db.updateRow(
-        session,
-        parentAction.copyWith(updatedAt: DateTime.now().toUtc()),
-      );
-      session.log(
-        'Deleted ActionStep id: $actionStepId from Action id: ${parentAction.id}',
-        level: LogLevel.info,
-      );
-      return true;
-    } catch (e) {
-      session.log(
-        'Delete Step failed for ActionStep id: $actionStepId',
-        level: LogLevel.error,
-      );
+    // Perform the actual deletion (hard delete)
+    // Pass the object itself to deleteRow
+    await ActionStep.db.deleteRow(session, stepToDelete);
 
-      return false;
-    }
+    // Assume success if no exception was thrown during deleteRow
+    // (deleteRow returns void)
+    session.log('Deleted ActionStep id: $actionStepId', level: LogLevel.info);
+    return true;
+
+    // Previous implementation with row count check (delete returns void now):
+    // int? deletedRowCount = await ActionStep.db.deleteRow(
+    //   session,
+    //   where: (step) => step.id.equals(actionStepId),
+    // );
+    // bool success = deletedRowCount == 1;
+    // session.log(
+    //   '${success ? 'Deleted' : 'Failed to delete'} ActionStep id: $actionStepId',
+    //   level: success ? LogLevel.info : LogLevel.error,
+    // );
+    // return success;
   }
+
+  // TODO: Implement reorderActionSteps method if needed
+  // Future<bool> reorderActionSteps(Session session, int actionId, List<int> orderedStepIds) async { ... }
 
   // --- Webhook Methods ---
 
   /// Adds a new Webhook to an existing Action.
   /// Verifies ownership of the parent Action.
   Future<Webhook?> addWebhook(Session session, Webhook webhook) async {
-    final authenticationInfo = await session.authenticated;
-    final userId = authenticationInfo?.userId;
-    if (userId == null) {
-      throw Exception('User authentication failed unexpectedly.');
-    }
-
-    // Verify ownership of the parent Action
-    Action? parentAction = await Action.db.findById(session, webhook.actionId);
-    if (parentAction == null ||
-        parentAction.userInfoId != userId ||
-        parentAction.isDeleted) {
-      session.log(
-        'Add Webhook failed: Parent Action ${webhook.actionId} not found, user $userId not owner, or action deleted.',
-        level: LogLevel.warning,
-      );
-      return null;
-    }
-
-    // Prepare the new Webhook object
-    Webhook hookToAdd = webhook.copyWith(
-      actionId: parentAction.id!,
-      createdAt: DateTime.now().toUtc(),
-      updatedAt: DateTime.now().toUtc(),
-      // Ensure isActive defaults if not provided, or use provided value
-      isActive: webhook.isActive ?? true,
-    );
-
-    Webhook? createdHook = await Webhook.db.insertRow(session, hookToAdd);
-    if (createdHook != null) {
-      // Update parent action's updatedAt timestamp
-      await Action.db.updateRow(
-        session,
-        parentAction.copyWith(updatedAt: DateTime.now().toUtc()),
-      );
-      session.log(
-        'Added Webhook id: ${createdHook.id} to Action id: ${parentAction.id}',
-        level: LogLevel.info,
-      );
-    }
-    return createdHook;
+    // Placeholder - move to WebhookEndpoint
+    throw UnimplementedError('Webhook operations should be in WebhookEndpoint');
   }
 
   /// Updates an existing Webhook.
   /// Verifies ownership of the parent Action.
   Future<Webhook?> updateWebhook(Session session, Webhook webhook) async {
-    final authenticationInfo = await session.authenticated;
-    final userId = authenticationInfo?.userId;
-    if (userId == null) {
-      throw Exception('User authentication failed unexpectedly.');
-    }
-
-    // Find existing webhook to get parent action ID
-    Webhook? existingHook = await Webhook.db.findById(session, webhook.id!);
-    if (existingHook == null) {
-      session.log(
-        'Update Webhook failed: Webhook ${webhook.id} not found.',
-        level: LogLevel.warning,
-      );
-      return null;
-    }
-
-    // Verify ownership of the parent Action
-    Action? parentAction = await Action.db.findById(
-      session,
-      existingHook.actionId,
-    );
-    if (parentAction == null ||
-        parentAction.userInfoId != userId ||
-        parentAction.isDeleted) {
-      session.log(
-        'Update Webhook failed: Parent Action ${existingHook.actionId} not found, user $userId not owner, or action deleted.',
-        level: LogLevel.warning,
-      );
-      return null;
-    }
-
-    // Prepare updated webhook
-    Webhook hookToUpdate = webhook.copyWith(
-      actionId: existingHook.actionId, // Preserve parent action
-      createdAt: existingHook.createdAt, // Preserve original creation time
-      updatedAt: DateTime.now().toUtc(),
-    );
-
-    Webhook? updatedHook = await Webhook.db.updateRow(session, hookToUpdate);
-    if (updatedHook != null) {
-      // Update parent action's updatedAt timestamp
-      await Action.db.updateRow(
-        session,
-        parentAction.copyWith(updatedAt: DateTime.now().toUtc()),
-      );
-      session.log(
-        'Updated Webhook id: ${updatedHook.id}',
-        level: LogLevel.info,
-      );
-    }
-    return updatedHook;
+    // Placeholder - move to WebhookEndpoint
+    throw UnimplementedError('Webhook operations should be in WebhookEndpoint');
   }
 
   /// Deletes a Webhook by its ID.
   /// Verifies ownership of the parent Action.
   Future<bool> deleteWebhook(Session session, int webhookId) async {
-    final authenticationInfo = await session.authenticated;
-    final userId = authenticationInfo?.userId;
-    if (userId == null) {
-      throw Exception('User authentication failed unexpectedly.');
-    }
-
-    // Find existing webhook to get parent action ID
-    Webhook? hookToDelete = await Webhook.db.findById(session, webhookId);
-    if (hookToDelete == null) {
-      session.log(
-        'Delete Webhook failed: Webhook $webhookId not found.',
-        level: LogLevel.warning,
-      );
-      return false;
-    }
-
-    // Verify ownership of the parent Action
-    Action? parentAction = await Action.db.findById(
-      session,
-      hookToDelete.actionId,
-    );
-    if (parentAction == null ||
-        parentAction.userInfoId != userId ||
-        parentAction.isDeleted) {
-      session.log(
-        'Delete Webhook failed: Parent Action ${hookToDelete.actionId} not found, user $userId not owner, or action deleted.',
-        level: LogLevel.warning,
-      );
-      return false;
-    }
-
-    // Perform delete
-    try {
-      await Webhook.db.deleteRow(session, hookToDelete);
-      // Update parent action's updatedAt timestamp
-      await Action.db.updateRow(
-        session,
-        parentAction.copyWith(updatedAt: DateTime.now().toUtc()),
-      );
-      session.log(
-        'Deleted Webhook id: $webhookId from Action id: ${parentAction.id}',
-        level: LogLevel.info,
-      );
-      return true;
-    } catch (e) {
-      session.log(
-        'Delete Webhook failed for Webhook id: $webhookId',
-        level: LogLevel.error,
-      );
-      return false;
-    }
+    // Placeholder - move to WebhookEndpoint
+    throw UnimplementedError('Webhook operations should be in WebhookEndpoint');
   }
 }
