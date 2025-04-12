@@ -6,6 +6,9 @@ import 'package:verily_server/src/web/routes/root.dart';
 import 'src/generated/protocol.dart';
 import 'src/generated/endpoints.dart';
 
+// Import the new endpoint
+import 'src/endpoints/location_endpoint.dart';
+
 // This is the starting point of your Serverpod server. In most cases, you will
 // only need to make additions to this file if you add future calls,  are
 // configuring Relic (Serverpod's web-server), or need custom setup work.

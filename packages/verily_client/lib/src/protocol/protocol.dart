@@ -18,7 +18,8 @@ import 'location.dart' as _i6;
 import 'verification_attempt.dart' as _i7;
 import 'webhook.dart' as _i8;
 import 'package:verily_client/src/protocol/action.dart' as _i9;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i10;
+import 'package:verily_client/src/protocol/location.dart' as _i10;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i11;
 export 'action.dart';
 export 'action_step.dart';
 export 'creator.dart';
@@ -98,8 +99,12 @@ class Protocol extends _i1.SerializationManager {
       return (data as List).map((e) => deserialize<_i9.Action>(e)).toList()
           as T;
     }
+    if (t == List<_i10.Location>) {
+      return (data as List).map((e) => deserialize<_i10.Location>(e)).toList()
+          as T;
+    }
     try {
-      return _i10.Protocol().deserialize<T>(data, t);
+      return _i11.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
@@ -129,7 +134,7 @@ class Protocol extends _i1.SerializationManager {
     if (data is _i8.Webhook) {
       return 'Webhook';
     }
-    className = _i10.Protocol().getClassNameForObject(data);
+    className = _i11.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth.$className';
     }
@@ -165,7 +170,7 @@ class Protocol extends _i1.SerializationManager {
     }
     if (dataClassName.startsWith('serverpod_auth.')) {
       data['className'] = dataClassName.substring(15);
-      return _i10.Protocol().deserializeByClassName(data);
+      return _i11.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }

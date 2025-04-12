@@ -12,10 +12,11 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 import '../endpoints/action_endpoint.dart' as _i2;
 import '../endpoints/example_endpoint.dart' as _i3;
-import 'package:verily_server/src/generated/action.dart' as _i4;
-import 'package:verily_server/src/generated/action_step.dart' as _i5;
-import 'package:verily_server/src/generated/webhook.dart' as _i6;
-import 'package:serverpod_auth_server/serverpod_auth_server.dart' as _i7;
+import '../endpoints/location_endpoint.dart' as _i4;
+import 'package:verily_server/src/generated/action.dart' as _i5;
+import 'package:verily_server/src/generated/action_step.dart' as _i6;
+import 'package:verily_server/src/generated/webhook.dart' as _i7;
+import 'package:serverpod_auth_server/serverpod_auth_server.dart' as _i8;
 
 class Endpoints extends _i1.EndpointDispatch {
   @override
@@ -31,6 +32,12 @@ class Endpoints extends _i1.EndpointDispatch {
         ..initialize(
           server,
           'example',
+          null,
+        ),
+      'location': _i4.LocationEndpoint()
+        ..initialize(
+          server,
+          'location',
           null,
         ),
     };
@@ -106,7 +113,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'action': _i1.ParameterDescription(
               name: 'action',
-              type: _i1.getType<_i4.Action>(),
+              type: _i1.getType<_i5.Action>(),
               nullable: false,
             )
           },
@@ -160,7 +167,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'actionStep': _i1.ParameterDescription(
               name: 'actionStep',
-              type: _i1.getType<_i5.ActionStep>(),
+              type: _i1.getType<_i6.ActionStep>(),
               nullable: false,
             )
           },
@@ -178,7 +185,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'actionStep': _i1.ParameterDescription(
               name: 'actionStep',
-              type: _i1.getType<_i5.ActionStep>(),
+              type: _i1.getType<_i6.ActionStep>(),
               nullable: false,
             )
           },
@@ -214,7 +221,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'webhook': _i1.ParameterDescription(
               name: 'webhook',
-              type: _i1.getType<_i6.Webhook>(),
+              type: _i1.getType<_i7.Webhook>(),
               nullable: false,
             )
           },
@@ -232,7 +239,7 @@ class Endpoints extends _i1.EndpointDispatch {
           params: {
             'webhook': _i1.ParameterDescription(
               name: 'webhook',
-              type: _i1.getType<_i6.Webhook>(),
+              type: _i1.getType<_i7.Webhook>(),
               nullable: false,
             )
           },
@@ -289,6 +296,22 @@ class Endpoints extends _i1.EndpointDispatch {
         )
       },
     );
-    modules['serverpod_auth'] = _i7.Endpoints()..initializeEndpoints(server);
+    connectors['location'] = _i1.EndpointConnector(
+      name: 'location',
+      endpoint: endpoints['location']!,
+      methodConnectors: {
+        'getAvailableLocations': _i1.MethodConnector(
+          name: 'getAvailableLocations',
+          params: {},
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['location'] as _i4.LocationEndpoint)
+                  .getAvailableLocations(session),
+        )
+      },
+    );
+    modules['serverpod_auth'] = _i8.Endpoints()..initializeEndpoints(server);
   }
 }

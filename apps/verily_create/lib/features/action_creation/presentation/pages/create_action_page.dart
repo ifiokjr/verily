@@ -2,8 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart'; // For date formatting
-import 'package:verily_create/features/action_creation/presentation/pages/action_list_page.dart'; // Import provider
+import 'package:verily_client/verily_client.dart'
+    as protocol; // Import client models
 import 'package:verily_create/main.dart'; // Import client
+
+// Provider to fetch the user's actions
+final myActionsProvider = FutureProvider<List<protocol.Action>>((ref) async {
+  try {
+    return await client.action.getMyActions();
+  } catch (e) {
+    print('Error fetching actions: $e');
+    rethrow;
+  }
+});
+
+// Provider to fetch available locations
+final availableLocationsProvider = FutureProvider<List<protocol.Location>>((
+  ref,
+) async {
+  try {
+    // Use the generated client to fetch locations
+    return await client.location.getAvailableLocations();
+  } catch (e) {
+    print('Error fetching available locations: $e');
+    // Return empty list on error or rethrow based on desired UI behavior
+    return [];
+  }
+});
 
 /// A page for creating a new Verily Action.
 class CreateActionPage extends ConsumerStatefulWidget {
@@ -17,19 +42,18 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _locationIdController = TextEditingController(); // Placeholder
   final _maxCompletionTimeController = TextEditingController();
 
   DateTime? _validFrom;
   DateTime? _validUntil;
   bool _isStrictOrder = true;
   bool _isLoading = false;
+  int? _selectedLocationId;
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _locationIdController.dispose();
     _maxCompletionTimeController.dispose();
     super.dispose();
   }
@@ -55,16 +79,22 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
   Future<void> _submitAction() async {
     if (_isLoading) return;
     if (_formKey.currentState!.validate()) {
+      final availableLocations =
+          ref.read(availableLocationsProvider).valueOrNull ?? [];
+      if (availableLocations.isNotEmpty && _selectedLocationId == null) {
+        _showErrorSnackbar('Please select a location.');
+        return;
+      }
+
       setState(() => _isLoading = true);
 
       final name = _nameController.text;
       final description = _descriptionController.text;
-      final int? locationId = int.tryParse(_locationIdController.text);
+      final int? locationId = _selectedLocationId;
       final int? maxCompletionTimeSeconds = int.tryParse(
         _maxCompletionTimeController.text,
       );
 
-      // Basic validation for dates
       if (_validFrom != null &&
           _validUntil != null &&
           _validUntil!.isBefore(_validFrom!)) {
@@ -80,8 +110,8 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
           name: name,
           description: description,
           locationId: locationId,
-          validFrom: _validFrom, // Already DateTime?
-          validUntil: _validUntil, // Already DateTime?
+          validFrom: _validFrom,
+          validUntil: _validUntil,
           maxCompletionTimeSeconds: maxCompletionTimeSeconds,
           strictOrder: _isStrictOrder,
         );
@@ -92,7 +122,6 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Action "${newAction.name}" created!')),
             );
-            // Navigate to edit page using GoRouter
             context.go('/actions/${newAction.id}/edit');
           }
         } else {
@@ -122,12 +151,18 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat.yMd(); // Date formatter
+    final dateFormat = DateFormat.yMd();
+    final locationsAsyncValue = ref.watch(availableLocationsProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create New Action'),
         centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back to Actions',
+          onPressed: () => context.go('/actions'),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
@@ -153,7 +188,6 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                // --- Action Details Section ---
                 Text(
                   'Action Details',
                   style: Theme.of(context).textTheme.titleLarge,
@@ -189,25 +223,98 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
                 ),
                 const SizedBox(height: 24),
 
-                // --- Optional Settings Section ---
                 Text(
                   'Optional Settings',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
-                // Location (Placeholder)
-                TextFormField(
-                  controller: _locationIdController,
-                  decoration: const InputDecoration(
-                    labelText: 'Location ID (Optional)',
-                    hintText: 'Enter numeric ID of a pre-defined location',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  // No validator needed as it's optional, parsed with tryParse
+
+                locationsAsyncValue.when(
+                  data: (locations) {
+                    if (locations.isEmpty) {
+                      return const InputDecorator(
+                        decoration: InputDecoration(
+                          labelText: 'Location (Optional)',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
+                        ),
+                        child: Text(
+                          'No locations available',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      );
+                    }
+                    return DropdownButtonFormField<int?>(
+                      value: _selectedLocationId,
+                      decoration: const InputDecoration(
+                        labelText: 'Location (Optional)',
+                        border: OutlineInputBorder(),
+                      ),
+                      hint: const Text('Select a location'),
+                      items:
+                          locations.map((location) {
+                            // Use address field for display, provide fallback if null
+                            final displayText =
+                                location.address?.isNotEmpty ?? false
+                                    ? location.address!
+                                    : 'Lat: ${location.latitude.toStringAsFixed(4)}, Lng: ${location.longitude.toStringAsFixed(4)} (ID: ${location.id})';
+                            return DropdownMenuItem<int?>(
+                              value: location.id,
+                              child: Text(
+                                displayText,
+                                overflow:
+                                    TextOverflow
+                                        .ellipsis, // Prevent long addresses from breaking layout
+                              ),
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedLocationId = value;
+                        });
+                      },
+                      // Validator is handled in _submitAction
+                    );
+                  },
+                  loading:
+                      () => const Row(
+                        children: [
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(width: 16),
+                          Text('Loading locations...'),
+                        ],
+                      ),
+                  error:
+                      (err, stack) => InputDecorator(
+                        decoration: InputDecoration(
+                          labelText: 'Location (Optional)',
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
+                        ),
+                        child: Text(
+                          'Error loading locations',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
                 ),
                 const SizedBox(height: 16),
-                // Valid From / Until
+
                 Row(
                   children: [
                     Expanded(
@@ -246,26 +353,25 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                // Max Completion Time
+
                 TextFormField(
                   controller: _maxCompletionTimeController,
                   decoration: const InputDecoration(
-                    labelText: 'Max Completion Time (seconds, Optional)',
-                    hintText: 'e.g., 300 for 5 minutes',
+                    labelText: 'Max Completion Time (Seconds, Optional)',
+                    hintText: 'e.g., 300 (for 5 minutes)',
                     border: OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value != null &&
-                        value.isNotEmpty &&
-                        int.tryParse(value) == null) {
-                      return 'Please enter a valid number of seconds';
+                    if (value == null || value.isEmpty) return null;
+                    if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                      return 'Please enter a positive number of seconds';
                     }
                     return null;
                   },
                 ),
-                const SizedBox(height: 8),
-                // Strict Order
+                const SizedBox(height: 16),
+
                 SwitchListTile(
                   title: const Text('Enforce Strict Step Order'),
                   subtitle: const Text(
@@ -277,53 +383,7 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
                       _isStrictOrder = value;
                     });
                   },
-                  contentPadding:
-                      EdgeInsets.zero, // Use ListTile default padding
-                ),
-                const SizedBox(height: 24),
-
-                // --- Action Steps Section (Placeholder) ---
-                Text(
-                  'Action Steps',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey[400]!),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Adding action steps will be implemented here.',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _submitAction,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 12,
-                      ),
-                    ),
-                    child:
-                        _isLoading
-                            ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 3,
-                              ),
-                            )
-                            : const Text('Save Action'),
-                  ),
+                  contentPadding: EdgeInsets.zero,
                 ),
               ],
             ),

@@ -14,8 +14,9 @@ import 'dart:async' as _i2;
 import 'package:verily_client/src/protocol/action.dart' as _i3;
 import 'package:verily_client/src/protocol/action_step.dart' as _i4;
 import 'package:verily_client/src/protocol/webhook.dart' as _i5;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i6;
-import 'protocol.dart' as _i7;
+import 'package:verily_client/src/protocol/location.dart' as _i6;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i7;
+import 'protocol.dart' as _i8;
 
 /// {@category Endpoint}
 class EndpointAction extends _i1.EndpointRef {
@@ -154,12 +155,31 @@ class EndpointExample extends _i1.EndpointRef {
       );
 }
 
+/// Endpoint for managing predefined locations.
+/// {@category Endpoint}
+class EndpointLocation extends _i1.EndpointRef {
+  EndpointLocation(_i1.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'location';
+
+  /// Fetches all available predefined locations.
+  ///
+  /// Returns a list of [Location] objects.
+  _i2.Future<List<_i6.Location>> getAvailableLocations() =>
+      caller.callServerEndpoint<List<_i6.Location>>(
+        'location',
+        'getAvailableLocations',
+        {},
+      );
+}
+
 class Modules {
   Modules(Client client) {
-    auth = _i6.Caller(client);
+    auth = _i7.Caller(client);
   }
 
-  late final _i6.Caller auth;
+  late final _i7.Caller auth;
 }
 
 class Client extends _i1.ServerpodClientShared {
@@ -178,7 +198,7 @@ class Client extends _i1.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
           host,
-          _i7.Protocol(),
+          _i8.Protocol(),
           securityContext: securityContext,
           authenticationKeyManager: authenticationKeyManager,
           streamingConnectionTimeout: streamingConnectionTimeout,
@@ -190,6 +210,7 @@ class Client extends _i1.ServerpodClientShared {
         ) {
     action = EndpointAction(this);
     example = EndpointExample(this);
+    location = EndpointLocation(this);
     modules = Modules(this);
   }
 
@@ -197,12 +218,15 @@ class Client extends _i1.ServerpodClientShared {
 
   late final EndpointExample example;
 
+  late final EndpointLocation location;
+
   late final Modules modules;
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
         'action': action,
         'example': example,
+        'location': location,
       };
 
   @override

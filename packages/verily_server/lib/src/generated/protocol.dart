@@ -20,6 +20,7 @@ import 'location.dart' as _i8;
 import 'verification_attempt.dart' as _i9;
 import 'webhook.dart' as _i10;
 import 'package:verily_server/src/generated/action.dart' as _i11;
+import 'package:verily_server/src/generated/location.dart' as _i12;
 export 'action.dart';
 export 'action_step.dart';
 export 'creator.dart';
@@ -754,6 +755,10 @@ class Protocol extends _i1.SerializationManagerServer {
     }
     if (t == List<_i11.Action>) {
       return (data as List).map((e) => deserialize<_i11.Action>(e)).toList()
+          as T;
+    }
+    if (t == List<_i12.Location>) {
+      return (data as List).map((e) => deserialize<_i12.Location>(e)).toList()
           as T;
     }
     try {
