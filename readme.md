@@ -6,6 +6,11 @@
 
 [![Flutter CI](https://github.com/ifiokjr/verily/actions/workflows/ci.yaml/badge.svg)](https://github.com/ifiokjr/verily/actions/workflows/ci.yaml)
 
+### Videos
+
+- [Verily Demo](https://youtu.be/zrHlUsZgi_4)
+- [Verily Demo 2](https://www.loom.com/share/1bcbfb54c7634e79b3dbdca3a6c8e3b3?sid=1262a158-f794-4bdc-a8ad-13a092d77123)
+
 **Verily** is a platform designed to reliably verify that specific actions have been performed in the real world. Using mobile device sensors (like camera, GPS, accelerometer) and on-device machine learning, Verily enables the creation and execution of verifiable action flows.
 
 Imagine verifying event check-ins with a specific pose, confirming fitness challenge completion through motion tracking, or ensuring participation in a marketing campaign by visiting a location and smiling. Verily makes these scenarios possible.
