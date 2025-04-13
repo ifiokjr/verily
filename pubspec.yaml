@@ -18,6 +18,7 @@ dev_dependencies:
   custom_lint:
   riverpod_lint:
   build_runner:
+  mocktail: ^1.0.3
 
 melos:
   repository: https://github.com/ifiokjr/verily
