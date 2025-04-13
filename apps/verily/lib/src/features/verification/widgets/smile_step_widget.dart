@@ -215,55 +215,72 @@ class SmileStepWidget extends HookConsumerWidget {
       cameraPreviewWidget = const Center(child: CircularProgressIndicator());
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Smile at the Camera',
-            style: Theme.of(context).textTheme.headlineMedium,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          // Camera Preview Area with Aspect Ratio
-          AspectRatio(
-            aspectRatio:
-                (isCameraInitialized.value && cameraController.value != null)
-                    ? cameraController.value!.value.aspectRatio
-                    : 1.0, // Default aspect ratio before init
-            child: ClipRRect(
-              // Optional: Add rounded corners
-              borderRadius: BorderRadius.circular(12.0),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Smile Step',
+              style: Theme.of(context).textTheme.headlineMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            AspectRatio(
+              aspectRatio: 1.0, // Camera preview is often square-ish
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  border: Border.all(
-                    color: detectedSmile.value ? Colors.green : Colors.grey,
-                    width: 3.0,
-                  ),
-                  borderRadius: BorderRadius.circular(12.0),
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: cameraPreviewWidget,
+                child: Center(
+                  child:
+                      detectedSmile.value
+                          ? const Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 80,
+                          )
+                          : const Icon(
+                            Icons.camera_alt,
+                            size: 80,
+                            color: Colors.grey,
+                          ),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          // Feedback Text
-          Center(
-            child: Text(
+            const SizedBox(height: 20),
+            Text(
               detectedSmile.value
-                  ? 'Smile Detected! Nicely done!'
-                  : 'Keep smiling...',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: detectedSmile.value ? Colors.green : Colors.grey[700],
-              ),
+                  ? 'Smile Detected!'
+                  : 'Please look at the camera and smile brightly!',
+              style: Theme.of(context).textTheme.titleMedium,
+              textAlign: TextAlign.center,
             ),
-          ),
-          // Removed simulation buttons
-          const Spacer(), // Push content up
-        ],
+            const SizedBox(height: 30),
+            // Simulation Buttons (for testing)
+            ElevatedButton(
+              onPressed:
+                  detectedSmile.value
+                      ? null
+                      : () {
+                        detectedSmile.value = true;
+                        notifier.reportStepSuccess({'smile_detected': true});
+                      },
+              child: const Text('Simulate Smile Success'),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: () {
+                debugPrint('Simulated smile detection failure.');
+              },
+              child: const Text('Simulate Smile Failure (Log Only)'),
+            ),
+          ],
+        ),
       ),
     );
   }

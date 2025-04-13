@@ -6,7 +6,7 @@ part of 'verification_flow_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$verificationFlowHash() => r'ae99e55313d24d41fe66f8904bdd4571bdd21c7a';
+String _$verificationFlowHash() => r'bb772fcc12fbca9dd7c98a5b28b7ea7899ed314c';
 
 /// Notifier to manage the state of the action verification flow.
 ///
