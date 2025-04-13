@@ -757,6 +757,9 @@ class Protocol extends _i1.SerializationManagerServer {
       return (data as List).map((e) => deserialize<_i11.Action>(e)).toList()
           as T;
     }
+    if (t == List<int>) {
+      return (data as List).map((e) => deserialize<int>(e)).toList() as T;
+    }
     if (t == List<_i12.Location>) {
       return (data as List).map((e) => deserialize<_i12.Location>(e)).toList()
           as T;

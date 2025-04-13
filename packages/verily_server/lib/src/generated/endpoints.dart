@@ -216,6 +216,30 @@ class Endpoints extends _i1.EndpointDispatch {
             params['actionStepId'],
           ),
         ),
+        'reorderActionSteps': _i1.MethodConnector(
+          name: 'reorderActionSteps',
+          params: {
+            'actionId': _i1.ParameterDescription(
+              name: 'actionId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'orderedStepIds': _i1.ParameterDescription(
+              name: 'orderedStepIds',
+              type: _i1.getType<List<int>>(),
+              nullable: false,
+            ),
+          },
+          call: (
+            _i1.Session session,
+            Map<String, dynamic> params,
+          ) async =>
+              (endpoints['action'] as _i2.ActionEndpoint).reorderActionSteps(
+            session,
+            params['actionId'],
+            params['orderedStepIds'],
+          ),
+        ),
         'addWebhook': _i1.MethodConnector(
           name: 'addWebhook',
           params: {

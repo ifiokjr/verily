@@ -113,6 +113,22 @@ class EndpointAction extends _i1.EndpointRef {
         {'actionStepId': actionStepId},
       );
 
+  /// Reorders the ActionSteps for a given Action.
+  /// Verifies ownership of the Action.
+  /// Expects a list of ActionStep IDs in the desired new order.
+  _i2.Future<bool> reorderActionSteps(
+    int actionId,
+    List<int> orderedStepIds,
+  ) =>
+      caller.callServerEndpoint<bool>(
+        'action',
+        'reorderActionSteps',
+        {
+          'actionId': actionId,
+          'orderedStepIds': orderedStepIds,
+        },
+      );
+
   /// Adds a new Webhook to an existing Action.
   /// Verifies ownership of the parent Action.
   _i2.Future<_i5.Webhook?> addWebhook(_i5.Webhook webhook) =>

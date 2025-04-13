@@ -99,6 +99,9 @@ class Protocol extends _i1.SerializationManager {
       return (data as List).map((e) => deserialize<_i9.Action>(e)).toList()
           as T;
     }
+    if (t == List<int>) {
+      return (data as List).map((e) => deserialize<int>(e)).toList() as T;
+    }
     if (t == List<_i10.Location>) {
       return (data as List).map((e) => deserialize<_i10.Location>(e)).toList()
           as T;

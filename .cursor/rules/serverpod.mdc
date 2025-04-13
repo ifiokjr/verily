@@ -36,6 +36,179 @@ serverpod create-migration # run the migration
 dart run bin/main.dart --role maintenance --apply-migrations
 ```
 
-Then run a migration:
+### Testing
 
+Serverpod provides a comprehensive testing framework that makes it easy to test your server code. Here's how to set up and write tests for your Serverpod application:
 
+## Setting Up Testing
+
+For new projects, testing is already configured. For existing projects, you'll need to:
+
+1. Add the `server_test_tools_path` key to `config/generator.yaml`:
+```
+server_test_tools_path: test/integration/test_tools
+```
+
+2. Add test database and Redis instances to your `docker-compose.yaml` file:
+```yaml
+postgres_test:
+  image: postgres:16.3
+  ports:
+    - '9090:5432'
+  environment:
+    POSTGRES_USER: postgres
+    POSTGRES_DB: <projectname>_test
+    POSTGRES_PASSWORD: "<insert database test password>"
+  volumes:
+    - <projectname>_test_data:/var/lib/postgresql/data
+redis_test:
+  image: redis:6.2.6
+  ports:
+    - '9091:6379'
+  command: redis-server --requirepass '<insert redis test password>'
+  environment:
+    - REDIS_REPLICATION_MODE=master
+```
+
+3. Create a `test.yaml` file in the `config` directory with test-specific configurations.
+
+4. Add test passwords to `config/passwords.yaml`:
+```
+test:
+  database: '<insert database test password>'
+  redis: '<insert redis test password>'
+```
+
+5. Add a `dart_test.yaml` file to the server directory:
+```yaml
+tags:
+  integration: {}
+```
+
+6. Add the required dev dependencies to `pubspec.yaml`:
+```yaml
+dev_dependencies:
+  serverpod_test: <serverpod version>
+  test: ^1.24.2
+```
+
+7. Generate the test tools:
+```
+serverpod generate
+```
+
+[Get Started with Testing](https://docs.serverpod.dev/concepts/testing/get-started)
+
+## Writing Tests
+
+Serverpod provides a `withServerpod` helper that makes it easy to test your endpoints:
+
+```dart
+import 'package:test/test.dart';
+
+// Import the generated file, it contains everything you need.
+import 'test_tools/serverpod_test_tools.dart';
+
+void main() {
+  withServerpod('Given Example endpoint', (sessionBuilder, endpoints) {
+    test('when calling `hello` then should return greeting', () async {
+      final greeting = await endpoints.example.hello(sessionBuilder, 'Michael');
+      expect(greeting, 'Hello Michael');
+    });
+  });
+}
+```
+
+### Testing Authenticated Endpoints
+
+You can simulate authenticated and unauthenticated scenarios:
+
+```dart
+withServerpod('Given AuthenticatedExample endpoint', (sessionBuilder, endpoints) {
+  const int userId = 1234;
+  
+  group('when authenticated', () {
+    var authenticatedSessionBuilder = sessionBuilder.copyWith(
+      authentication:
+          AuthenticationOverride.authenticationInfo(userId, {Scope('user')}),
+    );
+  
+    test('then calling `hello` should return greeting', () async {
+      final greeting = await endpoints.authenticatedExample
+          .hello(authenticatedSessionBuilder, 'Michael');
+      expect(greeting, 'Hello, Michael!');
+    });
+  });
+  
+  group('when unauthenticated', () {
+    var unauthenticatedSessionBuilder = sessionBuilder.copyWith(
+      authentication: AuthenticationOverride.unauthenticated(),
+    );
+  
+    test(
+        'then calling `hello` should throw `ServerpodUnauthenticatedException`',
+        () async {
+      final future = endpoints.authenticatedExample
+          .hello(unauthenticatedSessionBuilder, 'Michael');
+      await expectLater(
+          future, throwsA(isA<ServerpodUnauthenticatedException>()));
+    });
+  });
+});
+```
+
+[Setting Authenticated State](https://docs.serverpod.dev/concepts/testing/the-basics#setting-authenticated-state)
+
+### Seeding the Database
+
+To seed the database before tests, build a session and use it with database calls:
+
+```dart
+withServerpod('Given Products endpoint', (sessionBuilder, endpoints) {
+  var session = sessionBuilder.build();
+  
+  setUp(() async {
+    await Product.db.insert(session, [
+      Product(name: 'Apple', price: 10),
+      Product(name: 'Banana', price: 10)
+    ]);
+  });
+  
+  test('then calling `all` should return all products', () async {
+    final products = await endpoints.products.all(sessionBuilder);
+    expect(products, hasLength(2));
+    expect(products.map((p) => p.name), contains(['Apple', 'Banana']));
+  });
+});
+```
+
+By default, all database operations in tests are done inside a transaction that is rolled back after each test, ensuring a clean state.
+
+[Seeding the Database](https://docs.serverpod.dev/concepts/testing/the-basics#seeding-the-database)
+
+## Best Practices
+
+1. Only import the generated test tools file, not the `serverpod_test` package directly:
+```dart
+import 'serverpod_test_tools.dart'; // ✅
+```
+
+2. Don't manually clean up the database as transactions are rolled back automatically.
+
+3. Always call endpoints through the provided `endpoints` object, not by instantiating endpoint classes directly:
+```dart
+// ✅ Use the provided endpoints
+final greeting = await endpoints.example.hello(session, 'Michael');
+```
+
+4. Organize your tests into separate directories:
+   - `test/unit`: For unit tests
+   - `test/integration`: For endpoint or business logic tests using `withServerpod`
+
+[Best Practices](https://docs.serverpod.dev/concepts/testing/best-practises)
+
+Remember to start your database containers before running tests:
+```
+docker-compose up --build --detach
+dart test
+```

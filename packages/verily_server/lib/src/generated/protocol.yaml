@@ -7,6 +7,7 @@ action:
   - addActionStep:
   - updateActionStep:
   - deleteActionStep:
+  - reorderActionSteps:
   - addWebhook:
   - updateWebhook:
   - deleteWebhook:

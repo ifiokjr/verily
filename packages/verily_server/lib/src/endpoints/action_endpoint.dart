@@ -402,8 +402,95 @@ class ActionEndpoint extends Endpoint {
     // return success;
   }
 
-  // TODO: Implement reorderActionSteps method if needed
-  // Future<bool> reorderActionSteps(Session session, int actionId, List<int> orderedStepIds) async { ... }
+  /// Reorders the ActionSteps for a given Action.
+  /// Verifies ownership of the Action.
+  /// Expects a list of ActionStep IDs in the desired new order.
+  Future<bool> reorderActionSteps(
+    Session session,
+    int actionId,
+    List<int> orderedStepIds,
+  ) async {
+    final authenticationInfo = await session.authenticated;
+    final userId = authenticationInfo?.userId;
+    if (userId == null) {
+      throw Exception('User authentication failed unexpectedly.');
+    }
+
+    // Verify ownership of the parent Action
+    Action? parentAction = await Action.db.findById(session, actionId);
+    if (parentAction == null || parentAction.userInfoId != userId) {
+      session.log(
+        'Reorder Steps failed: Action $actionId not found or user $userId not owner.',
+        level: LogLevel.warning,
+      );
+      return false;
+    }
+
+    try {
+      // Use a transaction to ensure all updates succeed or fail together
+      await session.db.transaction((transaction) async {
+        // Fetch all existing steps for this action to verify IDs
+        final existingSteps = await ActionStep.db.find(
+          session,
+          where: (step) => step.actionId.equals(actionId),
+          transaction: transaction,
+        );
+        final existingStepIds = existingSteps.map((s) => s.id).toSet();
+
+        // Validate that all provided IDs belong to this action
+        if (orderedStepIds.any((id) => !existingStepIds.contains(id))) {
+          throw Exception('Invalid step ID provided in reorder list.');
+        }
+        // Validate that all existing steps are included in the provided list
+        if (existingStepIds.length != orderedStepIds.length) {
+          throw Exception(
+            'Mismatch between provided step IDs and existing steps.',
+          );
+        }
+
+        // Update the order for each step based on the new list index
+        for (int i = 0; i < orderedStepIds.length; i++) {
+          final stepId = orderedStepIds[i];
+          final newOrder = i + 1; // Order starts from 1
+
+          // Find the corresponding step object to update
+          // This is slightly inefficient but necessary without direct batch update by ID
+          final stepToUpdate = existingSteps.firstWhere((s) => s.id == stepId);
+
+          // Only update if the order actually changed
+          if (stepToUpdate.order != newOrder) {
+            await ActionStep.db.updateRow(
+              session,
+              stepToUpdate.copyWith(
+                order: newOrder,
+                updatedAt: DateTime.now().toUtc(),
+              ),
+              transaction: transaction,
+            );
+          }
+        }
+
+        // Update the parent action's updatedAt timestamp
+        await Action.db.updateRow(
+          session,
+          parentAction.copyWith(updatedAt: DateTime.now().toUtc()),
+          transaction: transaction,
+        );
+      });
+
+      session.log(
+        'Reordered steps for Action id: $actionId',
+        level: LogLevel.info,
+      );
+      return true;
+    } catch (e) {
+      session.log(
+        'Reorder Steps failed for Action $actionId: $e',
+        level: LogLevel.error,
+      );
+      return false;
+    }
+  }
 
   // --- Webhook Methods ---
 
