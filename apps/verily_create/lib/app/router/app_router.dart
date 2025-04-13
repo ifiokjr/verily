@@ -9,80 +9,95 @@ import 'package:verily_create/main.dart';
 
 /// Provider for the app's router
 final appRouterProvider = Provider<GoRouter>((ref) {
-  return AppRouter.router;
+  // Watch the AuthNotifier to rebuild the router when auth state changes
+  final authNotifier = ref.watch(authNotifierProvider);
+  return AppRouter.createRouter(authNotifier);
 });
 
 /// Central routing configuration for the app
 class AppRouter {
-  /// The GoRouter instance with all route definitions
-  static final router = GoRouter(
-    initialLocation: '/actions',
-    debugLogDiagnostics: true,
+  /// Static method to create the router, accepting the AuthNotifier
+  static GoRouter createRouter(AuthNotifier authNotifier) {
+    return GoRouter(
+      initialLocation: '/actions',
+      debugLogDiagnostics: true,
+      // Use the AuthNotifier to trigger router refresh on auth changes
+      refreshListenable: authNotifier,
 
-    // Redirect to sign-in if not authenticated
-    redirect: (context, state) {
-      final isSignedIn = sessionManager.isSignedIn;
-      if (!isSignedIn && !state.fullPath!.startsWith('/auth')) {
-        return '/auth/signin';
-      }
-      return null;
-    },
+      // Redirect logic now uses the AuthNotifier's state
+      redirect: (context, state) {
+        final isSignedIn = authNotifier.isSignedIn;
+        final isSigningIn = state.fullPath == '/auth/signin';
 
-    routes: [
-      // Authentication Routes
-      GoRoute(
-        path: '/auth/signin',
-        name: 'signin',
-        builder: (context, state) => const SignInPage(),
-      ),
+        // If not signed in and not on the sign-in page, redirect to sign-in
+        if (!isSignedIn && !isSigningIn) {
+          return '/auth/signin';
+        }
+        // If signed in and on the sign-in page, redirect to actions list
+        if (isSignedIn && isSigningIn) {
+          return '/actions';
+        }
 
-      // Actions List (Main Route)
-      GoRoute(
-        path: '/actions',
-        name: 'actions',
-        builder: (context, state) => const ActionListPage(),
-      ),
+        // No redirect needed
+        return null;
+      },
 
-      // Create New Action
-      GoRoute(
-        path: '/actions/new',
-        name: 'create-action',
-        builder: (context, state) => const CreateActionPage(),
-      ),
+      routes: [
+        // Authentication Routes
+        GoRoute(
+          path: '/auth/signin',
+          name: 'signin',
+          builder: (context, state) => const SignInPage(),
+        ),
 
-      // Edit Existing Action
-      GoRoute(
-        path: '/actions/:actionId/edit',
-        name: 'edit-action',
-        builder: (context, state) {
-          final actionId = int.parse(state.pathParameters['actionId']!);
-          return EditActionPage(actionId: actionId);
-        },
-      ),
-    ],
+        // Actions List (Main Route)
+        GoRoute(
+          path: '/actions',
+          name: 'actions',
+          builder: (context, state) => const ActionListPage(),
+        ),
 
-    // Error route for invalid paths
-    errorBuilder:
-        (context, state) => Scaffold(
-          appBar: AppBar(title: const Text('Page Not Found')),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 60, color: Colors.red),
-                const SizedBox(height: 16),
-                Text(
-                  'Route not found: ${state.uri.path}',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => context.go('/actions'),
-                  child: const Text('Go to Home'),
-                ),
-              ],
+        // Create New Action
+        GoRoute(
+          path: '/actions/new',
+          name: 'create-action',
+          builder: (context, state) => const CreateActionPage(),
+        ),
+
+        // Edit Existing Action
+        GoRoute(
+          path: '/actions/:actionId/edit',
+          name: 'edit-action',
+          builder: (context, state) {
+            final actionId = int.parse(state.pathParameters['actionId']!);
+            return EditActionPage(actionId: actionId);
+          },
+        ),
+      ],
+
+      // Error route for invalid paths
+      errorBuilder:
+          (context, state) => Scaffold(
+            appBar: AppBar(title: const Text('Page Not Found')),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 60, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Route not found: ${state.uri.path}',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.go('/actions'),
+                    child: const Text('Go to Home'),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-  );
+    );
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart'; // Import ChangeNotifier
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:verily_client/verily_client.dart'; // Import generated client
@@ -25,9 +26,43 @@ var client = Client(
 // The session manager keeps track of the signed-in state of the user.
 late SessionManager sessionManager;
 
-/// Provider to expose authentication state
+/// ChangeNotifier that notifies listeners about auth state changes.
+class AuthNotifier extends ChangeNotifier {
+  AuthNotifier() {
+    sessionManager.addListener(_onAuthStateChanged);
+  }
+
+  bool _isSignedIn = sessionManager.isSignedIn;
+  bool get isSignedIn => _isSignedIn;
+
+  void _onAuthStateChanged() {
+    final newState = sessionManager.isSignedIn;
+    if (_isSignedIn != newState) {
+      _isSignedIn = newState;
+      notifyListeners(); // Notify GoRouter and other listeners
+    }
+  }
+
+  @override
+  void dispose() {
+    sessionManager.removeListener(_onAuthStateChanged);
+    super.dispose();
+  }
+}
+
+/// Provider for the AuthNotifier
+final authNotifierProvider = ChangeNotifierProvider<AuthNotifier>((ref) {
+  // Ensure sessionManager is initialized before creating AuthNotifier
+  // This assumes sessionManager initialization in main() happens first.
+  return AuthNotifier();
+});
+
+/// Provider to expose authentication state (can still be useful for direct UI checks)
+/// Now listens to AuthNotifier for changes.
 final authStateProvider = StateProvider<bool>((ref) {
-  return sessionManager.isSignedIn;
+  // Listen to the AuthNotifier
+  final authNotifier = ref.watch(authNotifierProvider);
+  return authNotifier.isSignedIn;
 });
 
 Future<void> main() async {
@@ -40,6 +75,9 @@ Future<void> main() async {
   );
   await sessionManager.initialize();
 
+  // Create the AuthNotifier instance *after* sessionManager is initialized
+  // final authNotifier = AuthNotifier(); // No longer needed here, handled by provider
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -48,18 +86,21 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize the AuthNotifier provider so the listener is attached.
+    ref.watch(authNotifierProvider);
+
     // Get the router from the provider
     final router = ref.watch(appRouterProvider);
 
-    // Track auth state changes
-    final isSignedIn = sessionManager.isSignedIn;
-    ref.read(authStateProvider.notifier).state = isSignedIn;
+    // Track auth state changes - No longer needed here, handled by authNotifierProvider/authStateProvider
+    // final isSignedIn = sessionManager.isSignedIn;
+    // ref.read(authStateProvider.notifier).state = isSignedIn;
 
-    // Listen for auth changes
-    sessionManager.addListener(() {
-      // Update auth state provider when session changes
-      ref.read(authStateProvider.notifier).state = sessionManager.isSignedIn;
-    });
+    // Listen for auth changes - No longer needed here, handled by AuthNotifier
+    // sessionManager.addListener(() {
+    //   // Update auth state provider when session changes
+    //   ref.read(authStateProvider.notifier).state = sessionManager.isSignedIn;
+    // });
 
     return MaterialApp.router(
       title: 'Verily Creator',
