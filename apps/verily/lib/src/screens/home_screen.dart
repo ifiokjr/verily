@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart'; // Import flutter_hooks
 import 'package:hooks_riverpod/hooks_riverpod.dart'; // Import hooks_riverpod
+import 'package:verily/src/features/profile/screens/profile_screen.dart';
+import 'package:verily/src/features/settings/screens/settings_screen.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart'; // Unused import
 
 // Correct import path assuming standard features structure
@@ -15,8 +17,8 @@ class HomeScreen extends HookConsumerWidget {
   // Keep static if ActionsScreen can be const, otherwise make non-static.
   static final List<Widget> _widgetOptions = <Widget>[
     const ActionsScreen(), // Assumes ActionsScreen is const
-    const Text('Profile (Placeholder)'), // Placeholder for the second tab
-    const Text('Settings (Placeholder)'), // Placeholder for the third tab
+    const ProfileScreen(), // Placeholder for the second tab
+    const SettingsScreen(), // Placeholder for the third tab
   ];
 
   @override
