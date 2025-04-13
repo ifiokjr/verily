@@ -2,94 +2,111 @@
   <img src="assets/verily.svg" alt="Verily Logo" width="200"/>
 </p>
 
-# verily
+# Verily: Real-World Action Verification
 
 [![Flutter CI](https://github.com/ifiokjr/verily/actions/workflows/ci.yaml/badge.svg)](https://github.com/ifiokjr/verily/actions/workflows/ci.yaml)
 
-I would like to create an app which runs on mobile that can track and verify that a user has performed a certain action.
+**Verily** is a platform designed to reliably verify that specific actions have been performed in the real world. Using mobile device sensors (like camera, GPS, accelerometer) and on-device machine learning, Verily enables the creation and execution of verifiable action flows.
 
-User's can create a verification flow that requires the user takes a certain number of actions.
+Imagine verifying event check-ins with a specific pose, confirming fitness challenge completion through motion tracking, or ensuring participation in a marketing campaign by visiting a location and smiling. Verily makes these scenarios possible.
 
-The actions can have a series of steps and parameters.
+## 🤔 Why Open Source?
 
-- Access to the camera
-- Access to the accelerometer
-- Access to the microphone
-- Access to the location
-- Access to nearby devices
-- Access to nfc
-- Access to bluetooth
+Trust is paramount when dealing with sensor data. Verily is open-source for a few key reasons:
 
-It would bundle in mlkit to verify the actions.
+1.  **Transparency:** Anyone can inspect the code to understand exactly what data is collected, how it's processed, and where it goes. No black boxes.
+2.  **Verifiability:** You (and AI tools) can analyze the codebase to confirm it only performs the necessary functions for action verification, ensuring no unintended data usage.
+3.  **Community Collaboration:** Open development fosters innovation and allows the community to contribute, improve, and audit the platform.
 
-So the user can create a verification flow that requires the user to take a picture of themself smiling from a given location and the sdk will verify that the user has performed the action.
+## 🏗️ Project Structure (Monorepo)
 
-This can be used for a variety of use cases related to blockchain KYC, 2FA, game verification etc...
+This project uses a monorepo structure managed by [Melos](https://github.com/invertase/melos). Key directories include:
 
-## Tech Stack
+-   `/apps`: Contains the main applications.
+    -   `verily_create`: (Future) Flutter web app for creators to design action flows.
+    -   `verily`: The primary Flutter mobile app (iOS/Android) for end-users performing actions.
+    -   `reflexy`: A demo game app showcasing package usage.
+-   `/packages`: Reusable Flutter packages encapsulating sensor/ML logic (e.g., `verily_location`, `verily_face_detection`).
+-   `/backend`: The [Serverpod](https://serverpod.dev/) backend project handling data persistence, API logic, and webhook management.
+-   `/setup`: Project documentation, requirements, and task tracking.
 
-### Backend
+## 🛠️ Technology Stack
 
-- Serverpod (https://docs.serverpod.dev/) get started here.
-- Postgres DB managed by serverpod
-- pulumi for deployment
+-   **Frontend (Mobile & Web):** [Flutter](https://flutter.dev/)
+-   **Backend:** [Dart](https://dart.dev/) with [Serverpod](https://serverpod.dev/)
+-   **Database:** PostgreSQL (managed by Serverpod)
+-   **Machine Learning:** On-device via [Google ML Kit](https://developers.google.com/ml-kit) Flutter plugins.
+-   **Monorepo Management:** [Melos](https://github.com/invertase/melos)
+-   **Flutter Version Management:** [FVM](https://fvm.app/)
 
-### Frontend
+## 🚀 Getting Started
 
-The following integrations will be used for the flutter module.
+This guide will help you set up the development environment. We recommend using [Visual Studio Code (VS Code)](https://code.visualstudio.com/) with the Flutter and Dart extensions for the best experience.
 
-- flutter_nearby_connections
-- google_ml_kit (and child libraries)
-- geolocator
-- sensors_plus
+**Prerequisites:**
 
-The initial versions of this tool will bundle all the sdks into the modules. However, in the future it will be useful to split out different features so that developers can pick and choose which features they need.
+*   **Docker:** Ensure Docker Desktop is installed and running, as Serverpod relies on it for the development database. [Install Docker](https://docs.docker.com/get-docker/).
 
-This means that initially the increased bundle size will be a trade off for the ease of use.
+**Setup Steps:**
 
-## Development
+1.  **Install Flutter using FVM:**
+    We use FVM (Flutter Version Management) to ensure consistent Flutter versions. Follow the [FVM installation guide](https://fvm.app/documentation/getting-started/installation) for your OS (Homebrew recommended for macOS).
+    Once FVM is installed, enable the version specified in the project (check `fvm use` or `.fvm/fvm_config.json` if needed, but often `fvm install` followed by `fvm use` within the project is sufficient).
 
-To ensure that the module is working, an app will be built and included in the repo called reflexes.
+2.  **Install Project Dependencies:**
+    Navigate to the root project directory in your terminal and run:
+    ```bash
+    flutter pub get
+    ```
+    *Note: If you encounter issues, ensure FVM is active by prefixing commands with `fvm`, e.g., `fvm flutter pub get`.*
 
-The app will present a user a series of actions to perform with increasing difficulty. It is a game that is used to test how the module can be integrated into flutter apps.
+3.  **Install CLI Tools (Melos & Serverpod):**
+    Activate the specific versions used by the project:
+    ```bash
+    dart pub global activate melos 7.0.0-dev.8
+    dart pub global activate serverpod_cli 2.5.1
+    ```
 
-In the future we can test how to integrate the module into an expo app and then into a native app.
+4.  **Bootstrap Monorepo Packages:**
+    Link the local packages together using Melos:
+    ```bash
+    melos bootstrap
+    ```
 
-## Testing
+5.  **Start the Backend Server:**
+    Make sure Docker Desktop is running.
+    Run the Serverpod backend using the Melos script:
+    ```bash
+    melos run server:start
+    ```
+    This command does the following:
+    *   Navigates to the `packages/verily_server` directory.
+    *   Starts the Docker containers (PostgreSQL database, Redis cache).
+    *   Applies any pending database migrations.
+    *   Starts the Serverpod Dart server.
+    *Keep this terminal window running.*
 
-This will be difficult to test since so much of the app requires a real device to test.
+6.  **Run the Verily Mobile App:**
+    In a **new** terminal window:
+    ```bash
+    cd apps/verily
+    flutter run
+    ```
+    Select a connected device or simulator when prompted.
 
-Perhaps the best approach is to test the module in the reflexes app and then use the module in other apps. Most of the actions that can be verified will be simulated and ensure that the flow is working.
+**Optional Setup:**
 
-## hackathon
+*   **Shorebird (Code Push):** For over-the-air updates. Follow the [Shorebird initialization guide](https://docs.shorebird.dev/code-push/initialize/) if you plan to use this feature.
 
-This project is being built to submit for an AI hackathon I'm participating in.
+## 🙌 Contributing
 
-In order to structure how the project is built, the first part should be to build the reflexy game.
+Contributions are welcome! Please feel free to:
 
-- The game should rely directly on the flutter plugins initially (the action verification functionality can be extracted out later).
-- The game should test that mlkit can actually verify the actions like different excercises.
+*   Report bugs or suggest features by opening an issue.
+*   Submit pull requests for improvements or bug fixes.
 
-## Ideas
+For major changes, please open an issue first to discuss the proposed changes.
 
-- Verify that a user can answer a question correctly and they aren't using an AI to answer the question. So the verification would track the mouth movement of the user and the voice (words) to deterimine if the answer is correct.
+---
 
-- A fun lie detector.
-
-- Verify in real time that the user is where they say they are. So this is based on geolocation data and they can film the surrounding location to verify that they are at the location.
-
-- Verify that the user has rotated the device to a certain angle using the accelerometer and gyroscope.
-
-## Contributing
-
-To setup the development environment, run the following commands:
-
-Install flutter via `fvm` to manage flutter versions.
-
-```bash
-fvm global stable
-```
-
-Install shorebird
-
-https://docs.shorebird.dev/getting-started/
+*This README is actively maintained. If you find discrepancies or outdated information, please raise an issue.*
