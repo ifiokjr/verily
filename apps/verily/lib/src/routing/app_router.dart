@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:verily/src/features/actions/action_detail_screen.dart';
 import 'package:verily/src/features/actions/actions_screen.dart'; // Assuming you have this screen
+import 'package:verily/src/features/profile/screens/profile_screen.dart'; // Import ProfileScreen
+import 'package:verily/src/features/settings/screens/settings_screen.dart'; // Import SettingsScreen
 import 'package:verily/src/features/verification/screens/verification_screen.dart';
 import 'package:verily/src/screens/home_screen.dart'; // Assuming the main screen is HomeScreen
 
@@ -14,6 +16,8 @@ class AppRoute {
   static const actionDetail =
       'actionDetail'; // Corresponds to '/actions/:actionId'
   static const verify = 'verify'; // Corresponds to '/verify/:actionId'
+  static const profile = 'profile'; // Corresponds to '/profile'
+  static const settings = 'settings'; // Corresponds to '/settings'
 }
 
 // --- Riverpod Provider for GoRouter ---
@@ -71,6 +75,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           // VerificationScreen needs to be updated to accept actionId
           return VerificationScreen(actionId: actionId);
         },
+      ),
+      // --- Profile Route ---
+      GoRoute(
+        path: '/profile',
+        name: AppRoute.profile,
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      // --- Settings Route ---
+      GoRoute(
+        path: '/settings',
+        name: AppRoute.settings,
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
     // --- Error Handling ---

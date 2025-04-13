@@ -50,7 +50,7 @@ final _dummyStep3_1 = vc.ActionStep(
   order: 1,
   type: 'speech',
   parameters: jsonEncode({
-    'phrase': 'Solana is amazing!',
+    'phrase': 'Encode is amazing!',
   }), // Encode parameters map
   createdAt: _now,
   updatedAt: _now,
@@ -99,7 +99,7 @@ final _dummyAction3 = vc.Action(
   id: 3,
   userInfoId: 1,
   name: 'Daily Affirmation',
-  description: 'Say \'Solana is amazing!\'',
+  description: 'Say \'Encode is amazing!\'',
   createdAt: _now,
   updatedAt: _now,
 );

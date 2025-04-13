@@ -93,35 +93,44 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
     VerificationFlow flowNotifier,
     bool showPermissionError,
   ) {
+    // Consistent padding for all body states
+    const EdgeInsets bodyPadding = EdgeInsets.all(24.0);
+    final textTheme = Theme.of(context).textTheme;
+
     // Handle permission error state first
     if (showPermissionError) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: bodyPadding,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.lock_outline, color: Colors.orange, size: 80),
-              const SizedBox(height: 16),
+              const Icon(Icons.lock_outline, color: Colors.orange, size: 64),
+              const SizedBox(height: 24),
               Text(
                 'Permissions Required',
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Text(
                 flowState.errorMessage ?? 'Required permissions were denied.',
+                style: textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(44), // Standard height
+                ),
                 onPressed: () async {
-                  // Attempt to open app settings for the user
                   await openAppSettings();
                 },
                 child: const Text('Open App Settings'),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               TextButton(
                 onPressed: () {
                   flowNotifier.resetFlow();
@@ -140,86 +149,115 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
     // Original switch statement for other states
     switch (flowState.flowStatus) {
       case FlowStatus.idle:
-        // Show initializing state while permissions might be checked or flow starts
-        return const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Initializing verification...'),
-            ],
+        return Center(
+          child: Padding(
+            padding: bodyPadding,
+            child: const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator.adaptive(), // Use adaptive indicator
+                SizedBox(height: 20),
+                Text('Initializing verification...'),
+              ],
+            ),
           ),
         );
 
       case FlowStatus.inProgress:
         final step = flowState.currentStep;
         if (step == null) {
-          // Should not happen if startFlow worked correctly and permissions granted
-          return const Center(child: Text('Error: No current step found.'));
+          // Consistent error display style
+          return Center(
+            child: Padding(
+              padding: bodyPadding,
+              child: Text(
+                'Error: Could not load the current verification step.',
+                style: textTheme.bodyMedium?.copyWith(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
         }
         // Display the widget for the current step type
-        return _buildStepWidget(context, step, flowNotifier);
+        // Add padding *around* the step widget if needed, or handle padding within step widgets
+        return Padding(
+          padding: bodyPadding, // Apply consistent padding
+          child: _buildStepWidget(context, step, flowNotifier),
+        );
 
       case FlowStatus.completed:
         return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.check_circle_outline,
-                color: Colors.green,
-                size: 80,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Verification Complete!',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  flowNotifier.resetFlow();
-                  // Navigate back or to a results screen
-                  if (Navigator.canPop(context)) {
-                    Navigator.popUntil(context, (route) => route.isFirst);
-                  }
-                },
-                child: const Text('Done'),
-              ),
-            ],
+          child: Padding(
+            padding: bodyPadding,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.check_circle_outline,
+                  color: Colors.green,
+                  size: 64, // Slightly smaller icon
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Verification Complete!',
+                  style: textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                  ),
+                  onPressed: () {
+                    flowNotifier.resetFlow();
+                    if (Navigator.canPop(context)) {
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                    }
+                  },
+                  child: const Text('Done'),
+                ),
+              ],
+            ),
           ),
         );
 
       case FlowStatus.failed:
-        // This handles failures *other* than permission denial
         return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 80),
-              const SizedBox(height: 16),
-              Text(
-                'Verification Failed',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                flowState.errorMessage ?? 'An unknown error occurred.',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  flowNotifier.resetFlow();
-                  // Navigate back
-                  if (Navigator.canPop(context)) {
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text('Try Again Later'),
-              ),
-            ],
+          child: Padding(
+            padding: bodyPadding,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                const SizedBox(height: 24),
+                Text(
+                  'Verification Failed',
+                  style: textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  flowState.errorMessage ?? 'An unknown error occurred.',
+                  style: textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                  ),
+                  onPressed: () {
+                    flowNotifier.resetFlow();
+                    if (Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const Text('Try Again Later'),
+                ),
+              ],
+            ),
           ),
         );
     }
@@ -237,18 +275,24 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
         params = jsonDecode(step.parameters);
       }
     } catch (e) {
-      // Log the error properly instead of printing
-      // Logger().e('Error decoding step parameters: $e'); // Assuming a logger is set up
-      debugPrint(
-        'Error decoding step parameters: $e',
-      ); // Use debugPrint for now
-      flowNotifier.reportStepFailure('Invalid step parameters.');
-      return const Center(
-        child: Text('Error: Could not read step parameters.'),
+      debugPrint('Error decoding step parameters: $e');
+      // Use Future.microtask to avoid calling notifier during build
+      Future.microtask(() {
+        flowNotifier.reportStepFailure('Invalid step parameters.');
+      });
+      // Return an error indicator consistent with other failure states
+      return Center(
+        child: Text(
+          'Error: Could not read step parameters for step ${step.order}.',
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: Colors.red),
+          textAlign: TextAlign.center,
+        ),
       );
     }
 
-    // Use actual step widgets based on step type
+    // Select the widget based on step type
     switch (step.type) {
       case 'location':
         return LocationStepWidget(parameters: params, notifier: flowNotifier);
@@ -257,8 +301,19 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
       case 'speech':
         return SpeechStepWidget(parameters: params, notifier: flowNotifier);
       default:
-        flowNotifier.reportStepFailure('Unsupported step type: ${step.type}');
-        return Center(child: Text('Error: Unknown step type \'${step.type}\''));
+        // Handle unknown step type gracefully
+        Future.microtask(() {
+          flowNotifier.reportStepFailure('Unknown step type: ${step.type}');
+        });
+        return Center(
+          child: Text(
+            'Error: Unknown step type \'${step.type}\'.',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+        );
     }
   }
 }

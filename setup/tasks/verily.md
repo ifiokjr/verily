@@ -105,11 +105,11 @@
 - [ ] **Action Logic Implementation:**
     - [ ] Implement "Be at location" action logic (compare current location to target).
     - [ ] Implement "Smile at camera" action logic (using smile detection).
-    - [ ] Implement "Say 'Solana is amazing!'" action logic (using speech recognition).
+    - [ ] Implement "Say 'Encode is amazing!'" action logic (using speech recognition).
     - [ ] Add tests for action logic handlers.
 - [ ] **Dummy Data Setup:**
     - [x] Define data structures for mock Action Lists and Steps.
-    - [x] Create several dummy action lists including the specified actions ("Be at location", "Smile at camera", "Say Solana is amazing!").
+    - [x] Create several dummy action lists including the specified actions ("Be at location", "Smile at camera", "Say Encode is amazing!").
     - [ ] Implement loading/display of dummy data in the UI. *_(Need to ensure dummy data uses locations added to backend)_*
 - [ ] **Core Verification Packages Implementation:**
   - [ ] Create/refine/verify `verily_location` package.
