@@ -12,3 +12,5 @@ Testing guidelines for Flutter projects, covering unit, widget, and integration 
 - Use proper test coverage tools.
 - Follow proper test naming conventions.
 - Implement proper CI/CD testing.
+
+After making changes to each test run `flutter test` from the package or app directory. If tests fail unintentionally keep iterating until the tests pass meaningfully. 

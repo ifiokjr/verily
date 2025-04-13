@@ -16,11 +16,8 @@ class MockVerificationFlow extends VerificationFlow {
 
   @override
   VerificationFlowState build() {
-    // Return the overridden initial state if provided, otherwise a default.
-    return _initialStateOverride ??
-        const VerificationFlowState(
-          flowStatus: FlowStatus.inProgress, // Use inProgress as default
-        );
+    // Return the overridden initial state if provided, otherwise the base default
+    return _initialStateOverride ?? super.build();
   }
 
   // Method to explicitly set the state for the mock
@@ -344,16 +341,16 @@ void main() {
         stepResults: {},
       );
 
-      // Use ProviderScope override
+      // --- Prepare Mock Notifier ---
+      final mockNotifier = MockVerificationFlow();
+      mockNotifier.setInitialState(initialState);
+      // -----------------------------
+
+      // Use ProviderScope override, providing the pre-configured instance
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            verificationFlowProvider.overrideWith(() {
-              final notifier = MockVerificationFlow();
-              // Set initial state directly in the mock instance
-              notifier.setInitialState(initialState);
-              return notifier;
-            }),
+            verificationFlowProvider.overrideWith(() => mockNotifier),
           ],
           child: MaterialApp(home: VerificationScreen(actionId: testActionId)),
         ),
@@ -365,33 +362,29 @@ void main() {
       expect(find.byType(LocationStepWidget), findsOneWidget);
       expect(find.byType(SmileStepWidget), findsNothing);
 
-      // --- Retrieve notifier from container ---
-      final element = tester.element(find.byType(VerificationScreen));
-      final container = ProviderScope.containerOf(element);
-      final notifier =
-          container.read(verificationFlowProvider.notifier)
-              as MockVerificationFlow;
-      // ---------------------------------------
+      // --- Retrieve notifier (optional but good practice for clarity) ---
+      // final element = tester.element(find.byType(VerificationScreen));
+      // final container = ProviderScope.containerOf(element);
+      // final notifier = container.read(verificationFlowProvider.notifier) as MockVerificationFlow;
+      // assert(notifier == mockNotifier); // Should be the same instance
+      // -------------------------------------------------------------------
 
-      // Simulate successful completion using the retrieved notifier
+      // Simulate successful completion using the pre-configured mock instance
       await tester.runAsync(() async {
-        notifier.reportStepSuccess({'simulated': 'location success'});
+        mockNotifier.reportStepSuccess({'simulated': 'location success'});
       });
 
-      // Add a minimal delay to ensure microtasks complete
-      await Future.delayed(Duration.zero);
-
-      // Pump the widget tree to reflect the state change and settle
-      await tester.pumpAndSettle();
+      // Pump one frame
+      await tester.pump();
 
       // Verify that SmileStepWidget is now shown
       expect(find.byType(LocationStepWidget), findsNothing);
       expect(find.byType(SmileStepWidget), findsOneWidget);
 
-      // Verify the provider state updated correctly using the same container
-      final currentState = container.read(verificationFlowProvider);
-      expect(currentState.currentStepIndex, 1);
-      expect(currentState.stepStatuses[0], StepStatus.success);
+      // Verify the provider state updated correctly by checking the mock directly
+      // final currentState = container.read(verificationFlowProvider);
+      expect(mockNotifier.state.currentStepIndex, 1);
+      expect(mockNotifier.state.stepStatuses[0], StepStatus.success);
     });
 
     // Test 6: Successfully completing Smile step transitions to Speech step
@@ -420,14 +413,15 @@ void main() {
         stepResults: {0: {}}, // Dummy result for location
       );
 
+      // --- Prepare Mock Notifier ---
+      final mockNotifier = MockVerificationFlow();
+      mockNotifier.setInitialState(initialState);
+      // -----------------------------
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            verificationFlowProvider.overrideWith(() {
-              final notifier = MockVerificationFlow();
-              notifier.setInitialState(initialState);
-              return notifier;
-            }),
+            verificationFlowProvider.overrideWith(() => mockNotifier),
           ],
           child: MaterialApp(home: VerificationScreen(actionId: testActionId)),
         ),
@@ -440,34 +434,27 @@ void main() {
       expect(find.byType(LocationStepWidget), findsNothing);
       expect(find.byType(SpeechStepWidget), findsNothing);
 
-      // --- Retrieve notifier from container ---
-      final element = tester.element(find.byType(VerificationScreen));
-      final container = ProviderScope.containerOf(element);
-      final notifier =
-          container.read(verificationFlowProvider.notifier)
-              as MockVerificationFlow;
-      // ---------------------------------------
+      // --- Retrieve notifier (optional) ---
+      // ...
+      // -----------------------------------
 
       // Simulate successful completion of the smile step
       await tester.runAsync(() async {
-        notifier.reportStepSuccess({'simulated': 'smile success'});
+        mockNotifier.reportStepSuccess({'simulated': 'smile success'});
       });
 
-      // Add a minimal delay
-      await Future.delayed(Duration.zero);
-
-      // Pump the widget tree to reflect the state change and settle
-      await tester.pumpAndSettle();
+      // Pump one frame
+      await tester.pump();
 
       // Verify that SpeechStepWidget is now shown
       expect(find.byType(SmileStepWidget), findsNothing);
       expect(find.byType(SpeechStepWidget), findsOneWidget);
 
-      // Verify the provider state updated correctly using the container
-      final currentState = container.read(verificationFlowProvider);
-      expect(currentState.currentStepIndex, 2);
-      expect(currentState.stepStatuses[0], StepStatus.success);
-      expect(currentState.stepStatuses[1], StepStatus.success);
+      // Verify the provider state updated correctly using the mock directly
+      // final currentState = container.read(verificationFlowProvider);
+      expect(mockNotifier.state.currentStepIndex, 2);
+      expect(mockNotifier.state.stepStatuses[0], StepStatus.success);
+      expect(mockNotifier.state.stepStatuses[1], StepStatus.success);
     });
 
     // Test 7: Successfully completing final Speech step transitions to completed state
@@ -496,14 +483,15 @@ void main() {
         stepResults: {0: {}, 1: {}}, // Dummy results
       );
 
+      // --- Prepare Mock Notifier ---
+      final mockNotifier = MockVerificationFlow();
+      mockNotifier.setInitialState(initialState);
+      // -----------------------------
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            verificationFlowProvider.overrideWith(() {
-              final notifier = MockVerificationFlow();
-              notifier.setInitialState(initialState);
-              return notifier;
-            }),
+            verificationFlowProvider.overrideWith(() => mockNotifier),
           ],
           child: MaterialApp(home: VerificationScreen(actionId: testActionId)),
         ),
@@ -516,24 +504,17 @@ void main() {
       expect(find.byType(LocationStepWidget), findsNothing);
       expect(find.byType(SmileStepWidget), findsNothing);
 
-      // --- Retrieve notifier from container ---
-      final element = tester.element(find.byType(VerificationScreen));
-      final container = ProviderScope.containerOf(element);
-      final notifier =
-          container.read(verificationFlowProvider.notifier)
-              as MockVerificationFlow;
-      // ---------------------------------------
+      // --- Retrieve notifier (optional) ---
+      // ...
+      // -----------------------------------
 
       // Simulate successful completion of the speech step
       await tester.runAsync(() async {
-        notifier.reportStepSuccess({'simulated': 'speech success'});
+        mockNotifier.reportStepSuccess({'simulated': 'speech success'});
       });
 
-      // Add a minimal delay
-      await Future.delayed(Duration.zero);
-
-      // Pump the widget tree to reflect the state change and settle
-      await tester.pumpAndSettle();
+      // Pump one frame
+      await tester.pump();
 
       // Verify that no step widgets are shown anymore
       expect(find.byType(LocationStepWidget), findsNothing);
@@ -543,12 +524,12 @@ void main() {
       // Verify that the completion UI is shown
       expect(find.text('Verification Complete!'), findsOneWidget);
 
-      // Verify the provider state updated correctly using the container
-      final currentState = container.read(verificationFlowProvider);
-      expect(currentState.flowStatus, FlowStatus.completed);
-      expect(currentState.stepStatuses[0], StepStatus.success);
-      expect(currentState.stepStatuses[1], StepStatus.success);
-      expect(currentState.stepStatuses[2], StepStatus.success);
+      // Verify the provider state updated correctly using the mock directly
+      // final currentState = container.read(verificationFlowProvider);
+      expect(mockNotifier.state.flowStatus, FlowStatus.completed);
+      expect(mockNotifier.state.stepStatuses[0], StepStatus.success);
+      expect(mockNotifier.state.stepStatuses[1], StepStatus.success);
+      expect(mockNotifier.state.stepStatuses[2], StepStatus.success);
     });
 
     // Test 8: Step failure transitions flow to failed state
@@ -573,14 +554,15 @@ void main() {
         stepResults: {},
       );
 
+      // --- Prepare Mock Notifier ---
+      final mockNotifier = MockVerificationFlow();
+      mockNotifier.setInitialState(initialState);
+      // -----------------------------
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            verificationFlowProvider.overrideWith(() {
-              final notifier = MockVerificationFlow();
-              notifier.setInitialState(initialState);
-              return notifier;
-            }),
+            verificationFlowProvider.overrideWith(() => mockNotifier),
           ],
           child: MaterialApp(home: VerificationScreen(actionId: testActionId)),
         ),
@@ -592,25 +574,18 @@ void main() {
       expect(find.byType(LocationStepWidget), findsOneWidget);
       expect(find.byType(SmileStepWidget), findsNothing);
 
-      // --- Retrieve notifier from container ---
-      final element = tester.element(find.byType(VerificationScreen));
-      final container = ProviderScope.containerOf(element);
-      final notifier =
-          container.read(verificationFlowProvider.notifier)
-              as MockVerificationFlow;
-      // ---------------------------------------
+      // --- Retrieve notifier (optional) ---
+      // ...
+      // -----------------------------------
 
       // Simulate failure of the location step
       const failureMessage = 'Simulated location failure';
       await tester.runAsync(() async {
-        notifier.reportStepFailure(failureMessage);
+        mockNotifier.reportStepFailure(failureMessage);
       });
 
-      // Add a minimal delay
-      await Future.delayed(Duration.zero);
-
-      // Pump the widget tree to reflect the state change and settle
-      await tester.pumpAndSettle();
+      // Pump one frame
+      await tester.pump();
 
       // Verify that no step widgets are shown anymore
       expect(find.byType(LocationStepWidget), findsNothing);
@@ -626,10 +601,10 @@ void main() {
         findsOneWidget,
       );
 
-      // Verify the provider state updated correctly using the container
-      final currentState = container.read(verificationFlowProvider);
-      expect(currentState.flowStatus, FlowStatus.failed);
-      expect(currentState.errorMessage, failureMessage);
+      // Verify the provider state updated correctly using the mock directly
+      // final currentState = container.read(verificationFlowProvider);
+      expect(mockNotifier.state.flowStatus, FlowStatus.failed);
+      expect(mockNotifier.state.errorMessage, failureMessage);
     });
 
     // Test 9: Invalid step parameters transitions to failed state
@@ -655,15 +630,15 @@ void main() {
           errorMessage: errorMessage,
         );
 
+        // --- Prepare Mock Notifier ---
+        final mockNotifier = MockVerificationFlow();
+        mockNotifier.setInitialState(initialState);
+        // -----------------------------
+
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              verificationFlowProvider.overrideWith(() {
-                final notifier = MockVerificationFlow();
-                mockNotifierInstance = notifier;
-                Future.microtask(() => notifier.setInitialState(initialState));
-                return notifier;
-              }),
+              verificationFlowProvider.overrideWith(() => mockNotifier),
             ],
             child: MaterialApp(
               home: VerificationScreen(actionId: testActionId),
