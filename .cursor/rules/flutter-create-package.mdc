@@ -1,6 +1,6 @@
 ---
 description: Create flutter package
-globs: 
+globs:
 alwaysApply: false
 ---
 <rule>
@@ -19,7 +19,7 @@ actions:
 
       2.  **Run the Flutter create command:**
           ```bash
-          flutter create --template=package <PACKAGE_NAME> --org fun.verily.package
+          flutter create --template=package <PACKAGE_NAME> --org pro.verily.package
           ```
           *(Replace `<PACKAGE_NAME>` with the desired name, e.g., `verily_face_detection`)*
 
@@ -76,7 +76,7 @@ actions:
 
 examples:
   - input: "Create a new Flutter package called `verily_face_detection`."
-    output: "Provides steps using `flutter create --template=package verily_face_detection --org fun.verily.package` inside `/packages` and setting up standard files."
+    output: "Provides steps using `flutter create --template=package verily_face_detection --org pro.verily.package` inside `/packages` and setting up standard files."
 
 metadata:
   priority: medium

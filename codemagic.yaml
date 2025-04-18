@@ -10,7 +10,7 @@ workflows:
         - android_credentials # e.g., CM_KEYSTORE_PATH, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_ALIAS_PASSWORD
         - google_play_credentials # e.g., GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
       vars:
-        PACKAGE_NAME: "fun.verily.app.app" # Replace with your actual package name
+        PACKAGE_NAME: "pro.verily.app.app" # Replace with your actual package name
     cache:
       cache_paths:
         - $HOME/.pub-cache
@@ -87,7 +87,7 @@ workflows:
       vars:
          XCODE_WORKSPACE: "Runner.xcworkspace" # Default name in Flutter apps
          XCODE_SCHEME: "Runner" # Default name in Flutter apps
-         BUNDLE_ID: "fun.verily.app.app" # Replace with your actual bundle ID
+         BUNDLE_ID: "pro.verily.app.app" # Replace with your actual bundle ID
     cache:
       cache_paths:
         - $HOME/.pub-cache

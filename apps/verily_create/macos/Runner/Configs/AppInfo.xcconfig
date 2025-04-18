@@ -8,7 +8,7 @@
 PRODUCT_NAME = verily_create
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = fun.verily.app.create
+PRODUCT_BUNDLE_IDENTIFIER = pro.verily.app.create
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 fun.verily.app.create. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025 pro.verily.app.create. All rights reserved.
