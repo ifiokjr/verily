@@ -29,8 +29,8 @@ abstract class Action implements _i1.SerializableModel {
     bool? isDeleted,
     this.steps,
     this.webhooks,
-  })  : strictOrder = strictOrder ?? true,
-        isDeleted = isDeleted ?? false;
+  }) : strictOrder = strictOrder ?? true,
+       isDeleted = isDeleted ?? false;
 
   factory Action({
     int? id,
@@ -56,26 +56,36 @@ abstract class Action implements _i1.SerializableModel {
       description: jsonSerialization['description'] as String?,
       userInfoId: jsonSerialization['userInfoId'] as int,
       locationId: jsonSerialization['locationId'] as int?,
-      validFrom: jsonSerialization['validFrom'] == null
-          ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['validFrom']),
-      validUntil: jsonSerialization['validUntil'] == null
-          ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['validUntil']),
+      validFrom:
+          jsonSerialization['validFrom'] == null
+              ? null
+              : _i1.DateTimeJsonExtension.fromJson(
+                jsonSerialization['validFrom'],
+              ),
+      validUntil:
+          jsonSerialization['validUntil'] == null
+              ? null
+              : _i1.DateTimeJsonExtension.fromJson(
+                jsonSerialization['validUntil'],
+              ),
       maxCompletionTimeSeconds:
           jsonSerialization['maxCompletionTimeSeconds'] as int?,
       strictOrder: jsonSerialization['strictOrder'] as bool,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      updatedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+      updatedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['updatedAt'],
+      ),
       isDeleted: jsonSerialization['isDeleted'] as bool,
-      steps: (jsonSerialization['steps'] as List?)
-          ?.map((e) => _i2.ActionStep.fromJson((e as Map<String, dynamic>)))
-          .toList(),
-      webhooks: (jsonSerialization['webhooks'] as List?)
-          ?.map((e) => _i3.Webhook.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+      steps:
+          (jsonSerialization['steps'] as List?)
+              ?.map((e) => _i2.ActionStep.fromJson((e as Map<String, dynamic>)))
+              .toList(),
+      webhooks:
+          (jsonSerialization['webhooks'] as List?)
+              ?.map((e) => _i3.Webhook.fromJson((e as Map<String, dynamic>)))
+              .toList(),
     );
   }
 
@@ -176,21 +186,21 @@ class _ActionImpl extends Action {
     List<_i2.ActionStep>? steps,
     List<_i3.Webhook>? webhooks,
   }) : super._(
-          id: id,
-          name: name,
-          description: description,
-          userInfoId: userInfoId,
-          locationId: locationId,
-          validFrom: validFrom,
-          validUntil: validUntil,
-          maxCompletionTimeSeconds: maxCompletionTimeSeconds,
-          strictOrder: strictOrder,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-          isDeleted: isDeleted,
-          steps: steps,
-          webhooks: webhooks,
-        );
+         id: id,
+         name: name,
+         description: description,
+         userInfoId: userInfoId,
+         locationId: locationId,
+         validFrom: validFrom,
+         validUntil: validUntil,
+         maxCompletionTimeSeconds: maxCompletionTimeSeconds,
+         strictOrder: strictOrder,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+         isDeleted: isDeleted,
+         steps: steps,
+         webhooks: webhooks,
+       );
 
   /// Returns a shallow copy of this [Action]
   /// with some or all fields replaced by the given arguments.
@@ -220,19 +230,22 @@ class _ActionImpl extends Action {
       locationId: locationId is int? ? locationId : this.locationId,
       validFrom: validFrom is DateTime? ? validFrom : this.validFrom,
       validUntil: validUntil is DateTime? ? validUntil : this.validUntil,
-      maxCompletionTimeSeconds: maxCompletionTimeSeconds is int?
-          ? maxCompletionTimeSeconds
-          : this.maxCompletionTimeSeconds,
+      maxCompletionTimeSeconds:
+          maxCompletionTimeSeconds is int?
+              ? maxCompletionTimeSeconds
+              : this.maxCompletionTimeSeconds,
       strictOrder: strictOrder ?? this.strictOrder,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isDeleted: isDeleted ?? this.isDeleted,
-      steps: steps is List<_i2.ActionStep>?
-          ? steps
-          : this.steps?.map((e0) => e0.copyWith()).toList(),
-      webhooks: webhooks is List<_i3.Webhook>?
-          ? webhooks
-          : this.webhooks?.map((e0) => e0.copyWith()).toList(),
+      steps:
+          steps is List<_i2.ActionStep>?
+              ? steps
+              : this.steps?.map((e0) => e0.copyWith()).toList(),
+      webhooks:
+          webhooks is List<_i3.Webhook>?
+              ? webhooks
+              : this.webhooks?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }

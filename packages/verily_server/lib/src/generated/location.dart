@@ -41,8 +41,9 @@ abstract class Location
       radiusMeters: (jsonSerialization['radiusMeters'] as num?)?.toDouble(),
       googlePlacesId: jsonSerialization['googlePlacesId'] as String?,
       address: jsonSerialization['address'] as String?,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
     );
   }
 
@@ -148,14 +149,14 @@ class _LocationImpl extends Location {
     String? address,
     required DateTime createdAt,
   }) : super._(
-          id: id,
-          latitude: latitude,
-          longitude: longitude,
-          radiusMeters: radiusMeters,
-          googlePlacesId: googlePlacesId,
-          address: address,
-          createdAt: createdAt,
-        );
+         id: id,
+         latitude: latitude,
+         longitude: longitude,
+         radiusMeters: radiusMeters,
+         googlePlacesId: googlePlacesId,
+         address: address,
+         createdAt: createdAt,
+       );
 
   /// Returns a shallow copy of this [Location]
   /// with some or all fields replaced by the given arguments.
@@ -185,30 +186,12 @@ class _LocationImpl extends Location {
 
 class LocationTable extends _i1.Table<int> {
   LocationTable({super.tableRelation}) : super(tableName: 'location') {
-    latitude = _i1.ColumnDouble(
-      'latitude',
-      this,
-    );
-    longitude = _i1.ColumnDouble(
-      'longitude',
-      this,
-    );
-    radiusMeters = _i1.ColumnDouble(
-      'radiusMeters',
-      this,
-    );
-    googlePlacesId = _i1.ColumnString(
-      'googlePlacesId',
-      this,
-    );
-    address = _i1.ColumnString(
-      'address',
-      this,
-    );
-    createdAt = _i1.ColumnDateTime(
-      'createdAt',
-      this,
-    );
+    latitude = _i1.ColumnDouble('latitude', this);
+    longitude = _i1.ColumnDouble('longitude', this);
+    radiusMeters = _i1.ColumnDouble('radiusMeters', this);
+    googlePlacesId = _i1.ColumnString('googlePlacesId', this);
+    address = _i1.ColumnString('address', this);
+    createdAt = _i1.ColumnDateTime('createdAt', this);
   }
 
   late final _i1.ColumnDouble latitude;
@@ -225,14 +208,14 @@ class LocationTable extends _i1.Table<int> {
 
   @override
   List<_i1.Column> get columns => [
-        id,
-        latitude,
-        longitude,
-        radiusMeters,
-        googlePlacesId,
-        address,
-        createdAt,
-      ];
+    id,
+    latitude,
+    longitude,
+    radiusMeters,
+    googlePlacesId,
+    address,
+    createdAt,
+  ];
 }
 
 class LocationInclude extends _i1.IncludeObject {
@@ -353,10 +336,7 @@ class LocationRepository {
     int id, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.findById<Location>(
-      id,
-      transaction: transaction,
-    );
+    return session.db.findById<Location>(id, transaction: transaction);
   }
 
   /// Inserts all [Location]s in the list and returns the inserted rows.
@@ -370,10 +350,7 @@ class LocationRepository {
     List<Location> rows, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.insert<Location>(
-      rows,
-      transaction: transaction,
-    );
+    return session.db.insert<Location>(rows, transaction: transaction);
   }
 
   /// Inserts a single [Location] and returns the inserted row.
@@ -384,10 +361,7 @@ class LocationRepository {
     Location row, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.insertRow<Location>(
-      row,
-      transaction: transaction,
-    );
+    return session.db.insertRow<Location>(row, transaction: transaction);
   }
 
   /// Updates all [Location]s in the list and returns the updated rows. If
@@ -432,10 +406,7 @@ class LocationRepository {
     List<Location> rows, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.delete<Location>(
-      rows,
-      transaction: transaction,
-    );
+    return session.db.delete<Location>(rows, transaction: transaction);
   }
 
   /// Deletes a single [Location].
@@ -444,10 +415,7 @@ class LocationRepository {
     Location row, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.deleteRow<Location>(
-      row,
-      transaction: transaction,
-    );
+    return session.db.deleteRow<Location>(row, transaction: transaction);
   }
 
   /// Deletes all rows matching the [where] expression.

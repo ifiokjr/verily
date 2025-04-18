@@ -41,12 +41,15 @@ abstract class VerificationAttempt
       actionId: jsonSerialization['actionId'] as int,
       userId: jsonSerialization['userId'] as String,
       status: jsonSerialization['status'] as String,
-      startedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startedAt']),
-      lastUpdatedAt: jsonSerialization['lastUpdatedAt'] == null
-          ? null
-          : _i1.DateTimeJsonExtension.fromJson(
-              jsonSerialization['lastUpdatedAt']),
+      startedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['startedAt'],
+      ),
+      lastUpdatedAt:
+          jsonSerialization['lastUpdatedAt'] == null
+              ? null
+              : _i1.DateTimeJsonExtension.fromJson(
+                jsonSerialization['lastUpdatedAt'],
+              ),
       stepProgress: jsonSerialization['stepProgress'] as String?,
       errorMessage: jsonSerialization['errorMessage'] as String?,
     );
@@ -160,15 +163,15 @@ class _VerificationAttemptImpl extends VerificationAttempt {
     String? stepProgress,
     String? errorMessage,
   }) : super._(
-          id: id,
-          actionId: actionId,
-          userId: userId,
-          status: status,
-          startedAt: startedAt,
-          lastUpdatedAt: lastUpdatedAt,
-          stepProgress: stepProgress,
-          errorMessage: errorMessage,
-        );
+         id: id,
+         actionId: actionId,
+         userId: userId,
+         status: status,
+         startedAt: startedAt,
+         lastUpdatedAt: lastUpdatedAt,
+         stepProgress: stepProgress,
+         errorMessage: errorMessage,
+       );
 
   /// Returns a shallow copy of this [VerificationAttempt]
   /// with some or all fields replaced by the given arguments.
@@ -200,35 +203,14 @@ class _VerificationAttemptImpl extends VerificationAttempt {
 
 class VerificationAttemptTable extends _i1.Table<int> {
   VerificationAttemptTable({super.tableRelation})
-      : super(tableName: 'verification_attempt') {
-    actionId = _i1.ColumnInt(
-      'actionId',
-      this,
-    );
-    userId = _i1.ColumnString(
-      'userId',
-      this,
-    );
-    status = _i1.ColumnString(
-      'status',
-      this,
-    );
-    startedAt = _i1.ColumnDateTime(
-      'startedAt',
-      this,
-    );
-    lastUpdatedAt = _i1.ColumnDateTime(
-      'lastUpdatedAt',
-      this,
-    );
-    stepProgress = _i1.ColumnString(
-      'stepProgress',
-      this,
-    );
-    errorMessage = _i1.ColumnString(
-      'errorMessage',
-      this,
-    );
+    : super(tableName: 'verification_attempt') {
+    actionId = _i1.ColumnInt('actionId', this);
+    userId = _i1.ColumnString('userId', this);
+    status = _i1.ColumnString('status', this);
+    startedAt = _i1.ColumnDateTime('startedAt', this);
+    lastUpdatedAt = _i1.ColumnDateTime('lastUpdatedAt', this);
+    stepProgress = _i1.ColumnString('stepProgress', this);
+    errorMessage = _i1.ColumnString('errorMessage', this);
   }
 
   late final _i1.ColumnInt actionId;
@@ -247,15 +229,15 @@ class VerificationAttemptTable extends _i1.Table<int> {
 
   @override
   List<_i1.Column> get columns => [
-        id,
-        actionId,
-        userId,
-        status,
-        startedAt,
-        lastUpdatedAt,
-        stepProgress,
-        errorMessage,
-      ];
+    id,
+    actionId,
+    userId,
+    status,
+    startedAt,
+    lastUpdatedAt,
+    stepProgress,
+    errorMessage,
+  ];
 }
 
 class VerificationAttemptInclude extends _i1.IncludeObject {

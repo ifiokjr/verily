@@ -35,126 +35,92 @@ class EndpointAction extends _i1.EndpointRef {
     DateTime? validUntil,
     int? maxCompletionTimeSeconds,
     bool? strictOrder,
-  }) =>
-      caller.callServerEndpoint<_i3.Action>(
-        'action',
-        'createAction',
-        {
-          'name': name,
-          'description': description,
-          'locationId': locationId,
-          'validFrom': validFrom,
-          'validUntil': validUntil,
-          'maxCompletionTimeSeconds': maxCompletionTimeSeconds,
-          'strictOrder': strictOrder,
-        },
-      );
+  }) => caller.callServerEndpoint<_i3.Action>('action', 'createAction', {
+    'name': name,
+    'description': description,
+    'locationId': locationId,
+    'validFrom': validFrom,
+    'validUntil': validUntil,
+    'maxCompletionTimeSeconds': maxCompletionTimeSeconds,
+    'strictOrder': strictOrder,
+  });
 
   /// Retrieves a list of Actions created by the authenticated user.
   _i2.Future<List<_i3.Action>> getMyActions() =>
-      caller.callServerEndpoint<List<_i3.Action>>(
-        'action',
-        'getMyActions',
-        {},
-      );
+      caller.callServerEndpoint<List<_i3.Action>>('action', 'getMyActions', {});
 
   /// Updates an existing Action.
   /// Requires the action object with updated fields.
   /// Verifies ownership before updating.
   _i2.Future<_i3.Action?> updateAction(_i3.Action action) =>
-      caller.callServerEndpoint<_i3.Action?>(
-        'action',
-        'updateAction',
-        {'action': action},
-      );
+      caller.callServerEndpoint<_i3.Action?>('action', 'updateAction', {
+        'action': action,
+      });
 
   /// Soft deletes an Action by its ID.
   /// Verifies ownership before deleting.
   _i2.Future<bool> deleteAction(int actionId) =>
-      caller.callServerEndpoint<bool>(
-        'action',
-        'deleteAction',
-        {'actionId': actionId},
-      );
+      caller.callServerEndpoint<bool>('action', 'deleteAction', {
+        'actionId': actionId,
+      });
 
   /// Retrieves full details for a single Action, including steps and webhooks.
   /// Verifies ownership.
   _i2.Future<_i3.Action?> getActionDetails(int actionId) =>
-      caller.callServerEndpoint<_i3.Action?>(
-        'action',
-        'getActionDetails',
-        {'actionId': actionId},
-      );
+      caller.callServerEndpoint<_i3.Action?>('action', 'getActionDetails', {
+        'actionId': actionId,
+      });
 
   /// Adds a new ActionStep to an existing Action.
   /// Verifies ownership of the parent Action.
   _i2.Future<_i4.ActionStep?> addActionStep(_i4.ActionStep actionStep) =>
-      caller.callServerEndpoint<_i4.ActionStep?>(
-        'action',
-        'addActionStep',
-        {'actionStep': actionStep},
-      );
+      caller.callServerEndpoint<_i4.ActionStep?>('action', 'addActionStep', {
+        'actionStep': actionStep,
+      });
 
   /// Updates an existing ActionStep.
   /// Verifies ownership of the parent Action.
   _i2.Future<_i4.ActionStep?> updateActionStep(_i4.ActionStep actionStep) =>
-      caller.callServerEndpoint<_i4.ActionStep?>(
-        'action',
-        'updateActionStep',
-        {'actionStep': actionStep},
-      );
+      caller.callServerEndpoint<_i4.ActionStep?>('action', 'updateActionStep', {
+        'actionStep': actionStep,
+      });
 
   /// Deletes an ActionStep by its ID.
   /// Verifies ownership of the parent Action.
   _i2.Future<bool> deleteActionStep(int actionStepId) =>
-      caller.callServerEndpoint<bool>(
-        'action',
-        'deleteActionStep',
-        {'actionStepId': actionStepId},
-      );
+      caller.callServerEndpoint<bool>('action', 'deleteActionStep', {
+        'actionStepId': actionStepId,
+      });
 
   /// Reorders the ActionSteps for a given Action.
   /// Verifies ownership of the Action.
   /// Expects a list of ActionStep IDs in the desired new order.
-  _i2.Future<bool> reorderActionSteps(
-    int actionId,
-    List<int> orderedStepIds,
-  ) =>
-      caller.callServerEndpoint<bool>(
-        'action',
-        'reorderActionSteps',
-        {
-          'actionId': actionId,
-          'orderedStepIds': orderedStepIds,
-        },
-      );
+  _i2.Future<bool> reorderActionSteps(int actionId, List<int> orderedStepIds) =>
+      caller.callServerEndpoint<bool>('action', 'reorderActionSteps', {
+        'actionId': actionId,
+        'orderedStepIds': orderedStepIds,
+      });
 
   /// Adds a new Webhook to an existing Action.
   /// Verifies ownership of the parent Action.
   _i2.Future<_i5.Webhook?> addWebhook(_i5.Webhook webhook) =>
-      caller.callServerEndpoint<_i5.Webhook?>(
-        'action',
-        'addWebhook',
-        {'webhook': webhook},
-      );
+      caller.callServerEndpoint<_i5.Webhook?>('action', 'addWebhook', {
+        'webhook': webhook,
+      });
 
   /// Updates an existing Webhook.
   /// Verifies ownership of the parent Action.
   _i2.Future<_i5.Webhook?> updateWebhook(_i5.Webhook webhook) =>
-      caller.callServerEndpoint<_i5.Webhook?>(
-        'action',
-        'updateWebhook',
-        {'webhook': webhook},
-      );
+      caller.callServerEndpoint<_i5.Webhook?>('action', 'updateWebhook', {
+        'webhook': webhook,
+      });
 
   /// Deletes a Webhook by its ID.
   /// Verifies ownership of the parent Action.
   _i2.Future<bool> deleteWebhook(int webhookId) =>
-      caller.callServerEndpoint<bool>(
-        'action',
-        'deleteWebhook',
-        {'webhookId': webhookId},
-      );
+      caller.callServerEndpoint<bool>('action', 'deleteWebhook', {
+        'webhookId': webhookId,
+      });
 }
 
 /// {@category Endpoint}
@@ -164,11 +130,8 @@ class EndpointExample extends _i1.EndpointRef {
   @override
   String get name => 'example';
 
-  _i2.Future<String> hello(String name) => caller.callServerEndpoint<String>(
-        'example',
-        'hello',
-        {'name': name},
-      );
+  _i2.Future<String> hello(String name) =>
+      caller.callServerEndpoint<String>('example', 'hello', {'name': name});
 }
 
 /// Endpoint for managing predefined locations.
@@ -205,25 +168,21 @@ class Client extends _i1.ServerpodClientShared {
     _i1.AuthenticationKeyManager? authenticationKeyManager,
     Duration? streamingConnectionTimeout,
     Duration? connectionTimeout,
-    Function(
-      _i1.MethodCallContext,
-      Object,
-      StackTrace,
-    )? onFailedCall,
+    Function(_i1.MethodCallContext, Object, StackTrace)? onFailedCall,
     Function(_i1.MethodCallContext)? onSucceededCall,
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
-          host,
-          _i8.Protocol(),
-          securityContext: securityContext,
-          authenticationKeyManager: authenticationKeyManager,
-          streamingConnectionTimeout: streamingConnectionTimeout,
-          connectionTimeout: connectionTimeout,
-          onFailedCall: onFailedCall,
-          onSucceededCall: onSucceededCall,
-          disconnectStreamsOnLostInternetConnection:
-              disconnectStreamsOnLostInternetConnection,
-        ) {
+         host,
+         _i8.Protocol(),
+         securityContext: securityContext,
+         authenticationKeyManager: authenticationKeyManager,
+         streamingConnectionTimeout: streamingConnectionTimeout,
+         connectionTimeout: connectionTimeout,
+         onFailedCall: onFailedCall,
+         onSucceededCall: onSucceededCall,
+         disconnectStreamsOnLostInternetConnection:
+             disconnectStreamsOnLostInternetConnection,
+       ) {
     action = EndpointAction(this);
     example = EndpointExample(this);
     location = EndpointLocation(this);
@@ -240,12 +199,13 @@ class Client extends _i1.ServerpodClientShared {
 
   @override
   Map<String, _i1.EndpointRef> get endpointRefLookup => {
-        'action': action,
-        'example': example,
-        'location': location,
-      };
+    'action': action,
+    'example': example,
+    'location': location,
+  };
 
   @override
-  Map<String, _i1.ModuleEndpointCaller> get moduleLookup =>
-      {'auth': modules.auth};
+  Map<String, _i1.ModuleEndpointCaller> get moduleLookup => {
+    'auth': modules.auth,
+  };
 }

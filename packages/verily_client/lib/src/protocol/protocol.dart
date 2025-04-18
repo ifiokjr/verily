@@ -37,10 +37,7 @@ class Protocol extends _i1.SerializationManager {
   static final Protocol _instance = Protocol._();
 
   @override
-  T deserialize<T>(
-    dynamic data, [
-    Type? t,
-  ]) {
+  T deserialize<T>(dynamic data, [Type? t]) {
     t ??= T;
     if (t == _i2.Action) {
       return _i2.Action.fromJson(data) as T;
@@ -87,13 +84,17 @@ class Protocol extends _i1.SerializationManager {
     }
     if (t == _i1.getType<List<_i3.ActionStep>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i3.ActionStep>(e)).toList()
-          : null) as T;
+              ? (data as List)
+                  .map((e) => deserialize<_i3.ActionStep>(e))
+                  .toList()
+              : null)
+          as T;
     }
     if (t == _i1.getType<List<_i8.Webhook>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i8.Webhook>(e)).toList()
-          : null) as T;
+              ? (data as List).map((e) => deserialize<_i8.Webhook>(e)).toList()
+              : null)
+          as T;
     }
     if (t == List<_i9.Action>) {
       return (data as List).map((e) => deserialize<_i9.Action>(e)).toList()

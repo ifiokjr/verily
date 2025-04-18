@@ -43,10 +43,12 @@ abstract class ActionStep
       order: jsonSerialization['order'] as int,
       parameters: jsonSerialization['parameters'] as String,
       instruction: jsonSerialization['instruction'] as String?,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      updatedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+      updatedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['updatedAt'],
+      ),
       $_actionStepsActionId: jsonSerialization['_actionStepsActionId'] as int?,
     );
   }
@@ -163,15 +165,15 @@ class _ActionStepImpl extends ActionStep {
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
-          id: id,
-          actionId: actionId,
-          type: type,
-          order: order,
-          parameters: parameters,
-          instruction: instruction,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-        );
+         id: id,
+         actionId: actionId,
+         type: type,
+         order: order,
+         parameters: parameters,
+         instruction: instruction,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+       );
 
   /// Returns a shallow copy of this [ActionStep]
   /// with some or all fields replaced by the given arguments.
@@ -196,7 +198,7 @@ class _ActionStepImpl extends ActionStep {
       instruction: instruction is String? ? instruction : this.instruction,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      $_actionStepsActionId: this._actionStepsActionId,
+      $_actionStepsActionId: _actionStepsActionId,
     );
   }
 }
@@ -212,17 +214,17 @@ class ActionStepImplicit extends _ActionStepImpl {
     required DateTime createdAt,
     required DateTime updatedAt,
     int? $_actionStepsActionId,
-  })  : _actionStepsActionId = $_actionStepsActionId,
-        super(
-          id: id,
-          actionId: actionId,
-          type: type,
-          order: order,
-          parameters: parameters,
-          instruction: instruction,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-        );
+  }) : _actionStepsActionId = $_actionStepsActionId,
+       super(
+         id: id,
+         actionId: actionId,
+         type: type,
+         order: order,
+         parameters: parameters,
+         instruction: instruction,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+       );
 
   factory ActionStepImplicit(
     ActionStep actionStep, {
@@ -247,38 +249,14 @@ class ActionStepImplicit extends _ActionStepImpl {
 
 class ActionStepTable extends _i1.Table<int> {
   ActionStepTable({super.tableRelation}) : super(tableName: 'action_step') {
-    actionId = _i1.ColumnInt(
-      'actionId',
-      this,
-    );
-    type = _i1.ColumnString(
-      'type',
-      this,
-    );
-    order = _i1.ColumnInt(
-      'order',
-      this,
-    );
-    parameters = _i1.ColumnString(
-      'parameters',
-      this,
-    );
-    instruction = _i1.ColumnString(
-      'instruction',
-      this,
-    );
-    createdAt = _i1.ColumnDateTime(
-      'createdAt',
-      this,
-    );
-    updatedAt = _i1.ColumnDateTime(
-      'updatedAt',
-      this,
-    );
-    $_actionStepsActionId = _i1.ColumnInt(
-      '_actionStepsActionId',
-      this,
-    );
+    actionId = _i1.ColumnInt('actionId', this);
+    type = _i1.ColumnString('type', this);
+    order = _i1.ColumnInt('order', this);
+    parameters = _i1.ColumnString('parameters', this);
+    instruction = _i1.ColumnString('instruction', this);
+    createdAt = _i1.ColumnDateTime('createdAt', this);
+    updatedAt = _i1.ColumnDateTime('updatedAt', this);
+    $_actionStepsActionId = _i1.ColumnInt('_actionStepsActionId', this);
   }
 
   late final _i1.ColumnInt actionId;
@@ -299,28 +277,28 @@ class ActionStepTable extends _i1.Table<int> {
 
   @override
   List<_i1.Column> get columns => [
-        id,
-        actionId,
-        type,
-        order,
-        parameters,
-        instruction,
-        createdAt,
-        updatedAt,
-        $_actionStepsActionId,
-      ];
+    id,
+    actionId,
+    type,
+    order,
+    parameters,
+    instruction,
+    createdAt,
+    updatedAt,
+    $_actionStepsActionId,
+  ];
 
   @override
   List<_i1.Column> get managedColumns => [
-        id,
-        actionId,
-        type,
-        order,
-        parameters,
-        instruction,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    actionId,
+    type,
+    order,
+    parameters,
+    instruction,
+    createdAt,
+    updatedAt,
+  ];
 }
 
 class ActionStepInclude extends _i1.IncludeObject {
@@ -441,10 +419,7 @@ class ActionStepRepository {
     int id, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.findById<ActionStep>(
-      id,
-      transaction: transaction,
-    );
+    return session.db.findById<ActionStep>(id, transaction: transaction);
   }
 
   /// Inserts all [ActionStep]s in the list and returns the inserted rows.
@@ -458,10 +433,7 @@ class ActionStepRepository {
     List<ActionStep> rows, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.insert<ActionStep>(
-      rows,
-      transaction: transaction,
-    );
+    return session.db.insert<ActionStep>(rows, transaction: transaction);
   }
 
   /// Inserts a single [ActionStep] and returns the inserted row.
@@ -472,10 +444,7 @@ class ActionStepRepository {
     ActionStep row, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.insertRow<ActionStep>(
-      row,
-      transaction: transaction,
-    );
+    return session.db.insertRow<ActionStep>(row, transaction: transaction);
   }
 
   /// Updates all [ActionStep]s in the list and returns the updated rows. If
@@ -520,10 +489,7 @@ class ActionStepRepository {
     List<ActionStep> rows, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.delete<ActionStep>(
-      rows,
-      transaction: transaction,
-    );
+    return session.db.delete<ActionStep>(rows, transaction: transaction);
   }
 
   /// Deletes a single [ActionStep].
@@ -532,10 +498,7 @@ class ActionStepRepository {
     ActionStep row, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.deleteRow<ActionStep>(
-      row,
-      transaction: transaction,
-    );
+    return session.db.deleteRow<ActionStep>(row, transaction: transaction);
   }
 
   /// Deletes all rows matching the [where] expression.

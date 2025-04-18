@@ -12,15 +12,9 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 
 abstract class Creator implements _i1.TableRow<int>, _i1.ProtocolSerialization {
-  Creator._({
-    this.id,
-    required this.userInfoId,
-  });
+  Creator._({this.id, required this.userInfoId});
 
-  factory Creator({
-    int? id,
-    required int userInfoId,
-  }) = _CreatorImpl;
+  factory Creator({int? id, required int userInfoId}) = _CreatorImpl;
 
   factory Creator.fromJson(Map<String, dynamic> jsonSerialization) {
     return Creator(
@@ -44,24 +38,15 @@ abstract class Creator implements _i1.TableRow<int>, _i1.ProtocolSerialization {
   /// Returns a shallow copy of this [Creator]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
-  Creator copyWith({
-    int? id,
-    int? userInfoId,
-  });
+  Creator copyWith({int? id, int? userInfoId});
   @override
   Map<String, dynamic> toJson() {
-    return {
-      if (id != null) 'id': id,
-      'userInfoId': userInfoId,
-    };
+    return {if (id != null) 'id': id, 'userInfoId': userInfoId};
   }
 
   @override
   Map<String, dynamic> toJsonForProtocol() {
-    return {
-      if (id != null) 'id': id,
-      'userInfoId': userInfoId,
-    };
+    return {if (id != null) 'id': id, 'userInfoId': userInfoId};
   }
 
   static CreatorInclude include() {
@@ -97,22 +82,14 @@ abstract class Creator implements _i1.TableRow<int>, _i1.ProtocolSerialization {
 class _Undefined {}
 
 class _CreatorImpl extends Creator {
-  _CreatorImpl({
-    int? id,
-    required int userInfoId,
-  }) : super._(
-          id: id,
-          userInfoId: userInfoId,
-        );
+  _CreatorImpl({int? id, required int userInfoId})
+    : super._(id: id, userInfoId: userInfoId);
 
   /// Returns a shallow copy of this [Creator]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
   @override
-  Creator copyWith({
-    Object? id = _Undefined,
-    int? userInfoId,
-  }) {
+  Creator copyWith({Object? id = _Undefined, int? userInfoId}) {
     return Creator(
       id: id is int? ? id : this.id,
       userInfoId: userInfoId ?? this.userInfoId,
@@ -122,19 +99,13 @@ class _CreatorImpl extends Creator {
 
 class CreatorTable extends _i1.Table<int> {
   CreatorTable({super.tableRelation}) : super(tableName: 'creator') {
-    userInfoId = _i1.ColumnInt(
-      'userInfoId',
-      this,
-    );
+    userInfoId = _i1.ColumnInt('userInfoId', this);
   }
 
   late final _i1.ColumnInt userInfoId;
 
   @override
-  List<_i1.Column> get columns => [
-        id,
-        userInfoId,
-      ];
+  List<_i1.Column> get columns => [id, userInfoId];
 }
 
 class CreatorInclude extends _i1.IncludeObject {
@@ -255,10 +226,7 @@ class CreatorRepository {
     int id, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.findById<Creator>(
-      id,
-      transaction: transaction,
-    );
+    return session.db.findById<Creator>(id, transaction: transaction);
   }
 
   /// Inserts all [Creator]s in the list and returns the inserted rows.
@@ -272,10 +240,7 @@ class CreatorRepository {
     List<Creator> rows, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.insert<Creator>(
-      rows,
-      transaction: transaction,
-    );
+    return session.db.insert<Creator>(rows, transaction: transaction);
   }
 
   /// Inserts a single [Creator] and returns the inserted row.
@@ -286,10 +251,7 @@ class CreatorRepository {
     Creator row, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.insertRow<Creator>(
-      row,
-      transaction: transaction,
-    );
+    return session.db.insertRow<Creator>(row, transaction: transaction);
   }
 
   /// Updates all [Creator]s in the list and returns the updated rows. If
@@ -334,10 +296,7 @@ class CreatorRepository {
     List<Creator> rows, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.delete<Creator>(
-      rows,
-      transaction: transaction,
-    );
+    return session.db.delete<Creator>(rows, transaction: transaction);
   }
 
   /// Deletes a single [Creator].
@@ -346,10 +305,7 @@ class CreatorRepository {
     Creator row, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.deleteRow<Creator>(
-      row,
-      transaction: transaction,
-    );
+    return session.db.deleteRow<Creator>(row, transaction: transaction);
   }
 
   /// Deletes all rows matching the [where] expression.

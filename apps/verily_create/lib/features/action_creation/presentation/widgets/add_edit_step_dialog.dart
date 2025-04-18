@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:verily_client/verily_client.dart' as protocol;
 import 'package:verily_create/main.dart'; // Import client
-import 'package:verily_create/features/action_creation/presentation/pages/edit_action_page.dart'; // Import provider
+// Import provider
 import 'dart:convert'; // For JSON validation
 
 // Dialog widget for adding/editing an action step
@@ -176,7 +176,7 @@ class _AddEditStepDialogState extends ConsumerState<AddEditStepDialog> {
                 controller: _paramsController,
                 decoration: const InputDecoration(
                   labelText: 'Parameters (JSON)',
-                  hintText: '{\"key\": \"value\"}',
+                  hintText: '{"key": "value"}',
                 ),
                 maxLines: 3,
                 validator: (v) {

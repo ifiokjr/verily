@@ -40,12 +40,15 @@ abstract class VerificationAttempt implements _i1.SerializableModel {
       actionId: jsonSerialization['actionId'] as int,
       userId: jsonSerialization['userId'] as String,
       status: jsonSerialization['status'] as String,
-      startedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['startedAt']),
-      lastUpdatedAt: jsonSerialization['lastUpdatedAt'] == null
-          ? null
-          : _i1.DateTimeJsonExtension.fromJson(
-              jsonSerialization['lastUpdatedAt']),
+      startedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['startedAt'],
+      ),
+      lastUpdatedAt:
+          jsonSerialization['lastUpdatedAt'] == null
+              ? null
+              : _i1.DateTimeJsonExtension.fromJson(
+                jsonSerialization['lastUpdatedAt'],
+              ),
       stepProgress: jsonSerialization['stepProgress'] as String?,
       errorMessage: jsonSerialization['errorMessage'] as String?,
     );
@@ -116,15 +119,15 @@ class _VerificationAttemptImpl extends VerificationAttempt {
     String? stepProgress,
     String? errorMessage,
   }) : super._(
-          id: id,
-          actionId: actionId,
-          userId: userId,
-          status: status,
-          startedAt: startedAt,
-          lastUpdatedAt: lastUpdatedAt,
-          stepProgress: stepProgress,
-          errorMessage: errorMessage,
-        );
+         id: id,
+         actionId: actionId,
+         userId: userId,
+         status: status,
+         startedAt: startedAt,
+         lastUpdatedAt: lastUpdatedAt,
+         stepProgress: stepProgress,
+         errorMessage: errorMessage,
+       );
 
   /// Returns a shallow copy of this [VerificationAttempt]
   /// with some or all fields replaced by the given arguments.

@@ -29,8 +29,8 @@ abstract class Action implements _i1.TableRow<int>, _i1.ProtocolSerialization {
     bool? isDeleted,
     this.steps,
     this.webhooks,
-  })  : strictOrder = strictOrder ?? true,
-        isDeleted = isDeleted ?? false;
+  }) : strictOrder = strictOrder ?? true,
+       isDeleted = isDeleted ?? false;
 
   factory Action({
     int? id,
@@ -56,26 +56,36 @@ abstract class Action implements _i1.TableRow<int>, _i1.ProtocolSerialization {
       description: jsonSerialization['description'] as String?,
       userInfoId: jsonSerialization['userInfoId'] as int,
       locationId: jsonSerialization['locationId'] as int?,
-      validFrom: jsonSerialization['validFrom'] == null
-          ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['validFrom']),
-      validUntil: jsonSerialization['validUntil'] == null
-          ? null
-          : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['validUntil']),
+      validFrom:
+          jsonSerialization['validFrom'] == null
+              ? null
+              : _i1.DateTimeJsonExtension.fromJson(
+                jsonSerialization['validFrom'],
+              ),
+      validUntil:
+          jsonSerialization['validUntil'] == null
+              ? null
+              : _i1.DateTimeJsonExtension.fromJson(
+                jsonSerialization['validUntil'],
+              ),
       maxCompletionTimeSeconds:
           jsonSerialization['maxCompletionTimeSeconds'] as int?,
       strictOrder: jsonSerialization['strictOrder'] as bool,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      updatedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+      updatedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['updatedAt'],
+      ),
       isDeleted: jsonSerialization['isDeleted'] as bool,
-      steps: (jsonSerialization['steps'] as List?)
-          ?.map((e) => _i2.ActionStep.fromJson((e as Map<String, dynamic>)))
-          .toList(),
-      webhooks: (jsonSerialization['webhooks'] as List?)
-          ?.map((e) => _i3.Webhook.fromJson((e as Map<String, dynamic>)))
-          .toList(),
+      steps:
+          (jsonSerialization['steps'] as List?)
+              ?.map((e) => _i2.ActionStep.fromJson((e as Map<String, dynamic>)))
+              .toList(),
+      webhooks:
+          (jsonSerialization['webhooks'] as List?)
+              ?.map((e) => _i3.Webhook.fromJson((e as Map<String, dynamic>)))
+              .toList(),
     );
   }
 
@@ -183,10 +193,7 @@ abstract class Action implements _i1.TableRow<int>, _i1.ProtocolSerialization {
     _i2.ActionStepIncludeList? steps,
     _i3.WebhookIncludeList? webhooks,
   }) {
-    return ActionInclude._(
-      steps: steps,
-      webhooks: webhooks,
-    );
+    return ActionInclude._(steps: steps, webhooks: webhooks);
   }
 
   static ActionIncludeList includeList({
@@ -234,21 +241,21 @@ class _ActionImpl extends Action {
     List<_i2.ActionStep>? steps,
     List<_i3.Webhook>? webhooks,
   }) : super._(
-          id: id,
-          name: name,
-          description: description,
-          userInfoId: userInfoId,
-          locationId: locationId,
-          validFrom: validFrom,
-          validUntil: validUntil,
-          maxCompletionTimeSeconds: maxCompletionTimeSeconds,
-          strictOrder: strictOrder,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-          isDeleted: isDeleted,
-          steps: steps,
-          webhooks: webhooks,
-        );
+         id: id,
+         name: name,
+         description: description,
+         userInfoId: userInfoId,
+         locationId: locationId,
+         validFrom: validFrom,
+         validUntil: validUntil,
+         maxCompletionTimeSeconds: maxCompletionTimeSeconds,
+         strictOrder: strictOrder,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+         isDeleted: isDeleted,
+         steps: steps,
+         webhooks: webhooks,
+       );
 
   /// Returns a shallow copy of this [Action]
   /// with some or all fields replaced by the given arguments.
@@ -278,71 +285,39 @@ class _ActionImpl extends Action {
       locationId: locationId is int? ? locationId : this.locationId,
       validFrom: validFrom is DateTime? ? validFrom : this.validFrom,
       validUntil: validUntil is DateTime? ? validUntil : this.validUntil,
-      maxCompletionTimeSeconds: maxCompletionTimeSeconds is int?
-          ? maxCompletionTimeSeconds
-          : this.maxCompletionTimeSeconds,
+      maxCompletionTimeSeconds:
+          maxCompletionTimeSeconds is int?
+              ? maxCompletionTimeSeconds
+              : this.maxCompletionTimeSeconds,
       strictOrder: strictOrder ?? this.strictOrder,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isDeleted: isDeleted ?? this.isDeleted,
-      steps: steps is List<_i2.ActionStep>?
-          ? steps
-          : this.steps?.map((e0) => e0.copyWith()).toList(),
-      webhooks: webhooks is List<_i3.Webhook>?
-          ? webhooks
-          : this.webhooks?.map((e0) => e0.copyWith()).toList(),
+      steps:
+          steps is List<_i2.ActionStep>?
+              ? steps
+              : this.steps?.map((e0) => e0.copyWith()).toList(),
+      webhooks:
+          webhooks is List<_i3.Webhook>?
+              ? webhooks
+              : this.webhooks?.map((e0) => e0.copyWith()).toList(),
     );
   }
 }
 
 class ActionTable extends _i1.Table<int> {
   ActionTable({super.tableRelation}) : super(tableName: 'action') {
-    name = _i1.ColumnString(
-      'name',
-      this,
-    );
-    description = _i1.ColumnString(
-      'description',
-      this,
-    );
-    userInfoId = _i1.ColumnInt(
-      'userInfoId',
-      this,
-    );
-    locationId = _i1.ColumnInt(
-      'locationId',
-      this,
-    );
-    validFrom = _i1.ColumnDateTime(
-      'validFrom',
-      this,
-    );
-    validUntil = _i1.ColumnDateTime(
-      'validUntil',
-      this,
-    );
-    maxCompletionTimeSeconds = _i1.ColumnInt(
-      'maxCompletionTimeSeconds',
-      this,
-    );
-    strictOrder = _i1.ColumnBool(
-      'strictOrder',
-      this,
-      hasDefault: true,
-    );
-    createdAt = _i1.ColumnDateTime(
-      'createdAt',
-      this,
-    );
-    updatedAt = _i1.ColumnDateTime(
-      'updatedAt',
-      this,
-    );
-    isDeleted = _i1.ColumnBool(
-      'isDeleted',
-      this,
-      hasDefault: true,
-    );
+    name = _i1.ColumnString('name', this);
+    description = _i1.ColumnString('description', this);
+    userInfoId = _i1.ColumnInt('userInfoId', this);
+    locationId = _i1.ColumnInt('locationId', this);
+    validFrom = _i1.ColumnDateTime('validFrom', this);
+    validUntil = _i1.ColumnDateTime('validUntil', this);
+    maxCompletionTimeSeconds = _i1.ColumnInt('maxCompletionTimeSeconds', this);
+    strictOrder = _i1.ColumnBool('strictOrder', this, hasDefault: true);
+    createdAt = _i1.ColumnDateTime('createdAt', this);
+    updatedAt = _i1.ColumnDateTime('updatedAt', this);
+    isDeleted = _i1.ColumnBool('isDeleted', this, hasDefault: true);
   }
 
   late final _i1.ColumnString name;
@@ -382,8 +357,9 @@ class ActionTable extends _i1.Table<int> {
       field: Action.t.id,
       foreignField: _i2.ActionStep.t.$_actionStepsActionId,
       tableRelation: tableRelation,
-      createTable: (foreignTableRelation) =>
-          _i2.ActionStepTable(tableRelation: foreignTableRelation),
+      createTable:
+          (foreignTableRelation) =>
+              _i2.ActionStepTable(tableRelation: foreignTableRelation),
     );
     return ___steps!;
   }
@@ -395,8 +371,9 @@ class ActionTable extends _i1.Table<int> {
       field: Action.t.id,
       foreignField: _i3.Webhook.t.$_actionWebhooksActionId,
       tableRelation: tableRelation,
-      createTable: (foreignTableRelation) =>
-          _i3.WebhookTable(tableRelation: foreignTableRelation),
+      createTable:
+          (foreignTableRelation) =>
+              _i3.WebhookTable(tableRelation: foreignTableRelation),
     );
     return ___webhooks!;
   }
@@ -408,13 +385,15 @@ class ActionTable extends _i1.Table<int> {
       field: Action.t.id,
       foreignField: _i2.ActionStep.t.$_actionStepsActionId,
       tableRelation: tableRelation,
-      createTable: (foreignTableRelation) =>
-          _i2.ActionStepTable(tableRelation: foreignTableRelation),
+      createTable:
+          (foreignTableRelation) =>
+              _i2.ActionStepTable(tableRelation: foreignTableRelation),
     );
     _steps = _i1.ManyRelation<_i2.ActionStepTable>(
       tableWithRelations: relationTable,
       table: _i2.ActionStepTable(
-          tableRelation: relationTable.tableRelation!.lastRelation),
+        tableRelation: relationTable.tableRelation!.lastRelation,
+      ),
     );
     return _steps!;
   }
@@ -426,32 +405,34 @@ class ActionTable extends _i1.Table<int> {
       field: Action.t.id,
       foreignField: _i3.Webhook.t.$_actionWebhooksActionId,
       tableRelation: tableRelation,
-      createTable: (foreignTableRelation) =>
-          _i3.WebhookTable(tableRelation: foreignTableRelation),
+      createTable:
+          (foreignTableRelation) =>
+              _i3.WebhookTable(tableRelation: foreignTableRelation),
     );
     _webhooks = _i1.ManyRelation<_i3.WebhookTable>(
       tableWithRelations: relationTable,
       table: _i3.WebhookTable(
-          tableRelation: relationTable.tableRelation!.lastRelation),
+        tableRelation: relationTable.tableRelation!.lastRelation,
+      ),
     );
     return _webhooks!;
   }
 
   @override
   List<_i1.Column> get columns => [
-        id,
-        name,
-        description,
-        userInfoId,
-        locationId,
-        validFrom,
-        validUntil,
-        maxCompletionTimeSeconds,
-        strictOrder,
-        createdAt,
-        updatedAt,
-        isDeleted,
-      ];
+    id,
+    name,
+    description,
+    userInfoId,
+    locationId,
+    validFrom,
+    validUntil,
+    maxCompletionTimeSeconds,
+    strictOrder,
+    createdAt,
+    updatedAt,
+    isDeleted,
+  ];
 
   @override
   _i1.Table? getRelationTable(String relationField) {
@@ -480,9 +461,9 @@ class ActionInclude extends _i1.IncludeObject {
 
   @override
   Map<String, _i1.Include?> get includes => {
-        'steps': _steps,
-        'webhooks': _webhooks,
-      };
+    'steps': _steps,
+    'webhooks': _webhooks,
+  };
 
   @override
   _i1.Table<int> get table => Action.t;
@@ -627,10 +608,7 @@ class ActionRepository {
     List<Action> rows, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.insert<Action>(
-      rows,
-      transaction: transaction,
-    );
+    return session.db.insert<Action>(rows, transaction: transaction);
   }
 
   /// Inserts a single [Action] and returns the inserted row.
@@ -641,10 +619,7 @@ class ActionRepository {
     Action row, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.insertRow<Action>(
-      row,
-      transaction: transaction,
-    );
+    return session.db.insertRow<Action>(row, transaction: transaction);
   }
 
   /// Updates all [Action]s in the list and returns the updated rows. If
@@ -689,10 +664,7 @@ class ActionRepository {
     List<Action> rows, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.delete<Action>(
-      rows,
-      transaction: transaction,
-    );
+    return session.db.delete<Action>(rows, transaction: transaction);
   }
 
   /// Deletes a single [Action].
@@ -701,10 +673,7 @@ class ActionRepository {
     Action row, {
     _i1.Transaction? transaction,
   }) async {
-    return session.db.deleteRow<Action>(
-      row,
-      transaction: transaction,
-    );
+    return session.db.deleteRow<Action>(row, transaction: transaction);
   }
 
   /// Deletes all rows matching the [where] expression.
@@ -753,12 +722,13 @@ class ActionAttachRepository {
       throw ArgumentError.notNull('action.id');
     }
 
-    var $actionStep = actionStep
-        .map((e) => _i2.ActionStepImplicit(
-              e,
-              $_actionStepsActionId: action.id,
-            ))
-        .toList();
+    var $actionStep =
+        actionStep
+            .map(
+              (e) =>
+                  _i2.ActionStepImplicit(e, $_actionStepsActionId: action.id),
+            )
+            .toList();
     await session.db.update<_i2.ActionStep>(
       $actionStep,
       columns: [_i2.ActionStep.t.$_actionStepsActionId],
@@ -781,12 +751,13 @@ class ActionAttachRepository {
       throw ArgumentError.notNull('action.id');
     }
 
-    var $webhook = webhook
-        .map((e) => _i3.WebhookImplicit(
-              e,
-              $_actionWebhooksActionId: action.id,
-            ))
-        .toList();
+    var $webhook =
+        webhook
+            .map(
+              (e) =>
+                  _i3.WebhookImplicit(e, $_actionWebhooksActionId: action.id),
+            )
+            .toList();
     await session.db.update<_i3.Webhook>(
       $webhook,
       columns: [_i3.Webhook.t.$_actionWebhooksActionId],
@@ -868,12 +839,10 @@ class ActionDetachRepository {
       throw ArgumentError.notNull('actionStep.id');
     }
 
-    var $actionStep = actionStep
-        .map((e) => _i2.ActionStepImplicit(
-              e,
-              $_actionStepsActionId: null,
-            ))
-        .toList();
+    var $actionStep =
+        actionStep
+            .map((e) => _i2.ActionStepImplicit(e, $_actionStepsActionId: null))
+            .toList();
     await session.db.update<_i2.ActionStep>(
       $actionStep,
       columns: [_i2.ActionStep.t.$_actionStepsActionId],
@@ -895,12 +864,10 @@ class ActionDetachRepository {
       throw ArgumentError.notNull('webhook.id');
     }
 
-    var $webhook = webhook
-        .map((e) => _i3.WebhookImplicit(
-              e,
-              $_actionWebhooksActionId: null,
-            ))
-        .toList();
+    var $webhook =
+        webhook
+            .map((e) => _i3.WebhookImplicit(e, $_actionWebhooksActionId: null))
+            .toList();
     await session.db.update<_i3.Webhook>(
       $webhook,
       columns: [_i3.Webhook.t.$_actionWebhooksActionId],
@@ -951,10 +918,7 @@ class ActionDetachRowRepository {
       throw ArgumentError.notNull('webhook.id');
     }
 
-    var $webhook = _i3.WebhookImplicit(
-      webhook,
-      $_actionWebhooksActionId: null,
-    );
+    var $webhook = _i3.WebhookImplicit(webhook, $_actionWebhooksActionId: null);
     await session.db.updateRow<_i3.Webhook>(
       $webhook,
       columns: [_i3.Webhook.t.$_actionWebhooksActionId],

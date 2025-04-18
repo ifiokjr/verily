@@ -1,10 +1,3 @@
-# Devenv
-.devenv*
-devenv.local.nix
-
-# direnv
-.direnv
-
 # pre-commit
 .pre-commit-config.yaml
 
@@ -13,10 +6,6 @@ devenv.local.nix
 /result
 /.direnv
 **/rustc-ice-*.txt
-
-# Devenv
-.devenv*
-devenv.local.nix
 
 **/dist/**
 
@@ -107,10 +96,3 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-
-# Rust toolchain
-**/target/
-
-# Rust logs
-# **/rustc-ice-*.txt
-# Generated files

@@ -137,10 +137,7 @@ class ActionEndpoint extends Endpoint {
 
     // Perform the update
     Action? updatedAction = await Action.db.updateRow(session, actionToUpdate);
-    session.log(
-      'Updated Action id: ${updatedAction?.id}',
-      level: LogLevel.info,
-    );
+    session.log('Updated Action id: ${updatedAction.id}', level: LogLevel.info);
     return updatedAction;
   }
 
@@ -279,7 +276,7 @@ class ActionEndpoint extends Endpoint {
       stepToInsert,
     );
     session.log(
-      'Added ActionStep id: ${createdStep?.id} to Action id: $actionId',
+      'Added ActionStep id: ${createdStep.id} to Action id: $actionId',
       level: LogLevel.info,
     );
     return createdStep;
@@ -341,7 +338,7 @@ class ActionEndpoint extends Endpoint {
       stepToUpdate,
     );
     session.log(
-      'Updated ActionStep id: ${updatedStep?.id}',
+      'Updated ActionStep id: ${updatedStep.id}',
       level: LogLevel.info,
     );
     return updatedStep;

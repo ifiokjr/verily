@@ -34,7 +34,7 @@ class SpeechStepWidget extends HookConsumerWidget {
     // --- Helper Functions ---
 
     /// Processes the final recognized words against the target phrase.
-    void _processFinalResult(String recognized, String? target) {
+    void processFinalResult(String recognized, String? target) {
       if (target == null || target.isEmpty || reportedSuccess.value) return;
 
       // Normalize both strings for comparison (lowercase, trim whitespace)
@@ -72,7 +72,7 @@ class SpeechStepWidget extends HookConsumerWidget {
             // Process final result when listening stops
             if (status == 'notListening' && !reportedSuccess.value) {
               // Call the function defined above
-              _processFinalResult(lastWords.value, targetPhrase.value);
+              processFinalResult(lastWords.value, targetPhrase.value);
             }
           },
           // debugLog: true, // Removed parameter
@@ -123,7 +123,7 @@ class SpeechStepWidget extends HookConsumerWidget {
       if (phraseParam == null || phraseParam.isEmpty) {
         lastError.value = 'Configuration Error: Target phrase not specified.';
         // Report configuration error as failure
-        notifier.reportStepFailure(lastError.value!);
+        notifier.reportStepFailure(lastError.value);
       } else {
         targetPhrase.value = phraseParam;
       }

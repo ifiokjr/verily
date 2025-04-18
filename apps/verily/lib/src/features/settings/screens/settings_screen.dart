@@ -254,7 +254,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           CupertinoSwitch(
             value: value,
             onChanged: onChanged,
-            activeColor: CupertinoColors.systemBlue,
+            activeTrackColor: CupertinoColors.systemBlue,
           ),
         ],
       ),

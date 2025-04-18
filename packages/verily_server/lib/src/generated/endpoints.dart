@@ -22,24 +22,9 @@ class Endpoints extends _i1.EndpointDispatch {
   @override
   void initializeEndpoints(_i1.Server server) {
     var endpoints = <String, _i1.Endpoint>{
-      'action': _i2.ActionEndpoint()
-        ..initialize(
-          server,
-          'action',
-          null,
-        ),
-      'example': _i3.ExampleEndpoint()
-        ..initialize(
-          server,
-          'example',
-          null,
-        ),
-      'location': _i4.LocationEndpoint()
-        ..initialize(
-          server,
-          'location',
-          null,
-        ),
+      'action': _i2.ActionEndpoint()..initialize(server, 'action', null),
+      'example': _i3.ExampleEndpoint()..initialize(server, 'example', null),
+      'location': _i4.LocationEndpoint()..initialize(server, 'location', null),
     };
     connectors['action'] = _i1.EndpointConnector(
       name: 'action',
@@ -84,29 +69,28 @@ class Endpoints extends _i1.EndpointDispatch {
               nullable: true,
             ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['action'] as _i2.ActionEndpoint).createAction(
-            session,
-            name: params['name'],
-            description: params['description'],
-            locationId: params['locationId'],
-            validFrom: params['validFrom'],
-            validUntil: params['validUntil'],
-            maxCompletionTimeSeconds: params['maxCompletionTimeSeconds'],
-            strictOrder: params['strictOrder'],
-          ),
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['action'] as _i2.ActionEndpoint).createAction(
+                    session,
+                    name: params['name'],
+                    description: params['description'],
+                    locationId: params['locationId'],
+                    validFrom: params['validFrom'],
+                    validUntil: params['validUntil'],
+                    maxCompletionTimeSeconds:
+                        params['maxCompletionTimeSeconds'],
+                    strictOrder: params['strictOrder'],
+                  ),
         ),
         'getMyActions': _i1.MethodConnector(
           name: 'getMyActions',
           params: {},
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['action'] as _i2.ActionEndpoint).getMyActions(session),
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['action'] as _i2.ActionEndpoint).getMyActions(
+                    session,
+                  ),
         ),
         'updateAction': _i1.MethodConnector(
           name: 'updateAction',
@@ -115,16 +99,14 @@ class Endpoints extends _i1.EndpointDispatch {
               name: 'action',
               type: _i1.getType<_i5.Action>(),
               nullable: false,
-            )
+            ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['action'] as _i2.ActionEndpoint).updateAction(
-            session,
-            params['action'],
-          ),
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['action'] as _i2.ActionEndpoint).updateAction(
+                    session,
+                    params['action'],
+                  ),
         ),
         'deleteAction': _i1.MethodConnector(
           name: 'deleteAction',
@@ -133,16 +115,14 @@ class Endpoints extends _i1.EndpointDispatch {
               name: 'actionId',
               type: _i1.getType<int>(),
               nullable: false,
-            )
+            ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['action'] as _i2.ActionEndpoint).deleteAction(
-            session,
-            params['actionId'],
-          ),
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['action'] as _i2.ActionEndpoint).deleteAction(
+                    session,
+                    params['actionId'],
+                  ),
         ),
         'getActionDetails': _i1.MethodConnector(
           name: 'getActionDetails',
@@ -151,16 +131,14 @@ class Endpoints extends _i1.EndpointDispatch {
               name: 'actionId',
               type: _i1.getType<int>(),
               nullable: false,
-            )
+            ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['action'] as _i2.ActionEndpoint).getActionDetails(
-            session,
-            params['actionId'],
-          ),
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['action'] as _i2.ActionEndpoint).getActionDetails(
+                    session,
+                    params['actionId'],
+                  ),
         ),
         'addActionStep': _i1.MethodConnector(
           name: 'addActionStep',
@@ -169,16 +147,14 @@ class Endpoints extends _i1.EndpointDispatch {
               name: 'actionStep',
               type: _i1.getType<_i6.ActionStep>(),
               nullable: false,
-            )
+            ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['action'] as _i2.ActionEndpoint).addActionStep(
-            session,
-            params['actionStep'],
-          ),
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['action'] as _i2.ActionEndpoint).addActionStep(
+                    session,
+                    params['actionStep'],
+                  ),
         ),
         'updateActionStep': _i1.MethodConnector(
           name: 'updateActionStep',
@@ -187,16 +163,14 @@ class Endpoints extends _i1.EndpointDispatch {
               name: 'actionStep',
               type: _i1.getType<_i6.ActionStep>(),
               nullable: false,
-            )
+            ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['action'] as _i2.ActionEndpoint).updateActionStep(
-            session,
-            params['actionStep'],
-          ),
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['action'] as _i2.ActionEndpoint).updateActionStep(
+                    session,
+                    params['actionStep'],
+                  ),
         ),
         'deleteActionStep': _i1.MethodConnector(
           name: 'deleteActionStep',
@@ -205,16 +179,14 @@ class Endpoints extends _i1.EndpointDispatch {
               name: 'actionStepId',
               type: _i1.getType<int>(),
               nullable: false,
-            )
+            ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['action'] as _i2.ActionEndpoint).deleteActionStep(
-            session,
-            params['actionStepId'],
-          ),
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['action'] as _i2.ActionEndpoint).deleteActionStep(
+                    session,
+                    params['actionStepId'],
+                  ),
         ),
         'reorderActionSteps': _i1.MethodConnector(
           name: 'reorderActionSteps',
@@ -230,15 +202,14 @@ class Endpoints extends _i1.EndpointDispatch {
               nullable: false,
             ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['action'] as _i2.ActionEndpoint).reorderActionSteps(
-            session,
-            params['actionId'],
-            params['orderedStepIds'],
-          ),
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['action'] as _i2.ActionEndpoint)
+                      .reorderActionSteps(
+                        session,
+                        params['actionId'],
+                        params['orderedStepIds'],
+                      ),
         ),
         'addWebhook': _i1.MethodConnector(
           name: 'addWebhook',
@@ -247,16 +218,14 @@ class Endpoints extends _i1.EndpointDispatch {
               name: 'webhook',
               type: _i1.getType<_i7.Webhook>(),
               nullable: false,
-            )
+            ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['action'] as _i2.ActionEndpoint).addWebhook(
-            session,
-            params['webhook'],
-          ),
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['action'] as _i2.ActionEndpoint).addWebhook(
+                    session,
+                    params['webhook'],
+                  ),
         ),
         'updateWebhook': _i1.MethodConnector(
           name: 'updateWebhook',
@@ -265,16 +234,14 @@ class Endpoints extends _i1.EndpointDispatch {
               name: 'webhook',
               type: _i1.getType<_i7.Webhook>(),
               nullable: false,
-            )
+            ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['action'] as _i2.ActionEndpoint).updateWebhook(
-            session,
-            params['webhook'],
-          ),
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['action'] as _i2.ActionEndpoint).updateWebhook(
+                    session,
+                    params['webhook'],
+                  ),
         ),
         'deleteWebhook': _i1.MethodConnector(
           name: 'deleteWebhook',
@@ -283,16 +250,14 @@ class Endpoints extends _i1.EndpointDispatch {
               name: 'webhookId',
               type: _i1.getType<int>(),
               nullable: false,
-            )
+            ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['action'] as _i2.ActionEndpoint).deleteWebhook(
-            session,
-            params['webhookId'],
-          ),
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['action'] as _i2.ActionEndpoint).deleteWebhook(
+                    session,
+                    params['webhookId'],
+                  ),
         ),
       },
     );
@@ -307,17 +272,15 @@ class Endpoints extends _i1.EndpointDispatch {
               name: 'name',
               type: _i1.getType<String>(),
               nullable: false,
-            )
+            ),
           },
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['example'] as _i3.ExampleEndpoint).hello(
-            session,
-            params['name'],
-          ),
-        )
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['example'] as _i3.ExampleEndpoint).hello(
+                    session,
+                    params['name'],
+                  ),
+        ),
       },
     );
     connectors['location'] = _i1.EndpointConnector(
@@ -327,13 +290,11 @@ class Endpoints extends _i1.EndpointDispatch {
         'getAvailableLocations': _i1.MethodConnector(
           name: 'getAvailableLocations',
           params: {},
-          call: (
-            _i1.Session session,
-            Map<String, dynamic> params,
-          ) async =>
-              (endpoints['location'] as _i4.LocationEndpoint)
-                  .getAvailableLocations(session),
-        )
+          call:
+              (_i1.Session session, Map<String, dynamic> params) async =>
+                  (endpoints['location'] as _i4.LocationEndpoint)
+                      .getAvailableLocations(session),
+        ),
       },
     );
     modules['serverpod_auth'] = _i8.Endpoints()..initializeEndpoints(server);

@@ -12,15 +12,9 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 abstract class Creator implements _i1.SerializableModel {
-  Creator._({
-    this.id,
-    required this.userInfoId,
-  });
+  Creator._({this.id, required this.userInfoId});
 
-  factory Creator({
-    int? id,
-    required int userInfoId,
-  }) = _CreatorImpl;
+  factory Creator({int? id, required int userInfoId}) = _CreatorImpl;
 
   factory Creator.fromJson(Map<String, dynamic> jsonSerialization) {
     return Creator(
@@ -39,16 +33,10 @@ abstract class Creator implements _i1.SerializableModel {
   /// Returns a shallow copy of this [Creator]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
-  Creator copyWith({
-    int? id,
-    int? userInfoId,
-  });
+  Creator copyWith({int? id, int? userInfoId});
   @override
   Map<String, dynamic> toJson() {
-    return {
-      if (id != null) 'id': id,
-      'userInfoId': userInfoId,
-    };
+    return {if (id != null) 'id': id, 'userInfoId': userInfoId};
   }
 
   @override
@@ -60,22 +48,14 @@ abstract class Creator implements _i1.SerializableModel {
 class _Undefined {}
 
 class _CreatorImpl extends Creator {
-  _CreatorImpl({
-    int? id,
-    required int userInfoId,
-  }) : super._(
-          id: id,
-          userInfoId: userInfoId,
-        );
+  _CreatorImpl({int? id, required int userInfoId})
+    : super._(id: id, userInfoId: userInfoId);
 
   /// Returns a shallow copy of this [Creator]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
   @override
-  Creator copyWith({
-    Object? id = _Undefined,
-    int? userInfoId,
-  }) {
+  Creator copyWith({Object? id = _Undefined, int? userInfoId}) {
     return Creator(
       id: id is int? ? id : this.id,
       userInfoId: userInfoId ?? this.userInfoId,

@@ -72,5 +72,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'verilyfun.firebasestorage.app',
     iosBundleId: 'fun.verily.app.verily',
   );
-
 }

@@ -128,7 +128,7 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'id',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: true,
@@ -141,7 +141,7 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'userInfoId',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: false,
@@ -154,7 +154,7 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'locationId',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: false,
@@ -184,7 +184,7 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'createdAt',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: false,
@@ -285,7 +285,7 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'id',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: true,
@@ -340,12 +340,12 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'id',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: true,
           isPrimary: true,
-        )
+        ),
       ],
       managed: true,
     ),
@@ -408,7 +408,7 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'id',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: true,
@@ -438,7 +438,7 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'googlePlacesId',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: false,
@@ -513,7 +513,7 @@ class Protocol extends _i1.SerializationManagerServer {
           onUpdate: _i2.ForeignKeyAction.noAction,
           onDelete: _i2.ForeignKeyAction.noAction,
           matchType: null,
-        )
+        ),
       ],
       indexes: [
         _i2.IndexDefinition(
@@ -523,7 +523,7 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'id',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: true,
@@ -553,7 +553,7 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'status',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: false,
@@ -566,7 +566,7 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'startedAt',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: false,
@@ -668,7 +668,7 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'id',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: true,
@@ -681,7 +681,7 @@ class Protocol extends _i1.SerializationManagerServer {
             _i2.IndexElementDefinition(
               type: _i2.IndexElementDefinitionType.column,
               definition: 'actionId',
-            )
+            ),
           ],
           type: 'btree',
           isUnique: false,
@@ -695,10 +695,7 @@ class Protocol extends _i1.SerializationManagerServer {
   ];
 
   @override
-  T deserialize<T>(
-    dynamic data, [
-    Type? t,
-  ]) {
+  T deserialize<T>(dynamic data, [Type? t]) {
     t ??= T;
     if (t == _i4.Action) {
       return _i4.Action.fromJson(data) as T;
@@ -745,13 +742,17 @@ class Protocol extends _i1.SerializationManagerServer {
     }
     if (t == _i1.getType<List<_i5.ActionStep>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i5.ActionStep>(e)).toList()
-          : null) as T;
+              ? (data as List)
+                  .map((e) => deserialize<_i5.ActionStep>(e))
+                  .toList()
+              : null)
+          as T;
     }
     if (t == _i1.getType<List<_i10.Webhook>?>()) {
       return (data != null
-          ? (data as List).map((e) => deserialize<_i10.Webhook>(e)).toList()
-          : null) as T;
+              ? (data as List).map((e) => deserialize<_i10.Webhook>(e)).toList()
+              : null)
+          as T;
     }
     if (t == List<_i11.Action>) {
       return (data as List).map((e) => deserialize<_i11.Action>(e)).toList()

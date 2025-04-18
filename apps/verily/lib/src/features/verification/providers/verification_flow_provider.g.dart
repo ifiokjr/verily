@@ -12,13 +12,16 @@ String _$verificationFlowHash() => r'bb772fcc12fbca9dd7c98a5b28b7ea7899ed314c';
 ///
 /// Copied from [VerificationFlow].
 @ProviderFor(VerificationFlow)
-final verificationFlowProvider = AutoDisposeNotifierProvider<VerificationFlow,
-    VerificationFlowState>.internal(
+final verificationFlowProvider = AutoDisposeNotifierProvider<
+  VerificationFlow,
+  VerificationFlowState
+>.internal(
   VerificationFlow.new,
   name: r'verificationFlowProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$verificationFlowHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$verificationFlowHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

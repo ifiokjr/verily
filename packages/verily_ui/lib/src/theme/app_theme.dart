@@ -41,8 +41,9 @@ class AppTheme {
         backgroundColor: colorScheme.primary,
         elevation: 1.0, // Subtle elevation
         shape: RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.circular(AppSpacing.sm), // Use spacing constant
+          borderRadius: BorderRadius.circular(
+            AppSpacing.sm,
+          ), // Use spacing constant
         ),
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
@@ -81,7 +82,7 @@ class AppTheme {
   static InputDecorationTheme _inputDecorationTheme(ColorScheme colorScheme) {
     return InputDecorationTheme(
       filled: true,
-      fillColor: colorScheme.surfaceVariant.withOpacity(0.5),
+      fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.5),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSpacing.sm),
         borderSide: BorderSide.none, // Clean borderless look
@@ -98,8 +99,9 @@ class AppTheme {
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,
       ),
-      hintStyle:
-          TextStyle(color: colorScheme.onSurfaceVariant.withOpacity(0.7)),
+      hintStyle: TextStyle(
+        color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+      ),
     );
   }
 
@@ -110,7 +112,8 @@ class AppTheme {
       margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
-            AppSpacing.md), // Slightly larger radius for cards
+          AppSpacing.md,
+        ), // Slightly larger radius for cards
       ),
       color: colorScheme.surface, // Use surface color
     );
@@ -119,17 +122,18 @@ class AppTheme {
   // --- AppBar Theme Helper ---
   static AppBarTheme _appBarTheme(ColorScheme colorScheme) {
     return AppBarTheme(
-        elevation: 0, // Flat app bar
-        centerTitle: false, // Typically false for wider screens
-        backgroundColor: colorScheme.surface, // Match surface
-        foregroundColor: colorScheme.onSurface, // Ensure contrast
-        surfaceTintColor: Colors.transparent, // Avoid tinting on scroll
-        titleTextStyle: TextStyle(
-          fontFamily: _fontFamily,
-          color: colorScheme.onSurface,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ));
+      elevation: 0, // Flat app bar
+      centerTitle: false, // Typically false for wider screens
+      backgroundColor: colorScheme.surface, // Match surface
+      foregroundColor: colorScheme.onSurface, // Ensure contrast
+      surfaceTintColor: Colors.transparent, // Avoid tinting on scroll
+      titleTextStyle: TextStyle(
+        fontFamily: _fontFamily,
+        color: colorScheme.onSurface,
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+      ),
+    );
   }
 
   // --- Light Theme ---
@@ -146,14 +150,15 @@ class AppTheme {
     return baseTheme.copyWith(
       colorScheme: colorScheme,
       textTheme: _buildTextTheme(baseTheme.textTheme).apply(
-          bodyColor: colorScheme.onSurface,
-          displayColor: colorScheme.onSurface),
+        bodyColor: colorScheme.onSurface,
+        displayColor: colorScheme.onSurface,
+      ),
       elevatedButtonTheme: _elevatedButtonTheme(colorScheme),
       textButtonTheme: _textButtonTheme(colorScheme),
       inputDecorationTheme: _inputDecorationTheme(colorScheme),
       cardTheme: _cardTheme(colorScheme),
       appBarTheme: _appBarTheme(colorScheme),
-      scaffoldBackgroundColor: colorScheme.background,
+      scaffoldBackgroundColor: colorScheme.surface,
       visualDensity: VisualDensity.adaptivePlatformDensity,
       // Add other component themes (dialog, etc.)
     );
@@ -173,14 +178,15 @@ class AppTheme {
     return baseTheme.copyWith(
       colorScheme: colorScheme,
       textTheme: _buildTextTheme(baseTheme.textTheme).apply(
-          bodyColor: colorScheme.onSurface,
-          displayColor: colorScheme.onSurface),
+        bodyColor: colorScheme.onSurface,
+        displayColor: colorScheme.onSurface,
+      ),
       elevatedButtonTheme: _elevatedButtonTheme(colorScheme),
       textButtonTheme: _textButtonTheme(colorScheme),
       inputDecorationTheme: _inputDecorationTheme(colorScheme),
       cardTheme: _cardTheme(colorScheme),
       appBarTheme: _appBarTheme(colorScheme),
-      scaffoldBackgroundColor: colorScheme.background,
+      scaffoldBackgroundColor: colorScheme.surface,
       visualDensity: VisualDensity.adaptivePlatformDensity,
       // Add other component themes (dialog, etc.)
     );

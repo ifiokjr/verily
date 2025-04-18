@@ -40,8 +40,9 @@ abstract class Location implements _i1.SerializableModel {
       radiusMeters: (jsonSerialization['radiusMeters'] as num?)?.toDouble(),
       googlePlacesId: jsonSerialization['googlePlacesId'] as String?,
       address: jsonSerialization['address'] as String?,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
     );
   }
 
@@ -105,14 +106,14 @@ class _LocationImpl extends Location {
     String? address,
     required DateTime createdAt,
   }) : super._(
-          id: id,
-          latitude: latitude,
-          longitude: longitude,
-          radiusMeters: radiusMeters,
-          googlePlacesId: googlePlacesId,
-          address: address,
-          createdAt: createdAt,
-        );
+         id: id,
+         latitude: latitude,
+         longitude: longitude,
+         radiusMeters: radiusMeters,
+         googlePlacesId: googlePlacesId,
+         address: address,
+         createdAt: createdAt,
+       );
 
   /// Returns a shallow copy of this [Location]
   /// with some or all fields replaced by the given arguments.

@@ -42,10 +42,12 @@ abstract class ActionStep implements _i1.SerializableModel {
       order: jsonSerialization['order'] as int,
       parameters: jsonSerialization['parameters'] as String,
       instruction: jsonSerialization['instruction'] as String?,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      updatedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+      updatedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['updatedAt'],
+      ),
     );
   }
 
@@ -114,15 +116,15 @@ class _ActionStepImpl extends ActionStep {
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
-          id: id,
-          actionId: actionId,
-          type: type,
-          order: order,
-          parameters: parameters,
-          instruction: instruction,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-        );
+         id: id,
+         actionId: actionId,
+         type: type,
+         order: order,
+         parameters: parameters,
+         instruction: instruction,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+       );
 
   /// Returns a shallow copy of this [ActionStep]
   /// with some or all fields replaced by the given arguments.

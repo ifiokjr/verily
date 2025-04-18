@@ -1,4 +1,4 @@
-library verily_ui;
+library;
 
 // Export Theme
 export 'src/theme/app_theme.dart';

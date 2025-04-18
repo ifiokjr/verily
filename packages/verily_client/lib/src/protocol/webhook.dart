@@ -42,10 +42,12 @@ abstract class Webhook implements _i1.SerializableModel {
       secret: jsonSerialization['secret'] as String?,
       subscribedEvents: jsonSerialization['subscribedEvents'] as String,
       isActive: jsonSerialization['isActive'] as bool,
-      createdAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
-      updatedAt:
-          _i1.DateTimeJsonExtension.fromJson(jsonSerialization['updatedAt']),
+      createdAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['createdAt'],
+      ),
+      updatedAt: _i1.DateTimeJsonExtension.fromJson(
+        jsonSerialization['updatedAt'],
+      ),
     );
   }
 
@@ -114,15 +116,15 @@ class _WebhookImpl extends Webhook {
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
-          id: id,
-          actionId: actionId,
-          url: url,
-          secret: secret,
-          subscribedEvents: subscribedEvents,
-          isActive: isActive,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-        );
+         id: id,
+         actionId: actionId,
+         url: url,
+         secret: secret,
+         subscribedEvents: subscribedEvents,
+         isActive: isActive,
+         createdAt: createdAt,
+         updatedAt: updatedAt,
+       );
 
   /// Returns a shallow copy of this [Webhook]
   /// with some or all fields replaced by the given arguments.

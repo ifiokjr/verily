@@ -116,7 +116,7 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
           strictOrder: _isStrictOrder,
         );
 
-        if (newAction != null && newAction.id != null) {
+        if (newAction.id != null) {
           ref.invalidate(myActionsProvider);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -201,8 +201,9 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return 'Please enter a name';
+                    }
                     return null;
                   },
                 ),
@@ -216,8 +217,9 @@ class _CreateActionPageState extends ConsumerState<CreateActionPage> {
                   ),
                   maxLines: 3,
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return 'Please enter a description';
+                    }
                     return null;
                   },
                 ),
